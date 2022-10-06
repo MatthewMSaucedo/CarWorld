@@ -1,0 +1,58 @@
+@import "src/styles.scss";
+
+* {
+    font-family: Georgia;
+}
+
+.container {
+    padding-top: 5rem;
+    .mobile-auth-login {
+        background-color: $navbar-background;
+        position:relative;
+        top:25%;
+        margin: auto;
+        width: 70%;
+        height: 29rem;
+        border-top: 1px solid $navbar-border;
+        border-left: 1px solid $navbar-border;
+        border-right: 1px solid $navbar-border;
+        border-bottom: 1px solid $navbar-border;
+    }
+    .mobile-auth-register {
+        background-color: $navbar-background;
+        position:relative;
+        top:25%;
+        margin: auto;
+        width: 70%;
+        height: 33.5rem;
+        border-top: 1px solid $navbar-border;
+        border-left: 1px solid $navbar-border;
+        border-right: 1px solid $navbar-border;
+        border-bottom: 1px solid $navbar-border;
+    }
+    .desktop-auth-login {
+        background-color: $navbar-background;
+        margin-top: 4rem;
+        position:relative;
+        top:25%;
+        margin: auto;
+        width: 30%;
+        height: 29rem;
+        border-top: 1px solid $navbar-border;
+        border-left: 1px solid $navbar-border;
+        border-right: 1px solid $navbar-border;
+        border-bottom: 1px solid $navbar-border;
+    }
+    .desktop-auth-register {
+        background-color: $navbar-background;
+        position:relative;
+        top:25%;
+        margin: auto;
+        width: 30%;
+        height: 33.5rem;
+        border-top: 1px solid $navbar-border;
+        border-left: 1px solid $navbar-border;
+        border-right: 1px solid $navbar-border;
+        border-bottom: 1px solid $navbar-border;
+    }
+}

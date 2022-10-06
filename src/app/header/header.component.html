@@ -1,0 +1,85 @@
+<div class="smt-navbar">
+    <div class="smt-nav-header">
+        <span>
+            Stock Market Valuations
+        </span>
+    </div>
+    <nav class="smt-nav-body">
+        <div class="empty-border-bottom"></div>
+        <div class="smt-nav-body-content">
+            <div
+                *ngIf="!isLoggedIn"
+                class="smt-nav-item"
+                routerLinkActive="smt-active-nav">
+                <span
+                    class="oi oi-home icon-color"
+                    aria-hidden="true">
+                </span>
+                <a routerLink="/home">
+                    Home
+                </a>
+            </div>
+            <div
+                *ngIf="!isLoggedIn"
+                class="smt-nav-item"
+                routerLinkActive="smt-active-nav">
+                <span
+                    class="oi oi-menu icon-color"
+                    aria-hidden="true">
+                </span>
+                <a routerLink="/about">
+                    About
+                </a>
+            </div>
+            <!--<div TODO: Implement
+                *ngIf="isLoggedIn"
+                class="smt-nav-item"
+                routerLinkActive="smt-active-nav">
+                <span
+                    class="oi oi-dollar icon-color"
+                    aria-hidden="true">
+                </span>
+                <a routerLink="/market-analysis">
+                    Market Analysis
+                </a>
+            </div>-->
+            <div
+                *ngIf="isLoggedIn"
+                class="smt-nav-item"
+                routerLinkActive="smt-active-nav">
+                <span
+                    class="oi oi-dollar icon-color"
+                    aria-hidden="true">
+                </span>
+                <a routerLink="/security-analysis">
+                    Security Analysis
+                </a>
+            </div>
+            <div
+                *ngIf="!isLoggedIn"
+                class="smt-nav-item"
+                routerLinkActive="smt-active-nav">
+                <span
+                    class="oi oi-person icon-color"
+                    aria-hidden="true">
+                </span>
+                <a routerLink="/auth">
+                    Login
+                </a>
+            </div>
+            <div
+                *ngIf="isLoggedIn"
+                class="smt-nav-item"
+                routerLinkActive="smt-active-nav">
+                <span
+                    class="oi oi-person icon-color"
+                    aria-hidden="true">
+                </span>
+                <a routerLink="/profile">
+                    Profile
+                </a>
+            </div>
+        </div>
+        <div class="empty-border-bottom"></div>
+    </nav>
+</div>

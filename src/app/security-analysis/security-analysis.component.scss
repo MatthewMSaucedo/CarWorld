@@ -1,0 +1,132 @@
+@import "src/styles.scss";
+
+.security-body {
+    display: flex;
+	flex-direction: column;
+    align-items: center;
+    padding-bottom: 2rem;
+}
+
+.summary-container {
+    margin-top: 2.5rem;
+    padding-right: 5rem;
+    padding-left: 5rem;
+    background-color: $navbar-background;
+    border-top: 1px solid $navbar-border;
+    border-left: 1px solid $navbar-border;
+    border-right: 1px solid $navbar-border;
+    border-bottom: 1px solid $navbar-border;
+}
+
+.owner-summary-header {
+    padding-top: 1rem;
+    padding-bottom: 2rem;
+    text-align: center;
+    border-bottom: 1px solid $navbar-border;
+}
+
+.owner-summary-body {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+}
+
+.buy-recommendation {
+    background-color: limegreen;
+    color: white;
+    border-top: 1px solid $navbar-border;
+    border-left: 1px solid $navbar-border;
+    border-right: 1px solid $navbar-border;
+    border-bottom: 1px solid $navbar-border;
+    text-align: center;
+
+    span {
+        font-size: 8rem;
+        font-weight: bold;
+    }
+}
+
+.not-buy-recommendation {
+    background-color: red;
+    color: white;
+    border-top: 1px solid $navbar-border;
+    border-left: 1px solid $navbar-border;
+    border-right: 1px solid $navbar-border;
+    border-bottom: 1px solid $navbar-border;
+    text-align: center;
+
+    span {
+        font-size: 8rem;
+        font-weight: bold;
+    }
+}
+
+.instrinsic-details {
+    display: flex;
+    flex-direction: row;
+	justify-content: space-around;
+}
+
+.intrinsic-detail {
+    display: flex;
+    flex-direction: column;
+}
+
+.owner-summary-body-col {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 2rem;
+    width: 30rem;
+    padding-right: 1.5rem;
+    padding-left: 1.5rem;
+    padding-bottom: 1.5rem;
+    padding-top: 1.5rem;
+}
+
+.interact-bar {
+    padding-top: 3.5rem;
+    padding-bottom: 3.5rem;
+}
+
+.view-button {
+    width: 10rem;
+}
+
+.watchlist-button {
+    width: 15rem;
+}
+
+.col-row {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    padding-bottom: .5rem;
+}
+
+.lds-dual-ring {
+    display: inline-block;
+    width: 64px;
+    height: 64px;
+}
+.lds-dual-ring:after {
+    content: " ";
+    display: block;
+    width: 46px;
+    height: 46px;
+    margin: 1px;
+    border-radius: 50%;
+    border: 5px solid white;
+    border-color: limegreen transparent limegreen transparent;
+    animation: lds-dual-ring 1.2s linear infinite;
+}
+@keyframes lds-dual-ring {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+}
+.lds-margin-top {
+    margin-top: 3.5rem;
+}

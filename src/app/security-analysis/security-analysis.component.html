@@ -1,0 +1,55 @@
+<div class="container">
+    <div class="security-body">
+
+        <!-- Ticker Search -->
+        <div>
+            <input #tickerInput type="text" placeholder="Enter Ticker symbol"/>
+            <button class="btn-primary" (click)="handleTickerSearch(tickerInput)">Search</button>
+        </div>
+        <div *ngIf="isLoading" class="lds-dual-ring lds-margin-top"></div>
+        <!-- Owner Summary -->
+        <div *ngIf="shouldShowOwnerSummary" [@expandAppear] class="summary-container" #ownerSummary>
+            <div class="owner-summary-header">
+                <h1 style="margin-bottom: 0;">{{reportedTickerName}}<br /> Owner's Summary</h1>
+            </div>
+            <div class="owner-summary-body">
+                <div class="owner-summary-body-col">
+                    <div *ngIf="intrinsicValueResponse.recommend" class="buy-recommendation">
+                        <span>BUY</span>
+                    </div>
+
+                    <div *ngIf="!intrinsicValueResponse.recommend" class="not-buy-recommendation">
+                        <span>DON'T BUY</span>
+                    </div>
+                </div>
+                <div class="instrinsic-details">
+                    <div class="instrinsic-detail">
+                        <div><span style="font-weight:bold;">Current Price</span></div>
+                        <div><span>${{intrinsicValueResponse.currentPrice.toFixed(2)}}</span></div>
+                    </div>
+                    <div class="instrinsic-detail">
+                        <div><span style="font-weight:bold;">Intrinsic Value</span></div>
+                        <div><span>${{intrinsicValueResponse.intrinsicValue.toFixed(2)}}</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interact Bar -->
+        <div *ngIf="shouldShowOwnerSummary" class="interact-bar">
+                <button class="btn btn-primary view-button" (click)="handleComponentClick('dashboard')">Score Cards</button>
+                <button class="btn btn-primary view-button" (click)="handleComponentClick('reported')">Reported</button>
+                <button class="btn btn-primary watchlist-button" (click)="handleAddWatchlistClick()">Add to Watchlist</button>
+        </div>
+
+        <!-- Loaded Component -->
+        <app-dashboard *ngIf="shouldShowOwnerSummary && loadedComponent === 'dashboard'"
+            [@slideUp]
+            [ticker]="reportedTickerName">
+        </app-dashboard>
+        <app-reported *ngIf="shouldShowOwnerSummary && loadedComponent === 'reported'"
+            [@slideUp]
+            [ticker]="reportedTickerName">
+        </app-reported>
+    </div>
+</div>

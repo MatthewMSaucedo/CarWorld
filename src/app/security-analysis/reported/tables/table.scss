@@ -1,0 +1,29 @@
+@import "src/styles.scss";
+
+table {
+    width: 100%;
+    background-color: $navbar-background;
+    border-top: 1px solid $navbar-border;
+    border-left: 1px solid $navbar-border;
+    border-right: 1px solid $navbar-border;
+    table-layout: fixed;
+}
+
+th, td {
+  overflow: hidden;
+  width: 1.2rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mat-paginator {
+    border-left: 1px solid $navbar-border;
+    border-right: 1px solid $navbar-border;
+    border-bottom: 1px solid $navbar-border;
+    background-color: $navbar-background;
+}
+
+.center-buttons {
+    display: flex;
+    justify-content: center;
+}

@@ -1,0 +1,72 @@
+@import "src/styles.scss";
+
+/* Variables */
+//$active-text-color:
+$standard-text-color: black;
+
+/* Body */
+.smt-navbar {
+    background-color: $navbar-background;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 2rem;
+    .smt-nav-header {
+        text-align: center;
+        margin-top: 4rem;
+        margin-bottom: 1rem;
+        span {
+            color: $standard-text-color;
+            font-size: $nav-header-font-size;
+            //font-weight: ;
+            //padding-left: 14rem;
+        }
+    }
+    .smt-nav-body {
+        display: flex;
+        justify-content: center;
+        .smt-nav-body-content {
+            display: flex;
+            justify-content: center;
+            .smt-nav-item {
+                //flex-grow: 1;
+                text-align: center;
+                padding-left: 1rem;
+                padding-right: 1rem;
+                padding-top: 1rem;
+                padding-bottom: 1rem;
+                border-bottom: 1px solid $navbar-border;
+                a {
+                    font-size: $nav-item-font-size;
+                    color: $standard-text-color;
+                    text-decoration: none;
+                }
+                .icon-color {
+                    color: $blue;
+                }
+            }
+            .smt-active-nav {
+                padding-left: 1rem;
+                padding-right: 1rem;
+                padding-top: 1rem;
+                padding-bottom: 1rem;
+                background-color: white !important;
+                border-top: 4px solid $blue;
+                border-left: 1px solid $navbar-border;
+                border-right: 1px solid $navbar-border;
+                border-bottom: 1px solid white;
+                a {
+                    font-size: $nav-item-font-size;
+                    color: $standard-text-color;
+                    text-decoration: none;
+                }
+                .icon-color {
+                    color: LimeGreen;
+                }
+            }
+        }
+        .empty-border-bottom {
+            border-bottom: 1px solid $navbar-border;
+            flex-grow: 1;
+        }
+    }
+}

@@ -1,0 +1,54 @@
+@import "src/styles.scss";
+
+* {
+    font-family: Georgia;
+   }
+
+/* TODO: Change button disabled color */
+.btn-primary, .btn-primary:hover, .btn-primary:active, .btn-primary:disabled, .btn-primary:visited {
+    background-color: $blue !important;
+    font-family: Georgia;
+}
+
+.input-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.input-header {
+    text-align: center;
+    color: white;
+    background-color: $blue;
+    margin-top: 0rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+.input-body {
+    margin-top: 1rem;
+}
+
+.shorter-input-box {
+    padding-left: 3rem;
+    padding-right: 3rem;
+}
+
+.shorter-input-button {
+    padding-left: 7rem;
+    padding-right: 7rem;
+    margin-top: 3rem;
+}
+
+.input-footer {
+    padding-bottom: 2rem;
+}
+
+.h4 {
+    margin-top: 2rem;
+}
+
+.register-button {
+    cursor: pointer;
+    color: #6b789a !important;
+}
