@@ -9,7 +9,7 @@ import { ProfileService } from './profile.service';
     template: `
         <div *ngIf="!pageIsLoading" class="container profile-body">
             <div class="profile-heading">
-                {{username}}'s Profile
+                {{email}}'s Profile
             </div>
             <div class="profile-row">
                 <div class="profile-component">
@@ -45,7 +45,7 @@ import { ProfileService } from './profile.service';
 export class ProfileComponent implements OnInit {
     public pageIsLoading: boolean;
     public watchlist;
-    public username;
+    public email;
 
     constructor(
         public router: Router,
@@ -55,7 +55,7 @@ export class ProfileComponent implements OnInit {
     ) { }
 
     async ngOnInit() {
-        this.username = this.authService.loggedInUser;
+        this.email = this.authService.loggedInUser;
         this.pageIsLoading = true;
         this.watchlist = await this.profileService.listWatchlist();
         this.pageIsLoading = false;

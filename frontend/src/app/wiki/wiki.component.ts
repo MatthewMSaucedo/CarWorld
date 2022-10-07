@@ -5,7 +5,7 @@ import { Component, OnInit } from '@angular/core';
     template: `
         <div class="container">
             <h1>
-                market analysis
+               Wiki
             </h1>
         </div>
     `,

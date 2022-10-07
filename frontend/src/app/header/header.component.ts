@@ -2,6 +2,8 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { AuthService } from '../authorization/auth.service';
 import { Subscription } from 'rxjs';
 
+// TODO: Preserve session with cookies?
+
 @Component({
     selector: 'app-header',
     templateUrl: './header.component.html',

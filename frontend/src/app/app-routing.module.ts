@@ -2,9 +2,10 @@ import { NgModule } from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
 import { LoginComponent } from './authorization/login.component';
 import { HomeComponent } from './home/home.component';
-import { AboutComponent } from './about/about.component';
-import { SecurityAnalysisComponent } from './security-analysis/security-analysis.component';
-import { MarketAnalysisComponent } from './market-analysis/market-analysis.component';
+import { LandingComponent } from './home/landing.component';
+import { WikiComponent } from './wiki/wiki.component';
+import { MerchStoreComponent } from './merch-store/merch-store.component';
+import { EarnDevotionPointsComponent } from './earn-devotion-points/earn-devotion-points.component';
 import { AuthComponent } from './authorization/auth.component';
 import { RegisterComponent } from './authorization/register.component';
 import { ProfileComponent } from './profile/profile.component';
@@ -13,16 +14,20 @@ const appRoutes: Routes =
 [
     {
         path: '',
-        redirectTo: '/home',
+        redirectTo: '/landing',
         pathMatch: 'full'
+    },
+    {
+        path: 'landing',
+        component: LandingComponent,
     },
     {
         path: 'home',
         component: HomeComponent,
     },
     {
-        path: 'about',
-        component: AboutComponent,
+        path: 'wiki',
+        component: WikiComponent,
     },
     {
         path: 'auth',
@@ -48,12 +53,12 @@ const appRoutes: Routes =
         component: ProfileComponent,
     },
     {
-        path: 'market-analysis',
-        component: MarketAnalysisComponent,
+        path: 'earn-devotion-points',
+        component: EarnDevotionPointsComponent,
     },
     {
-        path: 'security-analysis',
-        component: SecurityAnalysisComponent,
+        path: 'merch-store',
+        component: MerchStoreComponent,
     }
 ];
 

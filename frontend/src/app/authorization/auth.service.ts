@@ -18,9 +18,9 @@ export class AuthService {
         return this._authToken;
     }
 
-    public async registerUser(username: string, email: string, password: string): Promise<void> {
+    public async registerUser(email: string, password: string): Promise<void> {
         try {
-            const response = await this.endpointService.register({email, password, username});
+            const response = await this.endpointService.register({email, password});
             this.registerToast.next(true);
         } catch (error) {
             this.error.next(error.error.error.message);
@@ -28,13 +28,13 @@ export class AuthService {
         }
     }
 
-    public async login(username: string, password: string): Promise<void> {
+    public async login(email: string, password: string): Promise<void> {
         try {
-            const response = await this.endpointService.login({username, password});
+            const response = await this.endpointService.login({email, password});
             this._authToken = response.token;
             this.loginToast.next(true);
             this.isLoggedIn.next(true);
-            this.loggedInUser = username;
+            this.loggedInUser = email;
         } catch (error) {
             this.error.next(error.error.message);
             this.loginToast.next(false);

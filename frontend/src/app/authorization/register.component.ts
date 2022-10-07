@@ -23,18 +23,7 @@ import { ToastrService } from 'ngx-toastr';
                             placeholder="Email"
                             />
                         </div>
-                        <div class="form-group shorter-input-box">
-                            <input type="text"
-                            id="username"
-                            class="form-control"
-                            name="username"
-                            ngModel
-                            maxlength="12"
-                            required
-                            placeholder="Username"
-                            />
-                        </div>
-                        <div class="form-group shorter-input-box">
+                       <div class="form-group shorter-input-box">
                             <input type="password"
                             id="password"
                             class="form-control"
@@ -100,10 +89,9 @@ export class RegisterComponent implements OnInit, OnDestroy {
     public async onSubmit(form: NgForm): Promise<void> {
         const email = form.value.email;
         const password = form.value.password;
-        const username = form.value.username;
 
         console.log(form.value);
-        await this.authService.registerUser(username, email, password);
+        await this.authService.registerUser(email, password);
         form.reset();
     }
 

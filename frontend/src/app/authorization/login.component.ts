@@ -14,9 +14,9 @@ import { Subscription } from 'rxjs';
                 <form #registrationForm="ngForm" (ngSubmit)="onSubmit(registrationForm)">
                     <div class="form-group shorter-input-box">
                         <input type="text"
-                            id="username"
+                            id="email"
                             class="form-control"
-                            name="username"
+                            name="email"
                             ngModel
                             maxlength="12"
                             required
@@ -59,7 +59,7 @@ import { Subscription } from 'rxjs';
 export class LoginComponent implements OnInit, OnDestroy {
     public toastSubscription: Subscription;
     public errorSubscription: Subscription;
-    private _username: string;
+    private _email: string;
     public error: string;
 
     constructor(
@@ -74,7 +74,7 @@ export class LoginComponent implements OnInit, OnDestroy {
         this.errorSubscription = this.authService.error.subscribe((error: string) => this.error = error);
         this.toastSubscription = this.authService.loginToast.subscribe((success: boolean) => {
             if (success) {
-                this._toastrService.success(`Welcome, ${this._username}!`, 'Login succeeded');
+                this._toastrService.success(`Welcome, ${this._email}!`, 'Login succeeded');
                 this.router.navigate(['security-analysis']);
             } else {
                 this._toastrService.error(this.error, 'Login failed');
@@ -88,10 +88,12 @@ export class LoginComponent implements OnInit, OnDestroy {
     }
 
     public async onSubmit(form: NgForm): Promise<void> {
-        const username = form.value.username;
-        this._username = username;
+        const email = form.value.email;
+        // TODO: Add email validation
+
+        this._email = email;
         const password = form.value.password;
-        await this.authService.login(username, password);
+        await this.authService.login(email, password);
         form.reset();
     }
 
