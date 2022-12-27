@@ -12,6 +12,7 @@
 /build
 
 # misc
+.code_scraps.ts
 .DS_Store
 .env.local
 .env.development.local
