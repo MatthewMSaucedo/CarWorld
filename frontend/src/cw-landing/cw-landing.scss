@@ -1,0 +1,16 @@
+cw-landing-container {
+  /* Orientation of contained html tags */
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  align-items: center;
+  align-content: space-evenly;
+
+  // page sizing
+  min-height: 100vh;
+  font-size: calc(10px + 2vmin);
+
+  background-size: 1000px 1000px;
+  background-image: url('/../public/cw-logo.svg');
+}

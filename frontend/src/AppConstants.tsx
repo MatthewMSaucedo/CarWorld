@@ -1,12 +1,13 @@
-import App from './App'
+import CWLandingComponent from './cw-landing/cw-landing-component'
+import CWHomeComponent from './cw-home/cw-home-component'
 
 export const CW_ROUTES = [
   {
     path: '/',
-    element: <App />
+    element: <CWLandingComponent />
   },
-  /* {
-   *   path: 'profile/',
-   *   element: <CarWorldProfile />
-   * }, */
+    {
+      path: 'home',
+      element: <CWHomeComponent />
+    },
 ]

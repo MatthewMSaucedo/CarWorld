@@ -1,14 +1,15 @@
 import './App.scss';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import * as AppConstants from './AppConstants';
 
 function App() {
+  const router = createBrowserRouter(AppConstants.CW_ROUTES)
+
   return (
-    <div className="App">
-      <header className="App-header">
-        { /* TODO: Add Flexbox container */ }
-        <div></div>
-      </header>
+    <div className="cw-common-container">
+      <RouterProvider router={router} />
     </div>
   );
 }
 
-export default App
+export default App;
