@@ -5,8 +5,8 @@ import { Link } from 'react-router-dom';
 
 function CWLandingComponent() {
   return (
-    <div className="cw-common-body">
-      <div className="cw-navbox">
+    <div className="cw-landing-container">
+      <div className="cw-landing-navbox">
         <p className="content">
           <b><Link className="cw-landing-link" to={`home`}>
              Enter CarWorld

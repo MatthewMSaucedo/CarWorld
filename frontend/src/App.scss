@@ -1,25 +1,7 @@
-.cw-landing-container {
-  /* Orientation of contained html tags */
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: space-around;
-  align-items: center;
-  align-content: space-evenly;
-
-  // page sizing
-  min-height: 100vh;
-  font-size: calc(10px + 2vmin);
-
-  // dat sick style bby
+// Top-level container for entire webapp
+.cw-app-container {
   background-color: #282c34;
-  background-size: 1250px 1250px;
-  background-position: center center;
-  background-repeat: no-repeat;
-  background-image: url('/../public/cw-logo.svg');
-
 }
-
 
 .cw-common-container {
   /* Orientation of contained html tags */
@@ -32,39 +14,38 @@
 
   // page sizing
   min-height: 100vh;
+  min-width: 100vh;
   font-size: calc(10px + 2vmin);
 
   // dat sick style bby
-  background-color: #282c34;
   background-size: 100px 100px;
   background-repeat: repeat-x repeat y;
   background-image: url('/../public/cw-logo.svg');
 
-}
+  .cw-common-navbox {
+    background-color: #FFFFFF;
+    min-height: 5vh;
+    min-height: 5vw;
 
-.cw-navbox {
-  background-color: #FFFFFF;
-  min-height: 5vh;
-  min-height: 5vw;
+    border: 5px solid black;
 
-  border: 5px solid black;
+    .content {
+      // padding-top: 10px;
+      padding-right: 50px;
+      // padding-bottom: 5px;
+      padding-left: 50px;
+    }
 
-  .content {
-    // padding-top: 10px;
-    padding-right: 50px;
-    // padding-bottom: 5px;
-    padding-left: 50px;
+    // TODO: way to repeat this?
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    align-items: center;
+    align-content: space-evenly;
   }
 
-  // TODO: way to repeat this?
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: space-around;
-  align-items: center;
-  align-content: space-evenly;
-}
+  .cw-common-link {
 
-.cw-common-link {
-
+  }
 }
