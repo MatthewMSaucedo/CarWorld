@@ -1,19 +1,16 @@
 import '../App.scss';
-import { Link } from 'react-router-dom';
+import CWCommonNavboxComponent from '../cw-common/components/navbox/cw-common-navbox-component';
 
 
 function CWHomeComponent() {
   return (
-      <div className="cw-common-container">
-        <div className="cw-common-navbox">
-          <p className="content">
-            <b><Link className="cw-common-link" to={`/`}>
-               Store
-            </Link></b>
-          </p>
-        </div>
+      <div className="cw-common-page-container">
+        <CWCommonNavboxComponent text='Login/Register' url='/' />
+        <CWCommonNavboxComponent text='Store' url='/' />
+        <CWCommonNavboxComponent text='Videos' url='/' />
+        <CWCommonNavboxComponent text='Wiki' url='/' />
       </div>
-  );
+  )
 }
 
 export default CWHomeComponent

@@ -1,20 +1,30 @@
-import { Entity, PrimaryGeneratedColumn, Column, BaseEntity } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, BaseEntity } from "typeorm"
 
 @Entity()
 export class Account extends BaseEntity {
 
   @PrimaryGeneratedColumn()
-  id: number;
+  id: number
 
   @Column()
-  username: string;
+  username: string
 
   @Column()
-  password: string;
+  type: AccountType
+
+  // salt & peppered
+  @Column()
+  password: string
 
   @Column()
-  salt: string;
+  salt: string
 
   @Column()
-  devotionPoints: number;
+  devotionPoints: number
+}
+
+export enum AccountType {
+  Standard,
+  Admin,
+  TicketTaker // Rendy validation against list?
 }

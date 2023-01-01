@@ -1,8 +1,9 @@
 export class CarWorldApiResponse {
   constructor(
     private _code?: number,
-    private _response?: any,
+    private _message?: any,
     private _error?: string,
+    private _data?: any,
   ) { }
 
   get code(): number {
@@ -21,12 +22,19 @@ export class CarWorldApiResponse {
     this._error = error;
   }
 
-  get response(): any {
-    return this._response;
+  get message(): any {
+    return this._message;
   }
 
-  // TODO: Consider passing this a res obj type and letting this initialize that?
-  set response(res: any) {
-    this._response = res;
+  set message(message: any) {
+    this._message = message;
+  }
+
+  get data(): string {
+    return this._data;
+  }
+
+  set data(data: any) {
+    this._data = data;
   }
 }

@@ -3,12 +3,16 @@
   background-color: #282c34;
 }
 
-.cw-common-container {
+// TODO: Consider making this into a component
+//       Might need to handle routing in a common
+//       way for pages in the future.
+// Common container for served webpages
+.cw-common-page-container {
   /* Orientation of contained html tags */
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  justify-content: space-around;
+  justify-content: center;
   align-items: center;
   align-content: space-evenly;
 
@@ -21,31 +25,4 @@
   background-size: 100px 100px;
   background-repeat: repeat-x repeat y;
   background-image: url('/../public/cw-logo.svg');
-
-  .cw-common-navbox {
-    background-color: #FFFFFF;
-    min-height: 5vh;
-    min-height: 5vw;
-
-    border: 5px solid black;
-
-    .content {
-      // padding-top: 10px;
-      padding-right: 50px;
-      // padding-bottom: 5px;
-      padding-left: 50px;
-    }
-
-    // TODO: way to repeat this?
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: space-around;
-    align-items: center;
-    align-content: space-evenly;
-  }
-
-  .cw-common-link {
-
-  }
 }
