@@ -7,7 +7,9 @@ export class Transaction extends BaseEntity {
   id: number
 
   @Column()
-  type: TransactionType
+  commodityId: number
+  // @Column()
+  // type: TransactionType
 
   @Column()
   state: TransactionState
@@ -19,6 +21,8 @@ export class Transaction extends BaseEntity {
   accountId: number
 }
 
+// replace this concept with generic Commodity class
+// each of these would extend that -- this makes sense I think
 export enum TransactionType {
   Ticket,
   StoreItem,
