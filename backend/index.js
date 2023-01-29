@@ -1,7 +1,7 @@
 import "reflect-metadata";
 
 const express = require('express');
-const carWorldApi= require('./src/CoronaStateInfoApplication');
+const carWorldApi= require('./src/CarWorldApi');
 
 const port = 3000;
 const app = express();

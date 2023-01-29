@@ -26,3 +26,37 @@
   background-repeat: repeat-x repeat y;
   background-image: url('/../public/cw-logo.svg');
 }
+
+.cw-common-content-container {
+  background-color: #FFFFFF;
+  // background-color: rgb(24, 26, 27);
+  min-height: 15vh;
+  min-width: 15vw;
+
+  // box
+  margin-right: 50px;
+  margin-left: 50px;
+  border: 5px solid black;
+
+
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  align-items: center;
+  align-content: stretch;
+
+  .content {
+    // padding-top: 10px;
+    padding-right: 50px;
+    // padding-bottom: 5px;
+    padding-left: 50px;
+
+    color: blue;
+    .cw-common-link {
+        text-decoration: none;
+        color: #ff0000;
+        min-height: 100vh;
+    }
+  }
+}

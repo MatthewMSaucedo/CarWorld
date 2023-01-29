@@ -1,12 +1,13 @@
 .cw-common-navbox {
-  background-color: #FFFFFF;
+  //background-color: #FFFFFF;
+  background-color: rgb(24, 26, 27);
   min-height: 15vh;
   min-width: 15vw;
 
   // box
   margin-right: 50px;
   margin-left: 50px;
-  border: 5px solid black;
+  border: 5px solid rgb(84, 91, 95);
 
 
   display: flex;
@@ -24,6 +25,7 @@
 
     .cw-common-link {
         text-decoration: none;
+        color: #ff0000;
         min-height: 100vh;
     }
   }

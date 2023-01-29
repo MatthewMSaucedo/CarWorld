@@ -11,6 +11,14 @@ export declare class NativescriptQueryRunner extends AbstractSqliteQueryRunner {
     driver: NativescriptDriver;
     constructor(driver: NativescriptDriver);
     /**
+     * Called before migrations are run.
+     */
+    beforeMigration(): Promise<void>;
+    /**
+     * Called after migrations are run.
+     */
+    afterMigration(): Promise<void>;
+    /**
      * Executes a given SQL query.
      */
     query(query: string, parameters?: any[], useStructuredResult?: boolean): Promise<any>;

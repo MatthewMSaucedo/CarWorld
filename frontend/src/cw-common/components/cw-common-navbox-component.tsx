@@ -5,9 +5,9 @@ function CWCommonNavboxComponent(text: string, url: string) {
   return (
     <div className="cw-common-navbox">
         <p className="content">
-        <b><Link className="cw-common-link" to={ url }>
-            { text }
-        </Link></b>
+          <b><Link className="cw-common-link" to={ url }>
+              { text }
+          </Link></b>
         </p>
     </div>
   );

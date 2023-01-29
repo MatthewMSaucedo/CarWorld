@@ -1,0 +1,94 @@
+.cw-common-page-header{
+  // display: flex;
+  // flex-direction: row;
+  // flex-wrap: wrap;
+  // justify-content: space-between;
+  // align-items: center;
+  // align-content: stretch;
+}
+
+// For store component
+.cw-store-nav-shopping-cart {
+  // dat sick style bby
+  // background-size: 300px 200px;
+  // background-position: center center;
+  // background-repeat: no-repeat;
+  // background-image: url('/../public/cw-logo.svg');
+
+  // //background-color: #FFFFFF;
+  // background-color: rgb(24, 26, 27);
+  min-height: 15vh;
+  min-width: 15vw;
+
+  // box
+  margin-top: 75px;
+
+
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  align-items: center;
+  align-content: space-evenly;
+
+  padding-bottom: 54px;
+  // padding-right: 50px;
+  // // padding-bottom: 5px;
+  // padding-left: 50px;
+
+  .cw-shopping-link {
+      margin-top: 8px;
+      text-decoration: none;
+      color: yellow;
+      font-size: calc(5px + 2vmin);
+      // float-right: 50px;
+      // padding-bottom: 5px;
+      // padding-right: 300px;
+  }
+}
+
+// For store item component
+.cw-store-item {
+  background-color: #FFFFFF;
+  // background-color: rgb(24, 26, 27);
+  min-height: 60vh;
+  width: 30vw;
+
+  // box
+  margin-right: 50px;
+  margin-left: 50px;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+
+  background-color: #cccccc;
+  border: 5px solid black;
+
+
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  align-content: stretch;
+
+  .item-image {
+    height: 40vh;
+    width: 20vw;
+  }
+  .content {
+    // padding-top: 10px;
+    padding-right: 50px;
+    // padding-bottom: 5px;
+    padding-left: 50px;
+
+    text-align: center;
+
+    color: blue;
+
+    .cw-common-link {
+        text-decoration: none;
+        color: #ff0000;
+        min-height: 100vh;
+    }
+  }
+}

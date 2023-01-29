@@ -1,7 +1,7 @@
 import { FindOperator } from "../FindOperator";
 /**
  * Find Options Operator.
- * Example: { someField: Like("%some sting%") }
+ * Example: { someField: Like("%some string%") }
  */
 export function Like(value) {
     return new FindOperator("like", value);

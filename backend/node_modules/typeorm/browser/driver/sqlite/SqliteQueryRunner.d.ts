@@ -13,6 +13,14 @@ export declare class SqliteQueryRunner extends AbstractSqliteQueryRunner {
     driver: SqliteDriver;
     constructor(driver: SqliteDriver);
     /**
+     * Called before migrations are run.
+     */
+    beforeMigration(): Promise<void>;
+    /**
+     * Called after migrations are run.
+     */
+    afterMigration(): Promise<void>;
+    /**
      * Executes a given SQL query.
      */
     query(query: string, parameters?: any[], useStructuredResult?: boolean): Promise<any>;

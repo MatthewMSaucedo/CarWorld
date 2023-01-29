@@ -9,7 +9,7 @@ function CWLandingComponent() {
       <div className="cw-landing-navbox">
         <p className="content">
           <b><Link className="cw-landing-link" to={`home`}>
-             Enter CarWorld
+             Enter CarWorld 
           </Link></b>
         </p>
       </div>

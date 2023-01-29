@@ -9,4 +9,5 @@ export declare class EntitySchemaTransformer {
      * Transforms entity schema into new metadata args storage object.
      */
     transform(schemas: EntitySchema<any>[]): MetadataArgsStorage;
+    private transformColumnsRecursive;
 }

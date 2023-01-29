@@ -4,7 +4,7 @@ import { Table } from "../schema-builder/table/Table";
  * Naming strategy that is used by default.
  */
 export declare class DefaultNamingStrategy implements NamingStrategyInterface {
-    private getTableName;
+    protected getTableName(tableOrName: Table | string): string;
     /**
      * Normalizes table name.
      *

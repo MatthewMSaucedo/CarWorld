@@ -10,6 +10,14 @@ export declare class CapacitorQueryRunner extends AbstractSqliteQueryRunner {
      */
     driver: CapacitorDriver;
     constructor(driver: CapacitorDriver);
+    /**
+     * Called before migrations are run.
+     */
+    beforeMigration(): Promise<void>;
+    /**
+     * Called after migrations are run.
+     */
+    afterMigration(): Promise<void>;
     executeSet(set: {
         statement: string;
         values?: any[];

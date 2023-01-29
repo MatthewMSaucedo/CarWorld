@@ -8,8 +8,11 @@ export class Transaction extends BaseEntity {
 
   @Column()
   commodityId: number
+
+  // I don't think we need this - probably all in same table
+  // Need to lookup implications of that on -- empty cols of subclasses?
   // @Column()
-  // type: TransactionType
+  // commodityType: CommodityType
 
   @Column()
   state: TransactionState
@@ -21,12 +24,11 @@ export class Transaction extends BaseEntity {
   accountId: number
 }
 
-// replace this concept with generic Commodity class
-// each of these would extend that -- this makes sense I think
-export enum TransactionType {
+// Subclasses of Commodity
+export enum CommodityType {
   Ticket,
   StoreItem,
-  DevotionPoints
+  DevotionPoint
 }
 
 export enum TransactionState {
