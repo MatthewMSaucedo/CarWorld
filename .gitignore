@@ -6,8 +6,8 @@
 /out-tsc
 
 # dependencies
-# frontent/node_modules
-# backend/node_modules
+frontent/node_modules
+backend/node_modules
 /.pnp
 .pnp.js
 
