@@ -1,4 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, BaseEntity } from "typeorm"
+import { Entity, PrimaryGeneratedColumn, Column, OneToOne, BaseEntity } from "typeorm"
+import { Account } from "./account"
+import { Address } from "./address"
+import { Commodity } from "./commodity"
 
 @Entity()
 export class Transaction extends BaseEntity {
@@ -6,22 +9,30 @@ export class Transaction extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number
 
-  @Column()
-  commodityId: number
+  @OneToMany(() => Photo, (photo) => photo.author) // note: we will create author property in the Photo class below
+  photos: Photo[]
 
-  // I don't think we need this - probably all in same table
-  // Need to lookup implications of that on -- empty cols of subclasses?
-  // @Column()
-  // commodityType: CommodityType
+  @OneToOne(() => Commodity)
+  @JoinColumn()
+  commodity: Commodity
 
   @Column()
   state: TransactionState
 
-  @Column()
+  @OneToOne(() => Address)
+  @JoinColumn()
   addressId: number
 
-  @Column()
+  @OneToOne(() => Account)
+  @JoinColumn()
   accountId: number
+
+  // unique guest token, attribute
+  @Column()
+  guestToken: string
+
+  @Column()
+  miscJson: string
 }
 
 // Subclasses of Commodity
@@ -36,3 +47,8 @@ export enum TransactionState {
   Pending,
   Failed
 }
+
+// NOTE: I don't think we need this - probably all in same table
+//       Need to lookup implications of that on -- empty cols of subclasses?
+// @Column()
+// commodityType: CommodityType

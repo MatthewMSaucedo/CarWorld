@@ -1,4 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, BaseEntity } from "typeorm"
+import { Account } from "./account"
 
 @Entity()
 export class Address extends BaseEntity {
@@ -6,7 +7,8 @@ export class Address extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number
 
-  @Column()
+  @OneToOne(() => Account)
+  @JoinColumn()
   accountId: number // optional, empty for guests
 
   @Column()
