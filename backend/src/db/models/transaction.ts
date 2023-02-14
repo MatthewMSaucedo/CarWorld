@@ -9,9 +9,6 @@ export class Transaction extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number
 
-  @OneToMany(() => Photo, (photo) => photo.author) // note: we will create author property in the Photo class below
-  photos: Photo[]
-
   @OneToOne(() => Commodity)
   @JoinColumn()
   commodity: Commodity
@@ -43,7 +40,8 @@ export enum CommodityType {
 }
 
 export enum TransactionState {
-  Succeeded,
+  Shipped,
+  Paid,
   Pending,
   Failed
 }
