@@ -1,11 +1,4 @@
-# CARWORLD.LOVE
-Cartopia
-
-## Frontend - CarWorld SPA
-Link coming soon
-
 ## Backend - CarWorld Serverless
-![CarWorld System Diagram](https://github.com/matthewmsaucedo/CarWorld/blob/main/backend/CarWorldSystemDesign.jpg?raw=true)
 ``` sh
 |--infra
 |---+ infrastructure as code
@@ -25,6 +18,8 @@ Link coming soon
   |--tests
     |---+ idk it works on my machine
 ```
+
+![CarWorld System Diagram](backend/CWSystemDiagram.jpg/infra?raw=true "Title")
 
 The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
@@ -86,4 +81,3 @@ command.
  * `cdk docs`        open CDK documentation
 
 Enjoy!
-

@@ -1,5 +1,24 @@
-
-# Welcome to CARWORLD-CDK!
+## Backend - CarWorld Serverless
+![CarWorld System Diagram](https://github.com/matthewmsaucedo/CarWorld/blob/main/backend/CarWorldSystemDesign.jpg?raw=true)
+``` sh
+|--infra
+|---+ infrastructure as code
+  |
+  |--lambda
+  |---+ api endpoints as lambda functions
+  |
+  |--infra
+  |---+ cloudformation to build and deploy the infrastructure stored here
+    |
+    |--CWCore Stack
+    |---+ CWAPIGW, AuthController, AuthDB
+    |--CWCommerce Stack
+    |---+ CommerceController, CommerceDB
+    |}--(CWForum Stack)?
+  |
+  |--tests
+    |---+ idk it works on my machine
+```
 
 The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
@@ -52,7 +71,7 @@ To add additional dependencies, for example other CDK libraries, just add
 them to your `setup.py` file and rerun the `pip install -r requirements.txt`
 command.
 
-## Useful commands
+#### Useful commands
 
  * `cdk ls`          list all stacks in the app
  * `cdk synth`       emits the synthesized CloudFormation template

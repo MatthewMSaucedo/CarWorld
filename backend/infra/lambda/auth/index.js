@@ -48,8 +48,8 @@ exports.handler = async(event) => {
     let password = ""
     let username = ""
     try {
-      password = request.body.password
-      username = request.body.username
+      password = request.body.password.toLowerCase()
+      username = request.body.username.toLowerCase()
     } catch (error) {
       return {
         code: 500,
@@ -128,8 +128,8 @@ exports.handler = async(event) => {
     let password = ""
     let username = ""
     try {
-      password = request.body.password
-      username = request.body.username
+      password = request.body.password.toLowerCase()
+      username = request.body.username.toLowerCase()
     } catch (error) {
       return {
         code: 500,
