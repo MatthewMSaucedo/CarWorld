@@ -4,6 +4,7 @@ import boto3
 from aws_cdk import (
     Stack,
     RemovalPolicy,
+    Duration,
     aws_lambda as lambdaFx,
     aws_dynamodb as dynamodb,
     aws_s3 as s3,
@@ -72,16 +73,18 @@ class CWCoreStack(Stack):
             ],
         )
         userTable.grant_read_write_data(sharedLambdaRole)
-        userTable.encryption_key.grant_encrypt_decrypt(sharedLambdaRole)
+        # userTable.encryption_key.grant_encrypt_decrypt(sharedLambdaRole)
         registrationLambda = lambdaFx.Function(
             scope=self,
             id="cw-auth-registration-lambda",
             runtime=lambdaFx.Runtime.NODEJS_18_X,
-            handler="index.handler",
+            handler="function/index.handler",
             role=sharedLambdaRole,
+            # TODO: fix this, upload manually for now
             code=lambdaFx.Code.from_asset("./lambda/auth/zip"),
             description="CarWorld AuthController",
             environment={"jwtSecret": self.jwtSecret},
+            timeout=Duration.seconds(15),
         )
 
         return {"function": registrationLambda, "role": sharedLambdaRole}
@@ -107,42 +110,35 @@ class CWCoreStack(Stack):
             code=lambdaFx.Code.from_asset("./lambda/validator/"),
             description="CarWorld Validator Lambda, to authenticate API requests",
             environment={"jwtSecret": self.jwtSecret},
+            timeout=Duration.seconds(15),
         )
 
         return {"function": validatorLambda, "role": validatorRole}
 
-    # NOTE: Might need to snake_case the lib functions
     def createCWApiGW(self, authLambda):
-        loginAPI = apigw.HttpApi(
+        authAPI = apigw.HttpApi(
             scope=self,
             id="cw-auth-api",
             description="CarWorld Auth Endpoints",
         )
-        # authController = apigw.HttpIntegration(
-        #     scope=self,
-        #     id="cw-auth-controller",
-        #     http_api=loginAPI,
-        #     integration_type=apigw.HttpIntegrationType.AWS_PROXY,
-        #     integration_uri=authLambda.function_arn,
-        # )
         authController = HttpLambdaIntegration("cw-auth-controller", authLambda)
-        loginAPI.add_routes(
+        authAPI.add_routes(
             path="/auth/login",
             methods=[apigw.HttpMethod.GET],
             integration=authController,
         )
-        loginAPI.add_routes(
+        authAPI.add_routes(
             path="/auth/register",
             methods=[apigw.HttpMethod.POST],
             integration=authController,
         )
-        loginAPI.add_routes(
+        authAPI.add_routes(
             path="/auth/refresh",
             methods=[apigw.HttpMethod.GET],
             integration=authController,
         )
 
-        return loginAPI
+        return authAPI
 
     #
     # NOTE: For cwStoreStack

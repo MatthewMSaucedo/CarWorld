@@ -180,7 +180,8 @@ exports.handler = async(event) => {
 
     let authToken = ""
     try {
-      if (await isValidPassword(password, getUserByUsername.password)) {
+      if (await isValidPassword(password, getUserByUsernameRes.password.S)) {
+        // TODO: implement
         authToken = await generateAuthToken()
       } else {
         return {
@@ -195,7 +196,7 @@ exports.handler = async(event) => {
         error: {
           title: error.name,
           message: error.message,
-          stack: error.stack
+          stack: error.stack,
         }
       }
     }

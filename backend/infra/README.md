@@ -22,6 +22,12 @@
 
 The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
+For zipping lambda:
+
+```bash
+rm zip/function.zip; zip -r zip/function.zip index.js package-lock.json package.json node_modules/
+```
+
 This project is set up like a standard Python project.  The initialization
 process also creates a virtualenv within this project, stored under the `.venv`
 directory.  To create the virtualenv it assumes that there is a `python3`
