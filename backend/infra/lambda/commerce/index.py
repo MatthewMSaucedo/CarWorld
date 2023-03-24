@@ -35,7 +35,6 @@ def handler(event, context):
             "error": {
                 "message": str(e),
                 "stack": traceback.format_exc(),
-                "req": request,
             },
         }
 

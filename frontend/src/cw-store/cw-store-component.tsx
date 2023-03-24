@@ -8,10 +8,15 @@ import '../cw-common/components/navbar/cw-common-navbar.scss'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCartShopping } from '@fortawesome/free-solid-svg-icons';
 import { CWShoppingCart } from './cw-shopping-cart';
+import {loadStripe} from '@stripe/stripe-js';
 
 /* import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"; */
 
 /* import CWCommonNavboxComponent from '../cw-common/components/navbox/cw-common-navbox-component'; */
+
+const stripePromise = loadStripe(
+'pk_test_51MVNG0Edd7yLru5yTI1lXrQ3y9cTs01dMpm1K5nFqzVAHkZ0PEhp8gnpqpJyuB2cbbkLI3FSDcxR9MmgNDUgikXM00MHFJnNAs'
+);
 
 function CWStoreComponent() {
     const [cwShoppingCart, setCwShoppingCart] = useState(new CWShoppingCart());
@@ -30,7 +35,9 @@ function CWStoreComponent() {
     const shoppingCartButton = (
         <div
             className="cw-store-nav-shopping-cart"
-            onClick={() => alert(cwShoppingCart.size)}
+            onClick={() => {
+                initiatePaymentFlow()
+            }}
         >
             <FontAwesomeIcon
                 icon={faCartShopping}
@@ -42,6 +49,13 @@ function CWStoreComponent() {
             </b>
         </div>
     )
+
+    const initiatePaymentFlow = async () => {
+        console.log("initiating payment flow...")
+        const response = await fetch('https://6vikh38ev7.execute-api.us-east-1.amazonaws.com/commerce/secret')
+        const {client_secret: clientSecret} = (await response.json()).body
+        alert(clientSecret)
+    }
 
     const navbarComponentLinks: CWCommonNavbarLink[] = [
         {
