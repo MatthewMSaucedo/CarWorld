@@ -21,25 +21,31 @@ from constructs import Construct
 class CWCoreStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
-        botoSession = boto3.Session(profile_name="personal")
-        self.ssm = botoSession.client("ssm", region_name="us-east-1")
-        self.jwtSecret = self.obtainSSMClientSecret(secretName="/cw/auth/jwtSecret")
-
-        self.cwUserTable = self.createCWUserTable()
-
-        self.cwAuthLambda = self.createCWAuthLambda(
-            jwtSecret=self.jwtSecret, userTable=self.cwUserTable
+        boto_session = boto3.Session(profile_name="personal")
+        self.ssm = boto_session.client("ssm", region_name="us-east-1")
+        self.jwt_secret = self.obtain_ssm_client_secret(
+            secret_name="/cw/auth/jwtSecret"
         )
-        self.cwValidatorLambda = self.createCWValidatorLambda(jwtSecret=self.jwtSecret)
 
-        self.cwApiGW = self.createCWApiGW(authLambda=self.cwAuthLambda["function"])
+        self.cw_user_table = self.create_cw_user_table()
 
-    def obtainSSMClientSecret(self, secretName):
-        jwtSecret = self.ssm.get_parameter(Name=secretName, WithDecryption=True)
-        return jwtSecret["Parameter"]["Value"]
+        self.cw_auth_lambda = self.create_cw_auth_lambda(
+            jwt_secret=self.jwt_secret, user_table=self.cw_user_table
+        )
+        self.cw_validator_lambda = self.create_cw_validator_lambda(
+            jwt_secret=self.jwt_secret
+        )
 
-    def createCWUserTable(self):
-        userTable = dynamodb.Table(
+        self.cw_api_gw = self.create_cw_api_gw(
+            auth_lambda=self.cw_auth_lambda["function"]
+        )
+
+    def obtain_ssm_client_secret(self, secret_name):
+        jwt_secret = self.ssm.get_parameter(Name=secret_name, WithDecryption=True)
+        return jwt_secret["Parameter"]["Value"]
+
+    def create_cw_user_table(self):
+        user_table = dynamodb.Table(
             scope=self,
             id="user",
             table_name="users",
@@ -51,17 +57,17 @@ class CWCoreStack(Stack):
             billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
             encryption=dynamodb.TableEncryption.AWS_MANAGED,
         )
-        userTable.add_global_secondary_index(
+        user_table.add_global_secondary_index(
             index_name="username-lookup-index",
             partition_key=dynamodb.Attribute(
                 name="username", type=dynamodb.AttributeType.STRING
             ),
         )
 
-        return userTable
+        return user_table
 
-    def createCWAuthLambda(self, jwtSecret, userTable):
-        sharedLambdaRole = iam.Role(
+    def create_cw_auth_lambda(self, jwt_secret, user_table):
+        shared_lambda_role = iam.Role(
             scope=self,
             id="cw-auth-lambda-role",
             assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
@@ -72,25 +78,24 @@ class CWCoreStack(Stack):
                 )
             ],
         )
-        userTable.grant_read_write_data(sharedLambdaRole)
-        # userTable.encryption_key.grant_encrypt_decrypt(sharedLambdaRole)
-        registrationLambda = lambdaFx.Function(
+        user_table.grant_read_write_data(shared_lambda_role)
+        registration_lambda = lambdaFx.Function(
             scope=self,
             id="cw-auth-registration-lambda",
             runtime=lambdaFx.Runtime.NODEJS_18_X,
             handler="function/index.handler",
-            role=sharedLambdaRole,
+            role=shared_lambda_role,
             # TODO: fix this, upload manually for now
             code=lambdaFx.Code.from_asset("./lambda/auth/zip"),
             description="CarWorld AuthController",
-            environment={"jwtSecret": self.jwtSecret},
+            environment={"jwtSecret": self.jwt_secret},
             timeout=Duration.seconds(15),
         )
 
-        return {"function": registrationLambda, "role": sharedLambdaRole}
+        return {"function": registration_lambda, "role": shared_lambda_role}
 
-    def createCWValidatorLambda(self, jwtSecret):
-        validatorRole = iam.Role(
+    def create_cw_validator_lambda(self, jwt_secret):
+        validator_role = iam.Role(
             scope=self,
             id="cw-validator-lambda-role",
             assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
@@ -101,102 +106,41 @@ class CWCoreStack(Stack):
                 )
             ],
         )
-        validatorLambda = lambdaFx.Function(
+        validator_lambda = lambdaFx.Function(
             scope=self,
             id="cw-validator-lambda",
             runtime=lambdaFx.Runtime.NODEJS_18_X,
             handler="index.handler",
-            role=validatorRole,
+            role=validator_role,
             code=lambdaFx.Code.from_asset("./lambda/validator/"),
             description="CarWorld Validator Lambda, to authenticate API requests",
-            environment={"jwtSecret": self.jwtSecret},
+            environment={"jwtSecret": self.jwt_secret},
             timeout=Duration.seconds(15),
         )
 
-        return {"function": validatorLambda, "role": validatorRole}
+        return {"function": validator_lambda, "role": validator_role}
 
-    def createCWApiGW(self, authLambda):
-        authAPI = apigw.HttpApi(
+    def create_cw_api_gw(self, auth_lambda):
+        auth_api = apigw.HttpApi(
             scope=self,
             id="cw-auth-api",
             description="CarWorld Auth Endpoints",
         )
-        authController = HttpLambdaIntegration("cw-auth-controller", authLambda)
-        authAPI.add_routes(
+        authController = HttpLambdaIntegration("cw-auth-controller", auth_lambda)
+        auth_api.add_routes(
             path="/auth/login",
             methods=[apigw.HttpMethod.GET],
             integration=authController,
         )
-        authAPI.add_routes(
+        auth_api.add_routes(
             path="/auth/register",
             methods=[apigw.HttpMethod.POST],
             integration=authController,
         )
-        authAPI.add_routes(
+        auth_api.add_routes(
             path="/auth/refresh",
             methods=[apigw.HttpMethod.GET],
             integration=authController,
         )
 
-        return authAPI
-
-    #
-    # NOTE: For cwStoreStack
-    # transactionTable = dynamodb.Table(
-    #     scope=self,
-    #     id="transaction",
-    #     table_name="transaction",
-    #     partition_key=dynamodb.Attribute(
-    #         name="id",
-    #         type=dynamodb.AttributeType.STRING,
-    #         billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
-    #         encryption=dynamodb.TableEncryption.AWS_MANAGED,
-    #     ),
-    #     sort_key=Attribute(name="accountId", type=AttributeType.STRING),
-    #     removal_policy=RemovalPolicy.DESTROY,
-    # )
-    # transactionTable.add_global_secondary_index(
-    #     index_name="transaction-state-index",
-    #     partition_key=dynamodb.Attribute(
-    #         name="id", type=dynamodb.AttributeType.STRING
-    #     ),
-    #     sort_key=dynamodb.Attribute(
-    #         name="state", type=dynamodb.AttributeType.STRING
-    #     ),
-    # )
-
-    # commodityTable = dynamodb.Table(
-    #     scope=self,
-    #     id="commodity",
-    #     table_name="commodity",
-    #     partition_key=dynamodb.Attribute(
-    #         name="id",
-    #         type=dynamodb.AttributeType.STRING,
-    #         billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
-    #         encryption=dynamodb.TableEncryption.AWS_MANAGED,
-    #     ),
-    #     sort_key=Attribute(name="type", type=AttributeType.STRING),
-    #     removal_policy=RemovalPolicy.DESTROY,
-    # )
-    # For paymentAPI
-    #
-    # https://docs.aws.amazon.com/cdk/api/v1/docs/aws-apigatewayv2-authorizers-readme.html
-    # http_authorizer = apigw.HttpLambdaAuthorizer(
-    #     self,
-    #     "cw-jwt-lambda-authorizer",
-    #     http_api=paymentAPI,
-    #     authorizer_uri="lambdaArn maybe?",
-    #     type=apigatewayv2_alpha.HttpAuthorizerType.LAMBDA
-    # )
-    #
-    # sharedLambdaRole.add_to_policy(
-    #     iam.PolicyStatement(
-    #         effect=iam.Effect.ALLOW,
-    #         actions=[
-    #             "service:Action"
-    #         ],
-    #         resources=[
-    #             'resource_arn'
-    #         ]
-    #     )
-    # )
+        return auth_api

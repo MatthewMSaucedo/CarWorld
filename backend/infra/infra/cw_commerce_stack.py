@@ -19,42 +19,42 @@ from constructs import Construct
 
 class CWCommerceStack(Stack):
     def __init__(
-        self, scope: Construct, construct_id: str, coreStack: Stack, **kwargs
+        self, scope: Construct, construct_id: str, core_stack: Stack, **kwargs
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        botoSession = boto3.Session(profile_name="personal")
-        self.transactionSalt = "5@&uS2SWX^WAoSiZ"
+        boto_session = boto3.Session(profile_name="personal")
+        self.transaction_salt = "5@&uS2SWX^WAoSiZ"
 
         # Obtain secrets
-        self.ssm = botoSession.client("ssm", region_name="us-east-1")
-        self.stripeSecret = self.obtainSSMClientSecret(
-            secretName="/cw/commerce/stripe/dev/key"
+        self.ssm = boto_session.client("ssm", region_name="us-east-1")
+        self.stripe_secret = self.obtain_ssm_client_secret(
+            secret_name="/cw/commerce/stripe/dev/key"
         )
-        # self.jwtSecret = self.obtainSSMClientSecret(secretName="/cw/auth/jwtSecret")
+        # self.jwt_secret = self.obtain_ssm_client_secret(secret_name="/cw/auth/jwtSecret")
 
         # Create commerce lambda controller and database
-        self.cwTransactionTable = self.createCWTransactionTable()
-        self.cwCommodityTable = self.createCWCommodityTable()
-        self.cwCommerceLambda = self.createCWCommerceLambda(
-            stripeSecret=self.stripeSecret,
-            transactionTable=self.cwTransactionTable,
-            commodityTable=self.cwCommodityTable,
+        self.cw_transaction_table = self.create_cw_transaction_table()
+        self.cw_commodity_table = self.create_cw_commodity_table()
+        self.cw_commerce_lambda = self.create_cw_commerce_lambda(
+            stripe_secret=self.stripe_secret,
+            transaction_table=self.cw_transaction_table,
+            commodity_table=self.cw_commodity_table,
         )
 
         # TODO: Cron job that I think we need ??
         #       for the record cleanup ??
-        #       input: cwTransactionTable
-        # self.cwCleanupTransactionLambda(cwTransactionTable)
+        #       input: cw_transaction_table
+        # self.cwCleanupTransactionLambda(cw_transaction_table)
 
-        self.createCommerceApiGw(self.cwCommerceLambda["function"])
+        self.create_commerce_api_gw(self.cw_commerce_lambda["function"])
 
-    def obtainSSMClientSecret(self, secretName):
-        jwtSecret = self.ssm.get_parameter(Name=secretName, WithDecryption=True)
-        return jwtSecret["Parameter"]["Value"]
+    def obtain_ssm_client_secret(self, secret_name):
+        jwt_secret = self.ssm.get_parameter(Name=secret_name, WithDecryption=True)
+        return jwt_secret["Parameter"]["Value"]
 
-    def createCWTransactionTable(self):
-        transactionTable = dynamodb.Table(
+    def create_cw_transaction_table(self):
+        transaction_table = dynamodb.Table(
             scope=self,
             id="transactions",
             table_name="transactions",
@@ -66,23 +66,23 @@ class CWCommerceStack(Stack):
             encryption=dynamodb.TableEncryption.AWS_MANAGED,
             removal_policy=RemovalPolicy.DESTROY,
         )
-        transactionTable.add_global_secondary_index(
+        transaction_table.add_global_secondary_index(
             index_name="transaction-state-index",
             partition_key=dynamodb.Attribute(
                 name="state", type=dynamodb.AttributeType.STRING
             ),
         )
-        transactionTable.add_global_secondary_index(
+        transaction_table.add_global_secondary_index(
             index_name="transaction-account-index",
             partition_key=dynamodb.Attribute(
                 name="account_id", type=dynamodb.AttributeType.STRING
             ),
         )
 
-        return transactionTable
+        return transaction_table
 
-    def createCWCommodityTable(self):
-        commodityTable = dynamodb.Table(
+    def create_cw_commodity_table(self):
+        commodity_table = dynamodb.Table(
             scope=self,
             id="commodity",
             table_name="commodity",
@@ -94,16 +94,18 @@ class CWCommerceStack(Stack):
             encryption=dynamodb.TableEncryption.AWS_MANAGED,
             removal_policy=RemovalPolicy.DESTROY,
         )
-        commodityTable.add_global_secondary_index(
+        commodity_table.add_global_secondary_index(
             index_name="commodity-type-index",
             partition_key=dynamodb.Attribute(
                 name="type", type=dynamodb.AttributeType.STRING
             ),
         )
-        return commodityTable
+        return commodity_table
 
-    def createCWCommerceLambda(self, stripeSecret, transactionTable, commodityTable):
-        commerceLambdaRole = iam.Role(
+    def create_cw_commerce_lambda(
+        self, stripe_secret, transaction_table, commodity_table
+    ):
+        commerce_lambda_role = iam.Role(
             scope=self,
             id="cw-commerce-lambda-role",
             assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
@@ -118,8 +120,10 @@ class CWCommerceStack(Stack):
             ],
         )
 
-        # External Packages
-        lambdaLayer = lambdaFx.LayerVersion(
+        # External Packages (Stripe)
+        # Generation guide:
+        #   https://medium.com/geekculture/deploying-aws-lambda-layers-with-python-8b15e24bdad2
+        lambda_layer = lambdaFx.LayerVersion(
             self,
             "lambda-layer",
             code=lambdaFx.AssetCode("lambda/commerce/layer/"),
@@ -127,52 +131,50 @@ class CWCommerceStack(Stack):
         )
 
         # Grant db access
-        transactionTable.grant_read_write_data(commerceLambdaRole)
-        # transactionTable.encryption_key.grant_encrypt_decrypt(commerceLambdaRole)
-        commodityTable.grant_read_write_data(commerceLambdaRole)
-        # commodityTable.encryption_key.grant_encrypt_decrypt(commerceLambdaRole)
+        transaction_table.grant_read_write_data(commerce_lambda_role)
+        commodity_table.grant_read_write_data(commerce_lambda_role)
 
-        commerceLambda = lambdaFx.Function(
+        commerce_lambda = lambdaFx.Function(
             scope=self,
             id="cw-commerce-lambda",
             runtime=lambdaFx.Runtime.PYTHON_3_7,
             handler="index.handler",
-            role=commerceLambdaRole,
+            role=commerce_lambda_role,
             code=lambdaFx.Code.from_asset("./lambda/commerce/"),
             description="CarWorld Commerce Lambda, to handle purchases",
             environment={
-                "stripe_secret": stripeSecret,
-                "transaction_salt": self.transactionSalt,
+                "stripe_secret": stripe_secret,
+                "transaction_salt": self.transaction_salt,
             },
-            layers=[lambdaLayer],
+            layers=[lambda_layer],
             timeout=Duration.seconds(15),
         )
 
-        return {"function": commerceLambda, "role": commerceLambdaRole}
+        return {"function": commerce_lambda, "role": commerce_lambda_role}
 
-    def createCommerceApiGw(self, commerceLambda):
-        commerceAPI = apigw.HttpApi(
+    def create_commerce_api_gw(self, commerce_lambda):
+        commerce_api = apigw.HttpApi(
             scope=self,
             id="cw-commerce-api",
             description="CarWorld Commerce Endpoints",
         )
-        commerceController = HttpLambdaIntegration(
-            "cw-commerce-controller", commerceLambda
+        commerce_controller = HttpLambdaIntegration(
+            "cw-commerce-controller", commerce_lambda
         )
-        commerceAPI.add_routes(
+        commerce_api.add_routes(
             path="/commerce/secret",
             methods=[apigw.HttpMethod.POST],
-            integration=commerceController,
+            integration=commerce_controller,
         )
-        commerceAPI.add_routes(
+        commerce_api.add_routes(
             path="/commerce/webhook",
             methods=[apigw.HttpMethod.POST],
-            integration=commerceController,
+            integration=commerce_controller,
         )
-        commerceAPI.add_routes(
+        commerce_api.add_routes(
             path="/commerce/update_transaction",
             methods=[apigw.HttpMethod.POST],
-            integration=commerceController,
+            integration=commerce_controller,
         )
 
-        return commerceAPI
+        return commerce_api
