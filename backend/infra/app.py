@@ -16,7 +16,6 @@ CWCoreStack(app, "InfraStack", env=cdk.Environment(account=account_id, region=re
 CWCommerceStack(
     app,
     "CommerceStack",
-    coreStack=CWCoreStack,
     env=cdk.Environment(account=account_id, region=region),
 )
 

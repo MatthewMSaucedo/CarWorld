@@ -1,8 +1,5 @@
-# TODO: (Implement webhook-based Transaction update)
-#       Absolutely should NOT be trusting the client to update these records,
-#       however, for now this is fine. We can use the Stripe Dashboard as the
-#       source of truth
-
+# TODO: Implement (or make use of pre-existing) propper logger, replace #print statements
+#
 # TODO: (Cleanup Transaction CRON job)
 #       Given the way in which transaction records are being
 #       created before they are confirmed by the user, we need to
@@ -16,8 +13,28 @@ import stripe
 import boto3
 import hashlib
 
-transaction_salt = os.environ["transaction_salt"]
+TRANSACTION_SALT = os.environ["transaction_salt"]
 stripe.api_key = os.environ["stripe_secret"]
+
+# TODO: move this mapping to param store, shouldn't be hardcoded here
+COMMODITY_VALUE_MAP = {
+    # "name_size_variant"
+    "save the attendants shirt_xs_1": 2500,
+    "save the attendants shirt_s_1": 2500,
+    "save the attendants shirt_m_1": 2500,
+    "save the attendants shirt_l_1": 2500,
+    "save the attendants shirt_xl_1": 2500,
+    "magwadi shirt_xs_1": 2500,
+    "magwadi shirt_s_1": 2500,
+    "magwadi shirt_m_1": 2500,
+    "magwadi shirt_l_1": 2500,
+    "magwadi shirt_xl_1": 2500,
+    "quuarux gas wars shirt_xs_1": 2500,
+    "quuarux gas wars shirt_s_1": 2500,
+    "quuarux gas wars shirt_m_1": 2500,
+    "quuarux gas wars shirt_l_1": 2500,
+    "quuarux gas wars shirt_xl_1": 2500,
+}
 
 
 # TODO: Make this into a lambda layer
@@ -25,12 +42,13 @@ class CWDynamoClient:
     client = boto3.client("dynamodb")
 
     def update(
+        self,
         table_name,
         key_expression,
         field_value_map,
         manual_expression_attribute_map=None,
     ):
-        update_expression = format_update_expression(
+        update_expression = self.format_update_expression(
             [*field_value_map.keys()]
             + (
                 []
@@ -39,65 +57,99 @@ class CWDynamoClient:
             )
         )
 
-        expression_attribute_values = {}
-        for field_value_mapping in field_value_map:
-            dynamo_formatted_value_mapping = dynamo_format_value_mapping(
-                field_value_mapping, operation="update"
-            )
-            expression_attribute_values.append(dynamo_formatted_value_mapping)
+        expression_attribute_values = self.format_update_expression_attribute_values(
+            field_value_map, manual_expression_attribute_map, operation="update"
+        )
 
-        if manual_expression_attribute_map is not None:
-            expression_attribute_values.append(manual_expression_attribute_map)
-
-        res = client.update_item(
+        print(
+            f"DEBUG: ExpressionAttributeValues: {expression_attribute_values}\nUpdateExpression: {update_expression}"
+        )
+        res = self.client.update_item(
             TableName=table_name,
             Key=key_expression,
             UpdateExpression=update_expression,
             ExpressionAttributeValues=expression_attribute_values,
+            ReturnValues="UPDATED_NEW",
         )
 
         return res
 
+    def get(self, table_name, key_expression):
+        return self.client.get_item(TableName=table_name, Key=key_expression)["Item"]
+
     def create(
+        self,
         table_name,
         key_expression,
         field_value_map,
         manual_expression_attribute_map=None,
     ):
+        # TODO: Roll this block into #format_update_expression_attribute_values
         item = key_expression
-        for field_value_mapping in field_value_map:
+        for field_name, field_value in field_value_map.items():
             dynamo_formatted_value_mapping = dynamo_format_value_mapping(
-                field_value_mapping, operation="create"
+                field_name, field_value, operation="create"
             )
-            item.append(dynamo_formatted_value_mapping)
+            item.update(dynamo_formatted_value_mapping)
+        if manual_expression_attribute_map is not None:
+            item.update(manual_expression_attribute_map)
 
-        res = client.put_item(TableName=table_name, Item=item)
+        res = self.client.put_item(TableName=table_name, Item=item)
 
         return res
 
     # TODO
-    def delete(table_name, field_value_map, manual_expression_attribute_map=None):
+    def delete(self, table_name, field_value_map, manual_expression_attribute_map=None):
         """"""
 
-    def dynamo_format_value_mapping(field_value_map, operation):
-        key = [*field_value_map.keys()][0]
-        value = field_value_map[key]
+    def format_update_expression_attribute_values(
+        self, field_value_map, manual_expression_attribute_map, operation
+    ):
+        expression_attribute_values = {}
+        for field_name, field_value in field_value_map.items():
+            dynamo_formatted_value_mapping = self.dynamo_format_value_mapping(
+                field_name, field_value, operation=operation
+            )
+            expression_attribute_values.update(dynamo_formatted_value_mapping)
+        if manual_expression_attribute_map is not None:
+            if operation == "update":
+                # add semicolon to manual_attribute_map keys
+                semicolon_manual_expr_attr_map = {}
+                for key, value in manual_expression_attribute_map.items():
+                    new_key = ":" + key
+                    semicolon_manual_expr_attr_map.update({new_key: value})
 
+                expression_attribute_values.update(semicolon_manual_expr_attr_map)
+            else:
+                expression_attribute_values.update(manual_expression_attribute_map)
+        return expression_attribute_values
+
+    def dynamo_format_value_mapping(self, field_name, field_value, operation):
         if operation == "update":
-            key = ":" + key
+            field_name = ":" + field_name
 
-        dynamoType = determine_dynamo_data_type(value)
+        dynamoType = self.determine_dynamo_data_type(field_value)
 
-        return {key: {dynamoType: str(value) if isinstance(value, int) else value}}
+        return {
+            field_name: {
+                dynamoType: str(field_value)
+                if isinstance(field_value, int) or isinstance(field_value, float)
+                else field_value
+            }
+        }
 
-    def determine_dynamo_data_type(value):
+    def determine_dynamo_data_type(self, value):
         if isinstance(value, str):
             return "S"
         elif isinstance(value, bool):
             return "BOOL"
         elif isinstance(value, int) or isinstance(value, float):
             return "N"
+        # TODO: Add better Map support - this only works for empty maps
         elif isinstance(value, dict):
+            # raise Exception(
+            #     'Dynamo Map type ("M") is not currently supported - use manual_expression_attribute_map'
+            # )
             return "M"
         # NOTE:
         # We don't support mixed-type lists. Make use
@@ -108,12 +160,12 @@ class CWDynamoClient:
             f"CWDynamo Client Error: Unhandled data type provided for value: {value}"
         )
 
-    def format_update_expression(field_name_list):
+    def format_update_expression(self, field_name_list):
         update_expression = f"SET {field_name_list[0]} = :{field_name_list[0]}"
         field_name_list.remove(field_name_list[0])
 
         for field_name in field_name_list:
-            update_expression + f", SET {field_name} = :{field_name}"
+            update_expression = update_expression + f", {field_name} = :{field_name}"
 
         return update_expression
 
@@ -127,13 +179,17 @@ def handler(event, context):
             "body": json.loads(event["body"]),
         }
     except Exception as e:
+        error = {
+            "message": str(e),
+            "stack": traceback.format_exc(),
+        }
+        print(
+            f"SERVER_ERROR: Failed to parse event into request format: {event} | Encountered error -- {error}"
+        )
         return {
             "code": 500,
-            "message": f"Failed to parse event into request format: {event}",
-            "error": {
-                "message": str(e),
-                "stack": traceback.format_exc(),
-            },
+            "message": f"SERVER_ERROR: Failed to parse event into request format: {event}",
+            "error": error,
         }
 
     # initialize dynamo client
@@ -147,23 +203,25 @@ def handler(event, context):
                 create_payment_intent_body=request["body"],
                 dynamo_client=cw_dynamo_client,
             )
-        elif request["action"] == "update_transaction":
-            res = update_transaction(
-                update_transaction_body=request["body"], dynamo_client=cw_dynamo_client
-            )
-        # TODO: (Implement webhook-based Transaction update)
+        # NOTE: For testing
+        # elif request["action"] == "update_transaction":
+        #     res = update_transaction(
+        #         update_transaction_body=request["body"], dynamo_client=cw_dynamo_client
+        #     )
         elif request["action"] == "webhook":
             res = handle_webhook(
                 stripe_event=request["body"], dynamo_client=cw_dynamo_client
             )
     except Exception as e:
+        error = {
+            "message": str(e),
+            "stack": traceback.format_exc(),
+        }
+        print(f"SERVER_ERROR: Unhandled server error encountered -- {error}")
         return {
             "code": 500,
-            "message": "Unhandled server error encountered",
-            "error": {
-                "message": str(e),
-                "stack": traceback.format_exc(),
-            },
+            "message": "SERVER_ERROR: Unhandled server error encountered",
+            "error": error,
         }
 
     return res
@@ -175,33 +233,39 @@ def update_transaction(update_transaction_body, dynamo_client):
     status = ""
     try:
         transaction_record_id = update_transaction_body["transaction_record_id"]
-        status = update_transaction_body["status"]
+        status = update_transaction_body["tx_status"]
     except Exception as e:
+        error = {
+            "message": str(e),
+            "stack": traceback.format_exc(),
+        }
+        print(
+            f"CLIENT_ERROR: incorrect payload submitted to CWCC /update_transaction: {create_payment_intent_body} | {error}"
+        )
         return {
             "code": 400,
-            "message": f"incorrect payload submitted to CWCC /update_transaction: {create_payment_intent_body}",
-            "error": {
-                "message": str(e),
-                "stack": traceback.format_exc(),
-            },
+            "message": f"CLIENT_ERROR: incorrect payload submitted to CWCC /update_transaction: {create_payment_intent_body}",
+            "error": error,
         }
 
     try:
         transaction_record = update_transaction_record_client_call(
-            transaction_record_id, status, dynamo_client=dynamo_client
+            transaction_record_id, status, dynamo_client
         )
         return {
             "code": 200,
             "message": "updated transaction_record",
         }
     except Exception as e:
+        error = {
+            "message": str(e),
+            "stack": traceback.format_exc(),
+        }
+        print(f"SERVER_ERROR: failed to update transaction_record | {error}")
         return {
             "code": 500,
-            "message": "failed to update transaction_record",
-            "error": {
-                "message": str(e),
-                "stack": traceback.format_exc(),
-            },
+            "message": "SERVER_ERROR: failed to update transaction_record",
+            "error": error,
         }
 
 
@@ -215,40 +279,41 @@ def create_payment_intent(create_payment_intent_body, dynamo_client):
             commodity_name = commodity["name"]
             quantity = commodity["quantity"]
     except Exception as e:
+        error = {
+            "message": str(e),
+            "stack": traceback.format_exc(),
+        }
+        print(
+            f"CLIENT_ERROR: incorrect payload submitted to CWCC /secret: got {create_payment_intent_body}, expected cart of commodities | {error}"
+        )
         return {
             "code": 400,
-            "message": f"incorrect payload submitted to CWCC /secret: got {create_payment_intent_body}, expected cart of commodities",
-            "error": {
-                "message": str(e),
-                "stack": traceback.format_exc(),
-            },
+            "message": f"CLIENT_ERROR: incorrect payload submitted to CWCC /secret: got {create_payment_intent_body}, expected cart of commodities",
+            "error": error,
         }
 
     amount = 0
-    commodity_value_map = {
-        "test shirt (m) (variant 2)": 25,
-        "test mug (variant 1)": 10,
-        "test shirt (m) (variant 1)": 25,
-    }
     for commodity in cart:
         client_secret = ""
         try:
-            if commodity["name"] in commodity_value_map.keys():
+            if commodity["name"] in COMMODITY_VALUE_MAP.keys():
                 amount = amount + (
-                    commodity_value_map[commodity["name"]] * commodity["quantity"]
+                    COMMODITY_VALUE_MAP[commodity["name"]] * commodity["quantity"]
                 )
             else:
                 raise Exception(
-                    f"Invalid commodity name received: {commodity['name']}, valid names: {commodity_value_map.keys()}"
+                    f"Invalid commodity name received: {commodity['name']}, valid names: {COMMODITY_VALUE_MAP.keys()}"
                 )
         except Exception as e:
+            error = {
+                "message": str(e),
+                "stack": traceback.format_exc(),
+            }
+            print(f"CLIENT_ERROR: Failed to parse shopping cart: {cart} | {error}")
             return {
                 "code": 400,
-                "message": f"Failed to parse shopping cart: {cart}",
-                "error": {
-                    "message": str(e),
-                    "stack": traceback.format_exc(),
-                },
+                "message": f"CLIENT_ERROR: Failed to parse shopping cart: {cart}",
+                "error": error,
             }
 
     try:
@@ -258,31 +323,36 @@ def create_payment_intent(create_payment_intent_body, dynamo_client):
             automatic_payment_methods={"enabled": True},
         ).client_secret
     except Exception as e:
+        error = {
+            "message": str(e),
+            "stack": traceback.format_exc(),
+        }
+        print("SERVER_ERROR: Failed to initiate Stripe Payment Intent | {error}")
         return {
             "code": 500,
-            "message": "Failed to initiate Stripe Payment Intent",
-            "error": {
-                "message": str(e),
-                "stack": traceback.format_exc(),
-            },
+            "message": "SERVER_ERROR: Failed to initiate Stripe Payment Intent",
+            "error": error,
         }
 
     transaction_id = ""
     try:
-        # TODO: shouldn't trust client_secret is unique, so let's
-        #       create a hash we can verify later
-        transaction_id = some_hash_algo(client_secret, transaction_salt)
+        transaction_id = some_hash_algo(client_secret)
         create_transaction_record(
-            cart=cart, amount=amount, transaction_id=transaction_id
+            cart=cart,
+            amount=amount,
+            transaction_id=transaction_id,
+            dynamo_client=dynamo_client,
         )
     except Exception as e:
+        error = {
+            "message": str(e),
+            "stack": traceback.format_exc(),
+        }
+        print("SERVER_ERROR: Failed to create Transaction record | {error}")
         return {
             "code": 500,
-            "message": "Failed to create Transaction record",
-            "error": {
-                "message": str(e),
-                "stack": traceback.format_exc(),
-            },
+            "message": "SERVER_ERROR: Failed to create Transaction record",
+            "error": error,
         }
 
     return {
@@ -295,15 +365,18 @@ def create_payment_intent(create_payment_intent_body, dynamo_client):
     }
 
 
+# TODO: Replace raw dynamo client call with cw_dynamo_client
 def create_transaction_record(
-    cart, amount, transaction_id, is_guest=True, status="initiated"
+    cart, amount, transaction_id, dynamo_client, is_guest=True, status="initiated"
 ):
     dynamo_client = boto3.client("dynamodb")
 
     # get commodity list
     commodity_list = []
     for commodity in cart:
-        commodity_list.append(commodity["name"])
+        # prepend quantity as dynamo SS does not allow duplicate entries
+        formatted_commodity_name = str(commodity["quantity"]) + "_" + commodity["name"]
+        commodity_list.append(formatted_commodity_name)
 
     dynamo_client.put_item(
         TableName="transactions",
@@ -312,7 +385,8 @@ def create_transaction_record(
             "commodity_list": {"SS": commodity_list},
             "amount": {"N": str(amount)},
             "guest": {"BOOL": is_guest},
-            "transaction_status": {"S": status},
+            "tx_status": {"S": status},
+            "shipping": {"M": {}},
         },
     )
 
@@ -320,20 +394,10 @@ def create_transaction_record(
 
 
 def update_transaction_record_client_call(transaction_id, status, dynamo_client):
-    # dynamo_client = boto3.client("dynamodb")
-    # response = dynamo_client.update_item(
-    #     TableName="transactions",
-    #     Key={"id": {"S": transaction_id}},
-    #     UpdateExpression="SET transaction_status = :status",
-    #     ExpressionAttributeValues={
-    #         ":status": {"S": status},
-    #     },
-    # )
-
     response = dynamo_client.update(
         table_name="transactions",
         key_expression={"id": {"S": transaction_id}},
-        field_value_map={"status": status},
+        field_value_map={"tx_status": status},
     )
     return response
 
@@ -341,56 +405,124 @@ def update_transaction_record_client_call(transaction_id, status, dynamo_client)
 def update_transaction_record_webhook_call(
     transaction_id, name, shipping, status, stripe_transaction_id, dynamo_client
 ):
-    # dynamo_client = boto3.client("dynamodb")
-    # response = dynamo_client.update_item(
-    #     TableName="transactions",
-    #     Key={"id": transaction_id},
-    #     UpdateExpression="SET status = :status, SET name = :name, SET shipping = :shipping, SET stripe_id = :stripe_id",
-    #     ExpressionAttributeValues={
-    #         ":status": {"S": status},
-    #         ":name": {"S": name},
-    #         ":shipping": {"M": shipping},
-    #         ":stripe_id": {"S": stripe_transaction_id},
-    #     },
-    # )
     response = dynamo_client.update(
         table_name="transactions",
         key_expression={"id": {"S": transaction_id}},
         field_value_map={
-            "status": status,
-            "name": name,
-            "shipping": shipping,
+            "tx_status": status,
+            "client_name": str(name or ""),
             "stripe_transaction_id": stripe_transaction_id,
+        },
+        manual_expression_attribute_map={
+            "shipping": {
+                "M": {
+                    "city": {"S": str(shipping["address"]["city"] or "")},
+                    "country": {"S": str(shipping["address"]["country"] or "")},
+                    "line1": {"S": str(shipping["address"]["line1"] or "")},
+                    "line2": {"S": str(shipping["address"]["line2"] or "")},
+                    "postal_code": {"S": str(shipping["address"]["postal_code"] or "")},
+                    "us_state": {"S": str(shipping["address"]["state"] or "")},
+                    "client_name": {"S": str(shipping["name"] or "")},
+                    "phone": {"S": str(shipping["phone"] or "")},
+                }
+            }
         },
     )
 
     return response
 
 
-# TODO: Handle webhook
-#       - update transaction record
-#       - save id, name, amount, shipping (address, name, phone), status
 def handle_webhook(stripe_event, dynamo_client):
-    print("\n\n\nStripe event on the next line! :)\n")
-    print(stripe_event)
+    try:
+        event = stripe.Event.construct_from(stripe_event, stripe.api_key)
+    except Exception as e:
+        error = {
+            "message": str(e),
+            "stack": traceback.format_exc(),
+        }
+        print(
+            f"SERVER_ERROR: Failed to parse Stripe webhook event: {stripe_event} | {error}"
+        )
+        return {
+            "code": 500,
+            "message": "SERVER_ERROR: Failed to parse Stripe webhook event",
+            "error": error,
+        }
 
-    update_transaction_record_webhook_call(
-        transaction_id=stripe_event["transaction_id"],
-        name=stripe_event["transaction_id"],
-        shipping=stripe_event["transaction_id"],
-        status=stripe_event["transaction_id"],
-        stripe_transaction_id=stripe_event["transaction_id"],
-        dynamo_client=dynamo_client,
-    )
+    try:
+        event_data = event["data"]["object"]
+        transaction_id = some_hash_algo(event_data["client_secret"])
+
+        transaction_record = update_transaction_record_webhook_call(
+            transaction_id=transaction_id,
+            name=event_data["shipping"]["name"],
+            shipping=event_data["shipping"],
+            status=event_data["status"],
+            stripe_transaction_id=event_data["id"],
+            dynamo_client=dynamo_client,
+        )
+    except Exception as e:
+        error = {
+            "message": str(e),
+            "stack": traceback.format_exc(),
+        }
+        print(f"SERVER_ERROR: Failed to update existing Transaction record -- {error}")
+        return {
+            "code": 500,
+            "message": "SERVER_ERROR: Failed to create Transaction record",
+            "error": error,
+        }
+
+    # NOTE:
+    #   This update method would not scale (dynamo atomicity) to, say, hundreds of concurrent payments.
+    #   What a beautiful problem that would be to have one day.
+    commodities_in_purchase = transaction_record["Attributes"]["commodity_list"]["SS"]
+    remove_purchased_commodities_from_stock(commodities_in_purchase, dynamo_client)
 
     return {
         "code": 200,
         "message": f"Webhook received: {stripe_event}",
+        "for testing": event,
     }
 
 
-def some_hash_algo(client_secret, transaction_salt):
+def remove_purchased_commodities_from_stock(commodities_in_purchase, dynamo_client):
+    for purchased_commodity in commodities_in_purchase:
+        quantity_purchased = purchased_commodity.split("_", 1)[0]
+        commodity_name = purchased_item.split("_", 1)[1]
+
+        try:
+            old_quantity = dynamo_client.get(
+                self,
+                table_name="commodities",
+                key_expression={"product_name": {"S": product_name}},
+            )["quantity"]
+
+            new_quantity = int(old_quantity) - int(quantity_purchased)
+
+            dynamo_client.update(
+                self,
+                table_name="commodities",
+                key_expression={"product_name": {"S": product_name}},
+                field_value_map={"quantity": new_quantity},
+            )
+        except Exception as e:
+            error = {
+                "message": str(e),
+                "stack": traceback.format_exc(),
+            }
+            print(
+                f"SERVER_ERROR: Failed to update quantity of {commodity_name} record \n{error}"
+            )
+            return {
+                "code": 500,
+                "message": f"SERVER_ERROR: Failed to update quantity of {commodity_name} record",
+                "error": error,
+            }
+
+
+def some_hash_algo(client_secret):
     hashed_secret = hashlib.sha512(
-        client_secret.encode("utf-8") + transaction_salt.encode("utf-8")
+        client_secret.encode("utf-8") + TRANSACTION_SALT.encode("utf-8")
     ).hexdigest()
     return hashed_secret

@@ -18,9 +18,7 @@ from constructs import Construct
 
 
 class CWCommerceStack(Stack):
-    def __init__(
-        self, scope: Construct, construct_id: str, core_stack: Stack, **kwargs
-    ) -> None:
+    def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         boto_session = boto3.Session(profile_name="personal")
@@ -84,10 +82,10 @@ class CWCommerceStack(Stack):
     def create_cw_commodity_table(self):
         commodity_table = dynamodb.Table(
             scope=self,
-            id="commodity",
-            table_name="commodity",
+            id="commodities",
+            table_name="commodities",
             partition_key=dynamodb.Attribute(
-                name="name",
+                name="product_name",
                 type=dynamodb.AttributeType.STRING,
             ),
             billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
@@ -97,7 +95,7 @@ class CWCommerceStack(Stack):
         commodity_table.add_global_secondary_index(
             index_name="commodity-type-index",
             partition_key=dynamodb.Attribute(
-                name="type", type=dynamodb.AttributeType.STRING
+                name="product_type", type=dynamodb.AttributeType.STRING
             ),
         )
         return commodity_table
