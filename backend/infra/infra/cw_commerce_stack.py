@@ -155,6 +155,17 @@ class CWCommerceStack(Stack):
             scope=self,
             id="cw-commerce-api",
             description="CarWorld Commerce Endpoints",
+            cors_preflight=apigw.CorsPreflightOptions(
+                allow_headers=["*"],
+                allow_methods=[
+                    apigw.CorsHttpMethod.GET,
+                    apigw.CorsHttpMethod.HEAD,
+                    apigw.CorsHttpMethod.OPTIONS,
+                    apigw.CorsHttpMethod.POST,
+                ],
+                allow_origins=["*"],
+                max_age=Duration.days(10),
+            ),
         )
         commerce_controller = HttpLambdaIntegration(
             "cw-commerce-controller", commerce_lambda
@@ -170,8 +181,8 @@ class CWCommerceStack(Stack):
             integration=commerce_controller,
         )
         commerce_api.add_routes(
-            path="/commerce/update_transaction",
-            methods=[apigw.HttpMethod.POST],
+            path="/commerce/commodities",
+            methods=[apigw.HttpMethod.GET, apigw.HttpMethod.OPTIONS],
             integration=commerce_controller,
         )
 

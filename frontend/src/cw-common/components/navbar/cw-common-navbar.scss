@@ -3,39 +3,21 @@
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
     align-content: stretch;
 
-    // space around element
-    margin-bottom: 20px;
+    // buffer inside navbar
+    padding-left: 4rem;
+    padding-right: 4rem;
 
     // element sizing
-    min-height: 20vh;
+    min-height: 6rem;
 
-    // background-color: #282c34e0;
-    // background-color: rgb(89, 89, 89);
-    // border-bottom: 5px solid black;
+    background-color: #282c34e0;
+    border-bottom: 5px solid #282c34e0;
 
-    .cw-common-navbar-item {
-        // dat sick style bby
-        background-size: 300px 300px;
-        background-position: center center;
-        background-repeat: no-repeat;
-        background-image: url('/../public/cw-logo.svg');
-
-        // //background-color: #FFFFFF;
-        // background-color: rgb(24, 26, 27);
-        min-height: 22vh;
-        min-width: 15vw;
-
-        // // box
-        // margin-right: 50px;
-        // margin-left: 50px;
-        // border-right: 5px solid black;
-        // border-left: 5px solid black;
-
-
+    .cw-common-navbar-item-grouping {
         display: flex;
         flex-direction: row;
         flex-wrap: wrap;
@@ -43,16 +25,19 @@
         align-items: center;
         align-content: space-evenly;
 
-        padding-bottom: 54px;
-        // padding-right: 50px;
-        // // padding-bottom: 5px;
-        // padding-left: 50px;
+        .cw-common-navbar-item {
+            // box
+            margin-right: 2rem;
+            margin-left: 2rem;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
 
-        .cw-common-link {
-            text-decoration: none;
-            color: yellow;
-            // min-height: 100vh;
-            font-size: calc(5px + 2vmin);
+            .cw-common-link {
+                text-decoration: none;
+                color: #379683;
+                // min-height: 100vh;
+                font-size: calc(5px + 2vmin);
+            }
         }
     }
 }

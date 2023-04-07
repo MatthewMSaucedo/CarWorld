@@ -2,16 +2,23 @@ import '../App.scss';
 import * as AppConstants from '../AppConstants';
 import CWCommonNavbarComponent, { CWCommonNavbarLink } from '../cw-common/components/navbar/cw-common-navbar-component'
 import CWCommonNavboxComponent from '../cw-common/components/navbox/cw-common-navbox-component'
-import CWStoreComponent from '../cw-store/cw-store-component'
 
 import YouTube from 'react-youtube'
 
-function CWHomeComponent() {
+function CWVideosComponent() {
   return (
+
     <div>
       <div className="cw-common-page-header">
           { CWCommonNavbarComponent() }
       </div>
+
+        <div className="cw-common-content-container">
+          <div className="cw-common-content-title">
+              VIDEOS
+          </div>
+        </div>
+
       <div className="cw-common-page-container">
         <div className="cw-common-content-container">
           <YouTube
@@ -25,15 +32,9 @@ function CWHomeComponent() {
             }}
           />
         </div>
-        <div className="cw-common-content-container">
-          <div className="cw-common-content-title">
-            MERCH
-          </div>
-          <CWStoreComponent />
-        </div>
       </div>
     </div>
   )
 }
 
-export default CWHomeComponent
+export default CWVideosComponent

@@ -1,43 +1,29 @@
 // Top-level container for entire webapp
 .cw-app-container {
-  background-color: #282c34;
+  background-color: #5d5c61;
+  height: 100vh;
+  width: 100%;
 }
 
-// TODO: Consider making this into a component
-//       Might need to handle routing in a common
-//       way for pages in the future.
 // Common container for served webpages
 .cw-common-page-container {
   /* Orientation of contained html tags */
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
   align-content: space-evenly;
 
   // page sizing
-  min-height: 100vh;
-  min-width: 100vh;
+  // width: auto;
   font-size: calc(10px + 2vmin);
-
-  // dat sick style bby
-  background-size: 100px 100px;
-  background-repeat: repeat-x repeat y;
-  background-image: url('/../public/cw-logo.svg');
 }
 
 .cw-common-content-container {
-  background-color: #FFFFFF;
-  // background-color: rgb(24, 26, 27);
-  min-height: 15vh;
-  min-width: 15vw;
 
-  // box
-  margin-right: 50px;
-  margin-left: 50px;
-  border: 5px solid black;
-
+  background-color: #5d5c61;
+  margin-top: 7rem;
 
   display: flex;
   flex-direction: column;
@@ -46,11 +32,21 @@
   align-items: center;
   align-content: stretch;
 
+
+  .yt-video {
+  }
+
+  .cw-common-content-title {
+    font-size: 4rem;
+    margin-bottom: 4rem;
+    font-weight: 900;
+    color: #379683;
+    border-bottom: 5px solid #282c34e0;
+  }
+
   .content {
-    // padding-top: 10px;
-    padding-right: 50px;
+    // padding-right: 50px;
     // padding-bottom: 5px;
-    padding-left: 50px;
 
     color: blue;
     .cw-common-link {

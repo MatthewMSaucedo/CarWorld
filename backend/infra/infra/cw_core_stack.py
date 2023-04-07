@@ -27,15 +27,20 @@ class CWCoreStack(Stack):
             secret_name="/cw/auth/jwtSecret"
         )
 
+        # Create the Users table
         self.cw_user_table = self.create_cw_user_table()
 
+        # Create the AuthController Lambda
         self.cw_auth_lambda = self.create_cw_auth_lambda(
             jwt_secret=self.jwt_secret, user_table=self.cw_user_table
         )
+
+        # Create the AuthValidator Lambda
         self.cw_validator_lambda = self.create_cw_validator_lambda(
             jwt_secret=self.jwt_secret
         )
 
+        # Create the API Gateway
         self.cw_api_gw = self.create_cw_api_gw(
             auth_lambda=self.cw_auth_lambda["function"]
         )
@@ -125,6 +130,17 @@ class CWCoreStack(Stack):
             scope=self,
             id="cw-auth-api",
             description="CarWorld Auth Endpoints",
+            cors_preflight=apigw.CorsPreflightOptions(
+                allow_headers=["*"],
+                allow_methods=[
+                    apigw.CorsHttpMethod.GET,
+                    apigw.CorsHttpMethod.HEAD,
+                    apigw.CorsHttpMethod.OPTIONS,
+                    apigw.CorsHttpMethod.POST,
+                ],
+                allow_origins=["*"],
+                max_age=Duration.days(10),
+            ),
         )
         authController = HttpLambdaIntegration("cw-auth-controller", auth_lambda)
         auth_api.add_routes(

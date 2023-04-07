@@ -77,6 +77,10 @@ class CWDynamoClient:
     def get(self, table_name, key_expression):
         return self.client.get_item(TableName=table_name, Key=key_expression)["Item"]
 
+    # NOTE: This only works for 1mb of data atm (need to add logic for pagination)
+    def get_all(self, table_name):
+        self.client.scan(TableName=table_name)["Items"]
+
     def create(
         self,
         table_name,
@@ -203,15 +207,12 @@ def handler(event, context):
                 create_payment_intent_body=request["body"],
                 dynamo_client=cw_dynamo_client,
             )
-        # NOTE: For testing
-        # elif request["action"] == "update_transaction":
-        #     res = update_transaction(
-        #         update_transaction_body=request["body"], dynamo_client=cw_dynamo_client
-        #     )
         elif request["action"] == "webhook":
             res = handle_webhook(
                 stripe_event=request["body"], dynamo_client=cw_dynamo_client
             )
+        elif request["action"] == "commodities":
+            res = get_commodity_list(dynamo_client=cw_dynamo_client)
     except Exception as e:
         error = {
             "message": str(e),
@@ -224,7 +225,36 @@ def handler(event, context):
             "error": error,
         }
 
+    # add headers for CORS
+    res["headers"] = {
+        "Access-Control-Allow-Headers": "*",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "OPTIONS,POST,GET",
+    }
+
     return res
+
+
+def get_commodity_list(dynamo_client):
+    try:
+        commodities = dynamo_client.get_all("commodities")
+    except Exception as e:
+        error = {
+            "message": str(e),
+            "stack": traceback.format_exc(),
+        }
+        print(f"SERVER_ERROR: Failed to obtain Commodites from DB -- {error}")
+        return {
+            "code": 500,
+            "message": "SERVER_ERROR: Failed to obtain Commodites from DB",
+            "error": error,
+        }
+
+    return {
+        "code": 200,
+        "message": "Successfully retreived commodity list",
+        "body": {"commodity_list": commodities},
+    }
 
 
 def update_transaction(update_transaction_body, dynamo_client):
@@ -317,7 +347,7 @@ def create_payment_intent(create_payment_intent_body, dynamo_client):
             }
 
     try:
-        client_secret = payment_intent_client_secret = stripe.PaymentIntent.create(
+        client_secret = stripe.PaymentIntent.create(
             amount=amount,
             currency="usd",
             automatic_payment_methods={"enabled": True},
@@ -454,6 +484,7 @@ def handle_webhook(stripe_event, dynamo_client):
         transaction_id = some_hash_algo(event_data["client_secret"])
 
         transaction_record = update_transaction_record_webhook_call(
+            # TODO: Email
             transaction_id=transaction_id,
             name=event_data["shipping"]["name"],
             shipping=event_data["shipping"],

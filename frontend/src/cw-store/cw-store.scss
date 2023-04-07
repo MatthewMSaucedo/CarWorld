@@ -1,28 +1,10 @@
-.cw-common-page-header{
-  // display: flex;
-  // flex-direction: row;
-  // flex-wrap: wrap;
-  // justify-content: space-between;
-  // align-items: center;
-  // align-content: stretch;
-}
-
 // For store component
 .cw-store-nav-shopping-cart {
-  // dat sick style bby
-  // background-size: 300px 200px;
-  // background-position: center center;
-  // background-repeat: no-repeat;
-  // background-image: url('/../public/cw-logo.svg');
-
-  // //background-color: #FFFFFF;
-  // background-color: rgb(24, 26, 27);
   min-height: 15vh;
   min-width: 15vw;
 
   // box
   margin-top: 75px;
-
 
   display: flex;
   flex-direction: column;
@@ -32,63 +14,64 @@
   align-content: space-evenly;
 
   padding-bottom: 54px;
-  // padding-right: 50px;
-  // // padding-bottom: 5px;
-  // padding-left: 50px;
 
   .cw-shopping-link {
       margin-top: 8px;
       text-decoration: none;
       color: yellow;
       font-size: calc(5px + 2vmin);
-      // float-right: 50px;
-      // padding-bottom: 5px;
-      // padding-right: 300px;
   }
 }
 
-// For store item component
-.cw-store-item {
-  background-color: #FFFFFF;
-  // background-color: rgb(24, 26, 27);
-  min-height: 60vh;
-  width: 30vw;
+.cw-store-container {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	justify-content: space-evenly;
+	align-items: stretch;
+	align-content: center;
 
-  // box
-  margin-right: 50px;
-  margin-left: 50px;
-  margin-bottom: 20px;
-  padding-bottom: 15px;
+  .cw-store-item {
+    background-color: #FFFFFF;
+    min-height: 10rem;
+    width: 30rem;
 
-  background-color: #cccccc;
-  border: 5px solid black;
+    // box
+    margin-right: 2rem;
+    margin-left: 2rem;
+    margin-bottom: 3rem;
+    // padding-bottom: 15px;
+
+    background-color: #7395ae;
+    border: 5px solid #282c34e0;
 
 
-  display: flex;
-  flex-direction: column;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  align-content: stretch;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    align-content: stretch;
 
-  .item-image {
-    height: 40vh;
-    width: 20vw;
-  }
-  .content {
-    // padding-top: 10px;
-    padding-right: 50px;
-    // padding-bottom: 5px;
-    padding-left: 50px;
+    .item-image {
+      height: 15em;
+      width: 12em;
+    }
+    .content {
+      // padding-top: 10px;
+      padding-right: 50px;
+      // padding-bottom: 5px;
+      padding-left: 50px;
 
-    text-align: center;
+      text-align: center;
 
-    color: blue;
+      color: blue;
 
-    .cw-common-link {
-        text-decoration: none;
-        color: #ff0000;
-        min-height: 100vh;
+      .cw-common-link {
+          text-decoration: none;
+          color: #ff0000;
+          min-height: 100vh;
+      }
     }
   }
 }
