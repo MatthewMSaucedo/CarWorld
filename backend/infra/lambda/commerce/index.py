@@ -18,22 +18,27 @@ stripe.api_key = os.environ["stripe_secret"]
 
 # TODO: move this mapping to param store, shouldn't be hardcoded here
 COMMODITY_VALUE_MAP = {
-    # "name_size_variant"
-    "save the attendants shirt_xs_1": 2500,
-    "save the attendants shirt_s_1": 2500,
-    "save the attendants shirt_m_1": 2500,
-    "save the attendants shirt_l_1": 2500,
-    "save the attendants shirt_xl_1": 2500,
-    "magwadi shirt_xs_1": 2500,
-    "magwadi shirt_s_1": 2500,
-    "magwadi shirt_m_1": 2500,
-    "magwadi shirt_l_1": 2500,
-    "magwadi shirt_xl_1": 2500,
-    "quuarux gas wars shirt_xs_1": 2500,
-    "quuarux gas wars shirt_s_1": 2500,
-    "quuarux gas wars shirt_m_1": 2500,
-    "quuarux gas wars shirt_l_1": 2500,
-    "quuarux gas wars shirt_xl_1": 2500,
+    # "name_size"
+    "save the attendants shirt_xs": 2500,
+    "save the attendants shirt_s": 2500,
+    "save the attendants shirt_m": 2500,
+    "save the attendants shirt_l": 2500,
+    "save the attendants shirt_xl": 2500,
+    "magwadi shirt_xs": 2500,
+    "magwadi shirt_s": 2500,
+    "magwadi shirt_m": 2500,
+    "magwadi shirt_l": 2500,
+    "magwadi shirt_xl": 2500,
+    "quuarux gas wars shirt_xs": 2500,
+    "quuarux gas wars shirt_s": 2500,
+    "quuarux gas wars shirt_m": 2500,
+    "quuarux gas wars shirt_l": 2500,
+    "quuarux gas wars shirt_xl": 2500,
+    "enter car world shirt_xs": 2500,
+    "enter car world shirt_s": 2500,
+    "enter car world shirt_m": 2500,
+    "enter car world shirt_l": 2500,
+    "enter car world shirt_xl": 2500,
 }
 
 
@@ -366,11 +371,11 @@ def create_payment_intent(create_payment_intent_body, dynamo_client):
 
     transaction_id = ""
     try:
-        transaction_id = some_hash_algo(client_secret)
+        # transaction_id = some_hash_algo(client_secret)
         create_transaction_record(
             cart=cart,
             amount=amount,
-            transaction_id=transaction_id,
+            transaction_id=client_secret,
             dynamo_client=dynamo_client,
         )
     except Exception as e:
@@ -481,7 +486,9 @@ def handle_webhook(stripe_event, dynamo_client):
 
     try:
         event_data = event["data"]["object"]
-        transaction_id = some_hash_algo(event_data["client_secret"])
+        transaction_id = event_data["client_secret"]
+
+        print(f"WEBHOOK EVENT DATA: {event_data}")
 
         transaction_record = update_transaction_record_webhook_call(
             # TODO: Email
@@ -507,6 +514,7 @@ def handle_webhook(stripe_event, dynamo_client):
     # NOTE:
     #   This update method would not scale (dynamo atomicity) to, say, hundreds of concurrent payments.
     #   What a beautiful problem that would be to have one day.
+    print(f'DEBUG -- Transaction Record: {transaction_record["Attributes"]}')
     commodities_in_purchase = transaction_record["Attributes"]["commodity_list"]["SS"]
     remove_purchased_commodities_from_stock(commodities_in_purchase, dynamo_client)
 

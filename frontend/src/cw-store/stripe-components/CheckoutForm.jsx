@@ -8,9 +8,11 @@ import {
 } from "@stripe/react-stripe-js";
 
 export default function CheckoutForm() {
+  // Stripe init
   const stripe = useStripe();
   const elements = useElements();
 
+  // Stateful variables
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -64,8 +66,11 @@ export default function CheckoutForm() {
     const { error } = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        // Make sure to change this to your payment completion page
-        return_url: "http://localhost:3000",
+        // TODO: (PaymentProcessedComponent)
+        //   Just a message with details and a button that redirects
+        //   to the Home page.
+        return_url: "http://localhost:3000/payment_processed",
+        // NOTE: This ensures customers receive a confirmation email
         receipt_email: email,
       },
     });
@@ -89,7 +94,7 @@ export default function CheckoutForm() {
   }
 
   return (
-    <form id="payment-form" onSubmit={handleSubmit}>
+    <form id="payment-form" onSubmit={handleSubmit} className="white-background">
       <LinkAuthenticationElement
         id="link-authentication-element"
         onChange={(e) => setEmail(e.target.value)}

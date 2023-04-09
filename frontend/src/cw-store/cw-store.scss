@@ -1,21 +1,25 @@
 // For store component
 .cw-store-nav-shopping-cart {
-  min-height: 15vh;
-  min-width: 15vw;
+  // min-height: 15vh;
+  // min-width: 15vw;
+  width: 20rem;
+  margin-left: 52rem;
 
   // box
   margin-top: 75px;
 
-  display: flex;
-  flex-direction: column;
-  flex-wrap: wrap;
   justify-content: space-around;
   align-items: center;
-  align-content: space-evenly;
 
   padding-bottom: 54px;
 
-  .cw-shopping-link {
+  .cw-shopping-link-white {
+      margin-top: 8px;
+      text-decoration: none;
+      color: white;
+      font-size: calc(5px + 2vmin);
+  }
+  .cw-shopping-link-yellow {
       margin-top: 8px;
       text-decoration: none;
       color: yellow;
@@ -32,7 +36,7 @@
 	align-content: center;
 
   .cw-store-item {
-    background-color: #FFFFFF;
+    // background-color: #FFFFFF;
     min-height: 10rem;
     width: 30rem;
 
@@ -42,8 +46,8 @@
     margin-bottom: 3rem;
     // padding-bottom: 15px;
 
-    background-color: #7395ae;
-    border: 5px solid #282c34e0;
+    // background-color: #7395ae;
+    // border: 5px solid #282c34e0;
 
 
     display: flex;
@@ -55,10 +59,11 @@
 
     .item-image {
       height: 15em;
+      // margin-bottom: -15px;
       width: 12em;
     }
     .content {
-      // padding-top: 10px;
+      // margin-bottom: -20px;
       padding-right: 50px;
       // padding-bottom: 5px;
       padding-left: 50px;

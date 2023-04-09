@@ -32,15 +32,11 @@ function StripePaymentComponent() {
         // Format shoppingCart for API body
         let formattedShoppingCart: any[] = []
         shoppingCart.contents.forEach((entry: CWShoppingCartEntry) => {
-            formattedShoppingCart.concat({
-                name: entry.cwStoreItem.serverName,
-                quantity: entry.size
+            formattedShoppingCart = formattedShoppingCart.concat({
+                // TODO: Logic for size if needed, and get quanitity from repeate items in cart
+                name: (entry.cwStoreItem.serverName + "_" + entry.size),
+                quantity: 1
             })
-        })
-        formattedShoppingCart = formattedShoppingCart.concat({
-            name: "quuarux gas wars shirt_l_1",
-            quantity: 5,
-            type: "clothing"
         })
 
 
@@ -61,12 +57,12 @@ function StripePaymentComponent() {
     const options: StripeElementsOptions = {
         clientSecret: clientSecret,
         appearance: {
-            theme: 'stripe',
+            theme: 'night',
         },
     };
 
     return (
-        <div className="App">
+        <div className="cw-common-content-container white-background">
         {clientSecret && (
             <Elements options={options} stripe={stripePromise}>
                 <CheckoutForm />

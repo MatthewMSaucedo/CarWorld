@@ -8,14 +8,15 @@
     align-content: stretch;
 
     // buffer inside navbar
-    padding-left: 4rem;
+    padding-left: 18rem;
     padding-right: 4rem;
 
     // element sizing
     min-height: 6rem;
 
-    background-color: #282c34e0;
-    border-bottom: 5px solid #282c34e0;
+    // background-color: #282c34e0;
+    background-color: #F0EAD6;
+    // border-bottom: 5px solid #282c34e0;
 
     .cw-common-navbar-item-grouping {
         display: flex;
@@ -26,9 +27,13 @@
         align-content: space-evenly;
 
         .cw-common-navbar-item {
+            .btn-primary, .btn-primary:hover, .btn-primary:active, .btn-primary:visited {
+                background-color: #8064A2 !important;
+            }
+
             // box
-            margin-right: 2rem;
-            margin-left: 2rem;
+            margin-right: 6rem;
+            margin-left: 6rem;
             margin-top: 1rem;
             margin-bottom: 1rem;
 

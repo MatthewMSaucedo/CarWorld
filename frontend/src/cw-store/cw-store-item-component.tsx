@@ -2,17 +2,22 @@ import '../App.scss'
 import './cw-store.scss'
 import { useState } from "react";
 import { CWShoppingItemType, CWStoreItem } from './cw-store-item'
+import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import { CWShoppingCart } from './cw-shopping-cart';
 
 function CWStoreItemComponent(cwStoreItem: CWStoreItem, cwShoppingCart: CWShoppingCart, setCwShoppingCart: any) {
+    // stateful variables
     const getInitialState = () => {
         const value = "m";
         return value;
     };
-
     const [value, setValue] = useState(getInitialState);
+
+    // navigation
+    const navigate = useNavigate()
 
     // TODO: type
     const handleChange = (e: any) => {
@@ -43,7 +48,9 @@ function CWStoreItemComponent(cwStoreItem: CWStoreItem, cwShoppingCart: CWShoppi
    }
 
   return (
-    <div className="cw-store-item">
+    <div
+      onClick={ () => navigate('/product', { replace: true, state: cwStoreItem }) }
+      className="cw-store-item">
         <img
             className="item-image"
             src={ process.env.PUBLIC_URL + cwStoreItem.image }
@@ -55,11 +62,13 @@ function CWStoreItemComponent(cwStoreItem: CWStoreItem, cwShoppingCart: CWShoppi
         <div className="content">
             ${cwStoreItem.price}
         </div>
-        { sizeForm(cwStoreItem.type === CWShoppingItemType["Clothing"]) }
+        { /*sizeForm(cwStoreItem.type === CWShoppingItemType["Clothing"]) */}
         { /* TODO: Add logic to disable if size is still "Size" */ }
-        <Button as="a" variant="primary" onClick={ (clickEvent) => addToCart(clickEvent) }>
+
+
+        {/* <Button as="a" variant="primary" onClick={ (clickEvent) => addToCart(clickEvent) }>
             Add to Cart
-        </Button>
+            </Button> */}
     </div>
   )
 }
