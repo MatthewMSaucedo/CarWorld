@@ -1,11 +1,18 @@
+// Styles
 import '../../App.scss';
 import './stripe-payment.scss'
+
+// Local Imports
 import { CWShoppingCart, CWShoppingCartEntry } from '../cw-shopping-cart';
 import CheckoutForm from "./CheckoutForm";
+import { CWShoppingItemType } from '../cw-store-item';
 
+// React Hooks
 import React, { useState, useEffect } from "react"
-import {useLocation} from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../redux/store'
 
+// 3rd Party Lib
 import { loadStripe, StripeElementsOptions } from '@stripe/stripe-js'
 import { Elements } from "@stripe/react-stripe-js";
 
@@ -15,45 +22,53 @@ const stripePromise = loadStripe(
 )
 
 function StripePaymentComponent() {
-    // grabbing passed in state
-    const location = useLocation()
-    const shoppingCart: CWShoppingCart = location.state
-
-    console.log("I got here at least...")
-    console.log(shoppingCart.contents[0].cwStoreItem.title)
-
-    // stateful variables
+    // Stateful variables
     const [clientSecret, setClientSecret] = useState("")
 
-    // Initiate PaymentIntent (clicked from shopping cart)
+    // Redux State variable
+    let { cwShoppingCart } = useSelector((state: RootState) => state)
+
+    // Initiate PaymentIntent
     useEffect(() => {
         console.log("initiating payment flow...")
 
-        // Format shoppingCart for API body
-        let formattedShoppingCart: any[] = []
-        shoppingCart.contents.forEach((entry: CWShoppingCartEntry) => {
-            formattedShoppingCart = formattedShoppingCart.concat({
-                // TODO: Logic for size if needed, and get quanitity from repeate items in cart
-                name: (entry.cwStoreItem.serverName + "_" + entry.size),
-                quantity: 1
-            })
+        // Format cwShoppingCart for API body
+        let formattedShoppingCart: Map<string, any> = new Map<string, any>()
+        cwShoppingCart.contents.forEach((entry: CWShoppingCartEntry) => {
+            let commodity = entry.cwStoreItem
+            formattedShoppingCart = formattedShoppingCart.set(
+                commodity.serverName + (entry.size ? "_" + entry.size : ""),
+                formattedShoppingCart.has(commodity.serverName) ? {
+                    quantity: formattedShoppingCart.get(commodity.serverName) + 1,
+                    type: commodity.type,
+                    frontend_name: commodity.title
+                } : {
+                    quantity: 1,
+                    type: commodity.type,
+                    frontend_name: commodity.title
+                }
+            )
         })
 
+        const paymentIntentPayload = { cart: Object.fromEntries(formattedShoppingCart) }
+        console.log("payload for backend:")
+        console.log(JSON.stringify(paymentIntentPayload))
 
-        // Create PaymentIntent as soon as the page loads
+        // Create PaymentIntent
         fetch('https://6vikh38ev7.execute-api.us-east-1.amazonaws.com/commerce/secret', {
             method: "POST",
             headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*"},
-            body: JSON.stringify({ cart: formattedShoppingCart }),
+            body: JSON.stringify(paymentIntentPayload),
         })
             .then((res) => res.json())
             .then((data) => {
+                console.log(data)
                 setClientSecret(data.body.client_secret)
-                console.log("logging api res...")
-                console.log(data.body.client_secret)
             });
+    // Empty dependency array to prevent re-rendering
     }, []);
 
+    // Stripe Checkout Config
     const options: StripeElementsOptions = {
         clientSecret: clientSecret,
         appearance: {
@@ -61,6 +76,7 @@ function StripePaymentComponent() {
         },
     };
 
+    // HTML
     return (
         <div className="cw-common-content-container white-background">
         {clientSecret && (
@@ -71,6 +87,8 @@ function StripePaymentComponent() {
         )}
         </div>
     );
+
+    // Helper Function
 }
 
 export default StripePaymentComponent

@@ -8,6 +8,7 @@ from aws_cdk import (
     aws_lambda as lambdaFx,
     aws_dynamodb as dynamodb,
     aws_iam as iam,
+    aws_ses as ses,
     aws_apigatewayv2_alpha as apigw,
 )
 from aws_cdk.aws_apigatewayv2_integrations_alpha import (
@@ -40,8 +41,11 @@ class CWCommerceStack(Stack):
             commodity_table=self.cw_commodity_table,
         )
 
-        # TODO: Cron job that I think we need ??
-        #       for the record cleanup ??
+        # Initialize AmazonSES and grant send permissions to the Commerce Lambda
+        self.cw_ses_service = self.create_cw_ses_service(self.cw_commerce_lambda)
+
+        # TODO: Cron job that we need
+        #       for the record cleanup
         #       input: cw_transaction_table
         # self.cwCleanupTransactionLambda(cw_transaction_table)
 
@@ -149,6 +153,36 @@ class CWCommerceStack(Stack):
         )
 
         return {"function": commerce_lambda, "role": commerce_lambda_role}
+
+    def create_cw_ses_service(self, cw_commerce_lambda):
+        ses_config_set = ses.ConfigurationSet(
+            self,
+            "cw-commerce-ses-configuration-set",
+        )
+
+        # grant lambda role ses perms & share ses_id to function
+        cw_commerce_lambda["role"].attach_inline_policy(
+            iam.Policy(
+                self,
+                "ses-policy",
+                statements=[
+                    iam.PolicyStatement(
+                        actions=[
+                            "ses:SendEmail",
+                            "ses:SendTemplatedEmail",
+                            "ses:SendRawEmail",
+                            "ses:SendBulkTemplatedEmail",
+                        ],
+                        resources=["*"],
+                    )
+                ],
+            )
+        )
+        cw_commerce_lambda["function"].add_environment(
+            key="ses_config_id", value="cw-commerce-ses-configuration-set"
+        )
+
+        return ses_config_set
 
     def create_commerce_api_gw(self, commerce_lambda):
         commerce_api = apigw.HttpApi(

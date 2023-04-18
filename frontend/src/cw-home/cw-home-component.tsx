@@ -9,47 +9,29 @@ import ReactPlayer from 'react-player'
 
 function CWHomeComponent() {
 
-  /*
-          <YouTube
-            videoId={"EovGOc-TAxY"}
-            id={"enter carworld trailer"}
-            className={'yt-video'}
-            title={"ENTER CAR WORLD Trailer (2022)"}
-            opts={{
-              playerVars: {
-                autoplay: 1
-              },
-              /* height: '600', */
-              /* wide: '800' */
-  /* }} */
-  /* /> */
-
-
   return (
-    <div>
-      <div className="cw-common-page-header">
-          { CWCommonNavbarComponent() }
+    <div className="cw-common-page-container">
+
+      {/* Navbar */}
+      { CWCommonNavbarComponent() }
+
+      {/* Enter CarWorld Video */}
+      <div className="cw-common-content-container">
+        <ReactPlayer
+          controls={true}
+          playing={true}
+          loop={true}
+          width={'35em'}
+          height={'20em'}
+          url='https://www.youtube.com/watch?v=EovGOc-TAxY'
+        />
       </div>
 
-      <div className="cw-common-page-container">
-
-        <div className="cw-common-content-container">
-          <ReactPlayer
-            playing={true}
-            width={1066}
-            height={600}
-            url='https://www.youtube.com/watch?v=EovGOc-TAxY'
-          />
-        </div>
-
-        <div className="cw-common-content-container">
-          {/* <div className="cw-common-content-title">
-              MERCH
-              </div> */}
-          <CWStoreComponent />
-        </div>
-
+      {/* Store */}
+      <div className="cw-common-content-container">
+        <CWStoreComponent />
       </div>
+
     </div>
   )
 }

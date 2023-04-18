@@ -2,8 +2,9 @@ export interface CWStoreItem {
     title: string
     price: number
     serverName: string
-    image: any
-    type: any
+    images: any[]
+    description_paragraphs: string[]
+    type: CWShoppingItemType
 }
 
 export enum CWShoppingItemType {

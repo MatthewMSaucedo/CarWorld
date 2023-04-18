@@ -1,7 +1,9 @@
 import './App.scss';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+
 import * as AppConstants from './AppConstants';
+
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 function App() {
   const router = createBrowserRouter(AppConstants.CW_ROUTES)
@@ -10,7 +12,7 @@ function App() {
     <div className="cw-app-container">
       <RouterProvider router={router} />
     </div>
-  );
+  )
 }
 
 export default App

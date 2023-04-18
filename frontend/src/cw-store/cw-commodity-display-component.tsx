@@ -1,15 +1,10 @@
 import '../App.scss';
 import './cw-commodity-display.scss';
 
-import {useLocation} from 'react-router-dom';
 import { CWStoreItem } from './cw-store-item';
 
 
-function CWCommodityDisplayComponent() {
-  // grabbing passed in state
-  const location = useLocation()
-  const cwStoreItem: CWStoreItem = location.state
-
+function CWCommodityDisplayComponent(cwStoreItem: CWStoreItem) {
 
   return (
     <div className="cw-common-page-container">
@@ -19,5 +14,13 @@ function CWCommodityDisplayComponent() {
     </div>
   );
 }
+
+/*
+        <img
+            className="item-image"
+            src={ process.env.PUBLIC_URL + cwStoreItem.images[0] }
+            alt="This is a very cool item you would love to own"
+        />
+*/
 
 export default CWCommodityDisplayComponent

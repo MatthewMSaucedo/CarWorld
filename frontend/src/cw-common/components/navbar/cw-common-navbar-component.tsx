@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import Button from 'react-bootstrap/Button';
 
 function CWCommonNavbarComponent() {
-    let navbarComponentLinks: CWCommonNavbarLink[] = [
+    let navbarComponentLinksLeft: CWCommonNavbarLink[] = [
         {
             url: '../' + AppConstants.CW_ROUTES[AppConstants.CW_ROUTE_ENUM['videos']].path,
             name: 'Videos',
@@ -15,10 +15,8 @@ function CWCommonNavbarComponent() {
             url: '../' + AppConstants.CW_ROUTES[AppConstants.CW_ROUTE_ENUM['store']].path,
             name: 'Merch',
         },
-        {
-            url: '../',
-            name: 'Home',
-        },
+    ]
+    let navbarComponentLinksRight: CWCommonNavbarLink[] = [
         {
             url: '../' + AppConstants.CW_ROUTES[AppConstants.CW_ROUTE_ENUM['wiki']].path,
             name: 'Wiki',
@@ -28,19 +26,7 @@ function CWCommonNavbarComponent() {
             name: 'My Car World',
         },
     ]
-    /* let isLoggedIn = false
-     * if(isLoggedIn) {
-     *     navbarComponentLinks = navbarComponentLinks.concat({
-     *         url: '../' + AppConstants.CW_ROUTES[AppConstants.CW_ROUTE_ENUM['home']].path,
-     *         name: 'Account',
-     *     })
-     * } else {
-     *     navbarComponentLinks = navbarComponentLinks.concat({
-     *         url: '../' + AppConstants.CW_ROUTES[AppConstants.CW_ROUTE_ENUM['home']].path,
-     *         name: 'Login/Register',
-     *     })
-     * } */
-    let navItems = navbarComponentLinks.map((navbarLink: CWCommonNavbarLink)=>{
+    let navItemsLeft = navbarComponentLinksLeft.map((navbarLink: CWCommonNavbarLink)=>{
         return (
             <div className="cw-common-navbar-item">
                 <b>
@@ -52,16 +38,27 @@ function CWCommonNavbarComponent() {
                     >
                         { navbarLink.name }
                     </Button>
-                    {/* <Link
-                        className="cw-common-link"
-                        to={ navbarLink.url }
-                        >
-                        { navbarLink.name }
-                        </Link> */}
                 </b>
             </div>
         )
     })
+    let navItemsRight = navbarComponentLinksRight.map((navbarLink: CWCommonNavbarLink)=>{
+        return (
+            <div className="cw-common-navbar-item">
+                <b>
+                    <Button
+                        onClick={() => navButtonClick(navbarLink.url)}
+                        variant="primary"
+                        size="lg"
+                        disabled={ navbarLink.name === "My Car World" ? true: false }
+                    >
+                        { navbarLink.name }
+                    </Button>
+                </b>
+            </div>
+        )
+    })
+
     const homeLink = '../'
 
     // navigation
@@ -72,17 +69,26 @@ function CWCommonNavbarComponent() {
 
     return (
         <div className="cw-common-navbar-wrapper">
-            {/* <div className="cw-common-navbar-item-grouping">
-                <div className="cw-common-navbar-item">
-                <Button onClick={() => navButtonClick(homeLink)} variant="primary" size="lg">
-                Home
-                </Button>
-                </div>
-                </div>
-              */}
             <div className="cw-common-navbar-item-grouping">
                 {/* set of requested standard nav buttons */}
-                { navItems }
+                { navItemsLeft }
+            </div>
+            <div className="cw-common-navbar-item-grouping">
+                <div className="cw-common-navbar-home">
+                    <b>
+                        <Link
+                        className="cw-common-link"
+                        to={ homeLink }
+                        >
+                            Home
+                        </Link>
+                    </b>
+                </div>
+
+            </div>
+            <div className="cw-common-navbar-item-grouping">
+                {/* set of requested standard nav buttons */}
+                { navItemsRight }
             </div>
         </div>
     )

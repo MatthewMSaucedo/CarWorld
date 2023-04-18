@@ -3,20 +3,17 @@
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     align-content: stretch;
 
     // buffer inside navbar
-    padding-left: 18rem;
-    padding-right: 4rem;
+    // padding-left: 18rem;
+    // padding-right: 4rem;
 
-    // element sizing
-    min-height: 6rem;
-
-    // background-color: #282c34e0;
-    background-color: #F0EAD6;
-    // border-bottom: 5px solid #282c34e0;
+    // padding outside navbar
+    padding-top: 1em;
+    padding-bottom: 4rem;
 
     .cw-common-navbar-item-grouping {
         display: flex;
@@ -26,6 +23,34 @@
         align-items: center;
         align-content: space-evenly;
 
+        .cw-common-navbar-home {
+            // dat sick style bby
+            background-size: 6em 6em;
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-image: url('/../public/cw-logo.svg');
+
+            min-height: 5em;
+            min-width: 6.5em;
+
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            align-items: center;
+            align-content: space-evenly;
+
+
+            padding-bottom: 1.7em;
+
+            .cw-common-link {
+
+                text-decoration: none;
+                color: yellow;
+                // min-height: 100vh;
+                font-size: .6em;
+            }
+          }
         .cw-common-navbar-item {
             .btn-primary, .btn-primary:hover, .btn-primary:active, .btn-primary:visited {
                 background-color: #8064A2 !important;
@@ -34,14 +59,14 @@
             // box
             margin-right: 6rem;
             margin-left: 6rem;
-            margin-top: 1rem;
-            margin-bottom: 1rem;
+            // margin-top: 1rem;
+            // margin-bottom: 1rem;
 
             .cw-common-link {
                 text-decoration: none;
                 color: #379683;
                 // min-height: 100vh;
-                font-size: calc(5px + 2vmin);
+                // font-size: calc(5px + 2vmin);
             }
         }
     }
@@ -59,7 +84,7 @@
 
   // page sizing
   min-height: 100vh;
-  font-size: calc(10px + 2vmin);
+  // font-size: calc(10px + 2vmin);
 
   // dat sick style bby
   background-size: 1250px 1250px;
@@ -68,7 +93,6 @@
   background-image: url('/../public/cw-logo.svg');
 
   .cw-landing-navbox {
-    // background-color: #FFFFFF;
     min-height: 5vh;
     min-height: 5vw;
 

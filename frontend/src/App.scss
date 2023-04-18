@@ -1,64 +1,84 @@
+html, body, #root, .App {
+  height: 100%;
+}
+
+body {
+  // display: flex;
+  // align-items: stretch;
+}
+
+#root {
+  width: 100%;
+  background-color: #f0ead6;
+}
+
 // Top-level container for entire webapp
 .cw-app-container {
-  // background-color: #5d5c61;
+  width: 100%;
+  height: 100%;
+
   background-color: #f0ead6;
-  height: 100vh;
-  width: 125rem;
+
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: stretch;
+  align-content: center;
+
+  // Common container for served webpages
+  .cw-common-page-container {
+    width: 100%;
+
+    /* Orientation of contained html tags */
+    flex-direction: column;
+    flex-wrap: wrap;
+    // justify-content: center;
+    align-items: center;
+    align-content: space-evenly;
+
+    // page sizing
+    // width: auto;
+    font-size: calc(10px + 2vmin);
+
+    .cw-common-content-container {
+      background-color: #F0EAD6;
+
+      display: flex;
+      flex-direction: column;
+      flex-wrap: nowrap;
+      justify-content: flex-start;
+      align-items: center;
+      align-content: stretch;
+
+      padding-bottom: 1.5rem;
+
+      .yt-video {
+      }
+
+      .cw-common-content-title {
+        font-size: 4rem;
+        // margin-bottom: 4rem;
+        font-weight: 900;
+        color: black;
+        border-bottom: 5px solid black;
+      }
+
+      .content {
+        // padding-right: 50px;
+        // padding-bottom: 5px;
+
+        color: blue;
+        .cw-common-link {
+            text-decoration: none;
+            color: #ff0000;
+            // min-height: 100vh;
+        }
+      }
+    }
+  }
 }
 
 .cw-common-background-color {
   background-color: #f0ead6;
 }
-
-// Common container for served webpages
-.cw-common-page-container {
-  /* Orientation of contained html tags */
-  display: flex;
-  flex-direction: column;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  align-content: space-evenly;
-
-  // page sizing
-  // width: auto;
-  font-size: calc(10px + 2vmin);
-}
-
-.cw-common-content-container {
-  // background-color: #5d5c61;
-  background-color: #F0EAD6;
-  margin-top: 5rem;
-
-  display: flex;
-  flex-direction: column;
-  flex-wrap: nowrap;
-  justify-content: flex-start;
-  align-items: center;
-  align-content: stretch;
-
-
-  .yt-video {
-  }
-
-  .cw-common-content-title {
-    font-size: 4rem;
-    margin-bottom: 4rem;
-    font-weight: 900;
-    color: black;
-    border-bottom: 5px solid black;
-  }
-
-  .content {
-    // padding-right: 50px;
-    // padding-bottom: 5px;
-
-    color: blue;
-    .cw-common-link {
-        text-decoration: none;
-        color: #ff0000;
-        min-height: 100vh;
-    }
-  }
-}
-

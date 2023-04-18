@@ -2,7 +2,7 @@
 Cartopia
 
 ## Frontend - CarWorld SPA
-Link coming soon
+https://carworldneedsme.netlify.app/
 
 ## Backend - CarWorld Serverless
 ![CarWorld System Diagram](https://github.com/matthewmsaucedo/CarWorld/blob/main/backend/CarWorldSystemDesign.jpg?raw=true)
@@ -25,6 +25,8 @@ Link coming soon
   |--tests
     |---+ idk it works on my machine
 ```
+
+All payments backed by Stripe!
 
 The `cdk.json` file tells the CDK Toolkit how to execute your app.
 

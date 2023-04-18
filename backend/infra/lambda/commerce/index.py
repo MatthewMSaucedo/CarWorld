@@ -13,12 +13,20 @@ import stripe
 import boto3
 import hashlib
 
+# Environment Variables
 TRANSACTION_SALT = os.environ["transaction_salt"]
+SES_CONFIG_ID = os.environ["ses_config_id"]
 stripe.api_key = os.environ["stripe_secret"]
 
-# TODO: move this mapping to param store, shouldn't be hardcoded here
+# TODO: move these mapping to param store, shouldn't be hardcoded here
+EMAIL_RECIPIENTS = [
+    "themattsaucedo@gmail.com",
+    # TODO: uncomment for site-launch
+    # "williambanks500@gmail.com",
+    # "rkats0524@gmail.com",
+]
+SES_SENDER_EMAIL = "themattsaucedo@gmail.com"
 COMMODITY_VALUE_MAP = {
-    # "name_size"
     "save the attendants shirt_xs": 2500,
     "save the attendants shirt_s": 2500,
     "save the attendants shirt_m": 2500,
@@ -39,10 +47,22 @@ COMMODITY_VALUE_MAP = {
     "enter car world shirt_m": 2500,
     "enter car world shirt_l": 2500,
     "enter car world shirt_xl": 2500,
+    "tat pass bracelet": 5500,
+    "quuarax earrings": 3000,
+    "car world emblem earrings": 2500,
+    "william banks devotional candle": 1200,
+    "attendant pendant": 2500,
+    "vip pass": 1200,
+    "car world supper book": 1000,
+    "car world supper book 10 pack": 7000,
+    "pamphlet pack": 1000,
+    "car world water": 500,
+    "enter car world poster": 3000,
+    "the artifact": 800000,
 }
 
 
-# TODO: Make this into a lambda layer
+# TODO: Make this into a lambda layer to be used as a common CWLibrary
 class CWDynamoClient:
     client = boto3.client("dynamodb")
 
@@ -305,14 +325,12 @@ def update_transaction(update_transaction_body, dynamo_client):
 
 
 def create_payment_intent(create_payment_intent_body, dynamo_client):
-    cart = {}
-
-    # validate
+    # Validate cart body
     try:
         cart = create_payment_intent_body["cart"]
-        for commodity in cart:
-            commodity_name = commodity["name"]
-            quantity = commodity["quantity"]
+        for name, details in cart.items():
+            commodity_name = name
+            quantity = details["quantity"]
     except Exception as e:
         error = {
             "message": str(e),
@@ -327,55 +345,49 @@ def create_payment_intent(create_payment_intent_body, dynamo_client):
             "error": error,
         }
 
-    amount = 0
-    for commodity in cart:
-        client_secret = ""
-        try:
-            if commodity["name"] in COMMODITY_VALUE_MAP.keys():
-                amount = amount + (
-                    COMMODITY_VALUE_MAP[commodity["name"]] * commodity["quantity"]
-                )
-            else:
-                raise Exception(
-                    f"Invalid commodity name received: {commodity['name']}, valid names: {COMMODITY_VALUE_MAP.keys()}"
-                )
-        except Exception as e:
-            error = {
-                "message": str(e),
-                "stack": traceback.format_exc(),
-            }
-            print(f"CLIENT_ERROR: Failed to parse shopping cart: {cart} | {error}")
-            return {
-                "code": 400,
-                "message": f"CLIENT_ERROR: Failed to parse shopping cart: {cart}",
-                "error": error,
-            }
-
     try:
-        client_secret = stripe.PaymentIntent.create(
-            amount=amount,
-            currency="usd",
-            automatic_payment_methods={"enabled": True},
-        ).client_secret
+        amount = calculate_transaction_amount(cart)
     except Exception as e:
         error = {
             "message": str(e),
             "stack": traceback.format_exc(),
         }
-        print("SERVER_ERROR: Failed to initiate Stripe Payment Intent | {error}")
+        print(f"CLIENT_ERROR: Failed to parse shopping cart: {cart} | {error}")
+        return {
+            "code": 400,
+            "message": f"CLIENT_ERROR: Failed to parse shopping cart: {cart}",
+            "error": error,
+        }
+
+    try:
+        stripe_payment_intent = stripe.PaymentIntent.create(
+            amount=amount,
+            currency="usd",
+            automatic_payment_methods={"enabled": True},
+            metadata={"cart": str(cart)},
+        )
+    except Exception as e:
+        error = {
+            "message": str(e),
+            "stack": traceback.format_exc(),
+        }
+        print(f"SERVER_ERROR: Failed to initiate Stripe Payment Intent | {error}")
         return {
             "code": 500,
             "message": "SERVER_ERROR: Failed to initiate Stripe Payment Intent",
             "error": error,
         }
 
-    transaction_id = ""
     try:
-        # transaction_id = some_hash_algo(client_secret)
+        client_secret = stripe_payment_intent.client_secret
+        # TODO: Is this right?
+        print(f"DEBUG -- Stripe PaymentIntent Create Res: {stripe_payment_intent}")
+        transaction_id = stripe_payment_intent.id
+
         create_transaction_record(
             cart=cart,
             amount=amount,
-            transaction_id=client_secret,
+            transaction_id=transaction_id,
             dynamo_client=dynamo_client,
         )
     except Exception as e:
@@ -400,6 +412,18 @@ def create_payment_intent(create_payment_intent_body, dynamo_client):
     }
 
 
+def calculate_transaction_amount(cart):
+    amount = 0
+    for name, details in cart.items():
+        if name in COMMODITY_VALUE_MAP.keys():
+            amount = amount + (COMMODITY_VALUE_MAP[name] * details["quantity"])
+        else:
+            raise Exception(
+                f"Invalid commodity name received: {name}, valid names: {COMMODITY_VALUE_MAP.keys()}"
+            )
+    return amount
+
+
 # TODO: Replace raw dynamo client call with cw_dynamo_client
 def create_transaction_record(
     cart, amount, transaction_id, dynamo_client, is_guest=True, status="initiated"
@@ -408,9 +432,9 @@ def create_transaction_record(
 
     # get commodity list
     commodity_list = []
-    for commodity in cart:
+    for name, details in cart.items():
         # prepend quantity as dynamo SS does not allow duplicate entries
-        formatted_commodity_name = str(commodity["quantity"]) + "_" + commodity["name"]
+        formatted_commodity_name = name + "_" + str(details["quantity"])
         commodity_list.append(formatted_commodity_name)
 
     dynamo_client.put_item(
@@ -518,6 +542,12 @@ def handle_webhook(stripe_event, dynamo_client):
     commodities_in_purchase = transaction_record["Attributes"]["commodity_list"]["SS"]
     remove_purchased_commodities_from_stock(commodities_in_purchase, dynamo_client)
 
+    send_email_order_details(
+        recipients=EMAIL_RECIPIENTS,
+        order_details=event_data,
+        products=commodities_in_purchase,
+    )
+
     return {
         "code": 200,
         "message": f"Webhook received: {stripe_event}",
@@ -559,9 +589,48 @@ def remove_purchased_commodities_from_stock(commodities_in_purchase, dynamo_clie
                 "error": error,
             }
 
+    def send_email_order_details(recipients, order_details, products):
+        ses_client = boto3.client("ses")
 
-def some_hash_algo(client_secret):
-    hashed_secret = hashlib.sha512(
-        client_secret.encode("utf-8") + TRANSACTION_SALT.encode("utf-8")
-    ).hexdigest()
-    return hashed_secret
+        body_html = f"""
+        <html>
+            <head></head>
+            <body>
+            <h2>Car World Store: Order Detail</h2>
+            <br/>
+            <p>
+                An order has been placed by {order_details["shipping"]["name"]}!
+            </p>
+            <p>
+                {products}
+            </p>
+            <p>
+                {order_details["shipping"]}
+            </p>
+            </body>
+        </html>
+                        """
+
+        email_message = {
+            "Body": {
+                "Html": {
+                    "Charset": "utf-8",
+                    "Data": body_html,
+                },
+            },
+            "Subject": {
+                "Charset": "utf-8",
+                "Data": "New Order placed on carworld.love!",
+            },
+        }
+
+        ses_response = ses_client.send_email(
+            Destination={
+                "ToAddresses": recipients,
+            },
+            Message=email_message,
+            Source=SES_SENDER_EMAIL,
+            ConfigurationSetName=SES_CONFIG_ID,
+        )
+
+        print(f"ses response id received: {response['MessageId']}.")
