@@ -1,20 +1,19 @@
 // Local Imports
 import '../App.scss';
 import './cw-commodity-display.scss';
-import { CWShoppingItemType, CWStoreItem } from './cw-store-item';
+import { CWShoppingItemType } from './cw-store-item';
 import { CWShoppingCart, CWShoppingCartEntry } from './cw-shopping-cart';
 import { STORE_ITEMS } from '../AppConstants'
 
 // React Hooks
 import { useState } from "react"
 import { useNavigate, useParams } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '../redux/store';
+import { useDispatch } from 'react-redux';
 
 // 3rd Party imports
 import { Button } from 'react-bootstrap';
 import Form from 'react-bootstrap/Form';
-import { addToCart } from '../redux/shoppingCartSlice';
+import { addToCart, updateCart } from '../redux/shoppingCartSlice';
 
 // TS type for page param
 export type CWStoreItemDetailParams = {
@@ -22,13 +21,6 @@ export type CWStoreItemDetailParams = {
 }
 
 function CWStoreItemDetailComponent() {
-  // Some initial state
-  const { cwShoppingCart } = useSelector((state: RootState) => {
-    console.log("from useSelector inside CWStoreItemDetailComponent")
-    console.log(state.cwShoppingCart.cart)
-    return state
-  })
-
   // Grabbing passed in state
   const { store_item_index } = useParams<keyof CWStoreItemDetailParams>() as CWStoreItemDetailParams
   const cwStoreItem = STORE_ITEMS[+store_item_index]
@@ -89,7 +81,8 @@ function CWStoreItemDetailComponent() {
   )
   const onClickAddToCart = () => {
     let entry: CWShoppingCartEntry = {
-      cwStoreItem: cwStoreItem
+      cwStoreItem: cwStoreItem,
+      quantity: 1
     }
     // Add size, if pertinent
     if (showSizeForm) {
@@ -98,8 +91,7 @@ function CWStoreItemDetailComponent() {
 
     dispatch(addToCart(entry))
 
-    // TODO: change to /store after fixing that page's style
-    navigate('/cart', { replace: true })
+    navigate('/store', { replace: true })
   }
 
   // Display non-highlighted images in a column IF there are more images
@@ -132,9 +124,23 @@ function CWStoreItemDetailComponent() {
     ) : ( <></> )
   )
   const onClickBuyNow = () => {
-    // TODO:
-    //  - add to shoppingcart
-    //  - take to purchase page
+    // Create entry
+    const entry: CWShoppingCartEntry = {
+      cwStoreItem: cwStoreItem,
+      quantity: 1
+    }
+    // Add size, if pertinent
+    if (showSizeForm) {
+      entry.size = value
+    }
+
+    // Set client cart to contain just this entry
+    const newCart = new CWShoppingCart()
+    newCart.add(entry)
+    dispatch(updateCart(newCart))
+
+    // Stripe checkout
+    navigate('/checkout', { replace: true })
   }
 
   // Rotate highlighted image onClick

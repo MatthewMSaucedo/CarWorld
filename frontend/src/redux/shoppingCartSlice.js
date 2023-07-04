@@ -19,10 +19,9 @@ export const cwShoppingCartSlice = createSlice({
     // valid for clearing cart also -
     // e.g.: updateCart(new CWShoppingCart())
     updateCart: (state, action: PayloadAction<CWShoppingCart>) => {
-      // state.cart = action.payload
+      state.cart = action.payload
     },
     addToCart: (state, action: PayloadAction<CWShoppingCartEntry>) => {
-      // state.cart.add(action.payload)
       state = CWShoppingCart.staticAddToCart(state, action.payload)
     },
     removeFromCart: (state, action: PayloadAction<CWShoppingCartEntry>) => {

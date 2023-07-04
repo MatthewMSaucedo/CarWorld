@@ -45,6 +45,10 @@ class CWCoreStack(Stack):
             auth_lambda=self.cw_auth_lambda["function"]
         )
 
+        # TODO: Lambda to handle db retries for sensitive writes
+        # Create the DB Retry Lambda for corrective actions
+        # self.cw_db_retry_lambda = self.create_cw_db_retry_lambda()
+
     def obtain_ssm_client_secret(self, secret_name):
         jwt_secret = self.ssm.get_parameter(Name=secret_name, WithDecryption=True)
         return jwt_secret["Parameter"]["Value"]

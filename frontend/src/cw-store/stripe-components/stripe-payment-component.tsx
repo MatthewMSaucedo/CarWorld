@@ -6,9 +6,10 @@ import './stripe-payment.scss'
 import { CWShoppingCart, CWShoppingCartEntry } from '../cw-shopping-cart';
 import CheckoutForm from "./CheckoutForm";
 import { CWShoppingItemType } from '../cw-store-item';
+import { CW_API_ENDPOINTS } from '../../AppConstants';
 
 // React Hooks
-import React, { useState, useEffect } from "react"
+import { useState, useEffect } from "react"
 import { useSelector } from 'react-redux';
 import { RootState } from '../../redux/store'
 
@@ -17,9 +18,20 @@ import { loadStripe, StripeElementsOptions } from '@stripe/stripe-js'
 import { Elements } from "@stripe/react-stripe-js";
 
 // Initialize Stripe
-const stripePromise = loadStripe(
-'pk_test_51MVNG0Edd7yLru5yTI1lXrQ3y9cTs01dMpm1K5nFqzVAHkZ0PEhp8gnpqpJyuB2cbbkLI3FSDcxR9MmgNDUgikXM00MHFJnNAs'
-)
+// TODO: Resolve issue wherein this constant reference fails due to
+//       declaration before initialization
+// import { STRIPE_PUB_KEY } from '../../AppConstants';
+const STRIPE_PUB_KEY = "pk_test_51MVNG0Edd7yLru5yTI1lXrQ3y9cTs01dMpm1K5nFqzVAHkZ0PEhp8gnpqpJyuB2cbbkLI3FSDcxR9MmgNDUgikXM00MHFJnNAs"
+const stripePromise = loadStripe(STRIPE_PUB_KEY)
+
+// Useful typdef
+export interface BackendCWShoppingCartEntry {
+    quantity: number,
+    type: CWShoppingItemType,
+    frontend_name: string,
+    server_name: string,
+    size?: string
+}
 
 function StripePaymentComponent() {
     // Stateful variables
@@ -28,34 +40,48 @@ function StripePaymentComponent() {
     // Redux State variable
     let { cwShoppingCart } = useSelector((state: RootState) => state)
 
-    // Initiate PaymentIntent
-    useEffect(() => {
-        console.log("initiating payment flow...")
-
-        // Format cwShoppingCart for API body
-        let formattedShoppingCart: Map<string, any> = new Map<string, any>()
+    // Formatting helper for server
+    const convertFrontendCartToBackendCart = (cwShoppingCart: CWShoppingCart) => {
+        let formattedShoppingCart: BackendCWShoppingCartEntry[] = []
         cwShoppingCart.contents.forEach((entry: CWShoppingCartEntry) => {
             let commodity = entry.cwStoreItem
-            formattedShoppingCart = formattedShoppingCart.set(
-                commodity.serverName + (entry.size ? "_" + entry.size : ""),
-                formattedShoppingCart.has(commodity.serverName) ? {
-                    quantity: formattedShoppingCart.get(commodity.serverName) + 1,
+
+            formattedShoppingCart.push(
+                // Account for clothing size if relevant
+                commodity.type === CWShoppingItemType.Clothing ? {
+                    quantity: entry.quantity,
                     type: commodity.type,
-                    frontend_name: commodity.title
+                    frontend_name: commodity.title,
+                    server_name: commodity.serverName,
+                    size: entry.size,
                 } : {
-                    quantity: 1,
+                    quantity: entry.quantity,
                     type: commodity.type,
-                    frontend_name: commodity.title
+                    frontend_name: commodity.title,
+                    server_name: commodity.serverName
                 }
             )
         })
 
-        const paymentIntentPayload = { cart: Object.fromEntries(formattedShoppingCart) }
+        return formattedShoppingCart
+    }
+
+    // Initiate PaymentIntent
+    useEffect(() => {
+        console.log("initiating payment flow...")
+        console.log("current shopping cart contents in next log:")
+        console.log(cwShoppingCart)
+
+        let formattedShoppingCart = convertFrontendCartToBackendCart(cwShoppingCart)
+
+        // const paymentIntentPayload = { cart: Object.fromEntries(formattedShoppingCart) }
+        const paymentIntentPayload = { cart: formattedShoppingCart }
         console.log("payload for backend:")
         console.log(JSON.stringify(paymentIntentPayload))
 
+        // TODO: this url should be sourced from App Constants
         // Create PaymentIntent
-        fetch('https://6vikh38ev7.execute-api.us-east-1.amazonaws.com/commerce/secret', {
+        fetch(CW_API_ENDPOINTS.commerce.secret, {
             method: "POST",
             headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*"},
             body: JSON.stringify(paymentIntentPayload),
@@ -65,14 +91,16 @@ function StripePaymentComponent() {
                 console.log(data)
                 setClientSecret(data.body.client_secret)
             });
-    // Empty dependency array to prevent re-rendering
+    // NOTE:
+    //   Empty dependency array to prevent re-rendering
+    //   (either react is stupid, or I'm stupid... I'd believe either)
     }, []);
 
     // Stripe Checkout Config
     const options: StripeElementsOptions = {
         clientSecret: clientSecret,
         appearance: {
-            theme: 'night',
+            theme: 'night', // duh
         },
     };
 
@@ -87,8 +115,6 @@ function StripePaymentComponent() {
         )}
         </div>
     );
-
-    // Helper Function
 }
 
 export default StripePaymentComponent

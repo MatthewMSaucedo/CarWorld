@@ -70,7 +70,7 @@ function CWVideosComponent() {
                         <ReactPlayer
                             width={533.3}
                             height={300}
-                            url='https://www.youtube.com/watch?v=EovGOc-TAxY&feature=youtu.be' />
+                            url='https://www.youtube.com/watch?v=FDZsqouKQ3M&t=1s' />
                 </div>
             </div>
         </div>

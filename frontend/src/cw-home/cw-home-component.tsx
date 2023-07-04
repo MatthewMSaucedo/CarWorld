@@ -23,7 +23,7 @@ function CWHomeComponent() {
           loop={true}
           width={'35em'}
           height={'20em'}
-          url='https://www.youtube.com/watch?v=EovGOc-TAxY'
+          url='https://www.youtube.com/watch?v=FDZsqouKQ3M&t=1s'
         />
       </div>
 

@@ -69,7 +69,8 @@ export default function CheckoutForm() {
         // TODO: (PaymentProcessedComponent)
         //   Just a message with details and a button that redirects
         //   to the Home page.
-        return_url: "https://carworldneedsme.netlify.app/payment_processed",
+        // return_url: "https://carworldneedsme.netlify.app/payment_processed",
+        return_url: "http://localhost:3000/payment_processed",
         // NOTE: This ensures customers receive a confirmation email
         receipt_email: email,
       },

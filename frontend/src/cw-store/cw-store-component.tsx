@@ -19,7 +19,7 @@ import Button from 'react-bootstrap/Button';
 
 
 function CWStoreComponent() {
-    // Redux State variable
+    // Redux State
     let { cwShoppingCart } = useSelector((state: RootState) => state)
     console.log(cwShoppingCart)
 
@@ -48,7 +48,6 @@ function CWStoreComponent() {
         )
     })
 
-    // TODO: add navbar component if the route is /store
     return (
         <div className="cw-common-page-container">
             { route === "/store" ? CWCommonNavbarComponent() : <></> }

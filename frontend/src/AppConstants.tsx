@@ -56,6 +56,12 @@ export const CW_ROUTES = [
 
 export const STRIPE_PUB_KEY = "pk_test_51MVNG0Edd7yLru5yTI1lXrQ3y9cTs01dMpm1K5nFqzVAHkZ0PEhp8gnpqpJyuB2cbbkLI3FSDcxR9MmgNDUgikXM00MHFJnNAs"
 
+export const CW_API_ENDPOINTS = {
+  "commerce": {
+    "secret": "https://6vikh38ev7.execute-api.us-east-1.amazonaws.com/commerce/secret"
+  }
+}
+
 export const STORE_ITEMS: CWStoreItem[] = [
   {
     title: 'Save The Attendants',
@@ -105,6 +111,7 @@ export const STORE_ITEMS: CWStoreItem[] = [
     ],
     type: CWShoppingItemType["Clothing"]
   },
+  // TODO: add / obtain images
   /* {
    *   title: 'Enter Car World',
    *   price: 25,

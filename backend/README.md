@@ -19,7 +19,7 @@
     |---+ idk it works on my machine
 ```
 
-![CarWorld System Diagram](backend/CWSystemDiagram.jpg/infra?raw=true "Title")
+![CarWorld System Diagram](backend/CWSystemDiagram.jpg/infra?raw=true "CarWorld System Design")
 
 The `cdk.json` file tells the CDK Toolkit how to execute your app.
 

@@ -41,13 +41,8 @@ class CWCommerceStack(Stack):
             commodity_table=self.cw_commodity_table,
         )
 
-        # Initialize AmazonSES and grant send permissions to the Commerce Lambda
+        # Initialize AmazonSES and grant Send permissions to the Commerce Lambda
         self.cw_ses_service = self.create_cw_ses_service(self.cw_commerce_lambda)
-
-        # TODO: Cron job that we need
-        #       for the record cleanup
-        #       input: cw_transaction_table
-        # self.cwCleanupTransactionLambda(cw_transaction_table)
 
         self.create_commerce_api_gw(self.cw_commerce_lambda["function"])
 
@@ -174,12 +169,17 @@ class CWCommerceStack(Stack):
                             "ses:SendBulkTemplatedEmail",
                         ],
                         resources=["*"],
+                        # conditions={
+                        # "StringEquals": {
+                        # "ses:FromAddress": "themattsaucedo@gmail.com",
+                        # },
+                        # },
                     )
                 ],
             )
         )
         cw_commerce_lambda["function"].add_environment(
-            key="ses_config_id", value="cw-commerce-ses-configuration-set"
+            key="ses_config_id", value=ses_config_set.configuration_set_name
         )
 
         return ses_config_set
@@ -216,7 +216,12 @@ class CWCommerceStack(Stack):
         )
         commerce_api.add_routes(
             path="/commerce/commodities",
-            methods=[apigw.HttpMethod.GET, apigw.HttpMethod.OPTIONS],
+            methods=[apigw.HttpMethod.GET],
+            integration=commerce_controller,
+        )
+        commerce_api.add_routes(
+            path="/commerce/ses",
+            methods=[apigw.HttpMethod.POST],
             integration=commerce_controller,
         )
 
