@@ -101,7 +101,12 @@ function CWCartComponent() {
 
     // TODO: Add logic to not apply x42 for >1 of an item
     const determineCartTableHeight = () => {
-        return 50 + (42 * cwShoppingCart.size)
+        let numRows = cwShoppingCart.size
+        cwShoppingCart.contents.forEach((entry: CWShoppingCartEntry) => {
+            numRows -= entry.quantity > 1 ? (entry.quantity - 1) : 0
+        })
+
+        return 50 + (42 * numRows)
     }
 
     return (

@@ -42,26 +42,32 @@ exports.handler = async(event) => {
     return getRes.Items[0];
   }
 
+  async function validateCredentialRequestInput(request) {
+
+  }
+
   async function registerRequest(request) {
     const dbClient = new DynamoDBClient({ region: "us-east-1" })
 
-    let password = ""
-    let username = ""
+    // Validate input
     try {
-      password = request.body.password.toLowerCase()
-      username = request.body.username.toLowerCase()
+      validateCredentialRequestInput(request)
     } catch (error) {
       return {
-        code: 500,
-        message: error.message,
+        code: 400,
+        message: `Payload failed to validate: ${error.message}`,
         error: {
           title: error.name,
           message: error.message,
           stack: error.stack
         }
       }
-    }
 
+    // Obtain user input
+    const password = request.body.password.toLowerCase()
+    const username = request.body.username.toLowerCase()
+
+    // Hash password
     let hashedPassword = ""
     try {
       hashedPassword = await bcrypt.hash(password, 10)
@@ -77,6 +83,7 @@ exports.handler = async(event) => {
       }
     }
 
+    // Check if requested username is available
     let getUserByUsernameRes = null
     try {
       getUserByUsernameRes = await getUserByUsername(dbClient, username)
@@ -91,7 +98,6 @@ exports.handler = async(event) => {
         }
       }
     }
-
     try {
       if (getUserByUsernameRes) {
         return {
@@ -99,6 +105,8 @@ exports.handler = async(event) => {
           message: `The username, ${username}, is unavailable`,
         }
       }
+
+      // Store new user in DB
       await storeInDatabase(dbClient, username, hashedPassword)
     } catch (error) {
       return {
@@ -112,6 +120,7 @@ exports.handler = async(event) => {
       }
     }
 
+    // 200 Success
     return {
       code: 200,
       message: `Sucessfully created an account for user: ${username}`,
@@ -125,22 +134,8 @@ exports.handler = async(event) => {
   async function loginRequest(request) {
     const dbClient = new DynamoDBClient({ region: "us-east-1" })
 
-    let password = ""
-    let username = ""
-    try {
-      password = request.body.password.toLowerCase()
-      username = request.body.username.toLowerCase()
-    } catch (error) {
-      return {
-        code: 500,
-        message: error.message,
-        error: {
-          title: error.name,
-          message: error.message,
-          stack: error.stack
-        }
-      }
-    }
+
+
 
     let hashedPassword = ""
     try {
