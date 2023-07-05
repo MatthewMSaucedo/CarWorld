@@ -12,10 +12,13 @@ config = app.node.try_get_context("config")
 account_id = config["account_id"]
 region = config["region"]
 
-CWCoreStack(app, "InfraStack", env=cdk.Environment(account=account_id, region=region))
+cwCoreStack = CWCoreStack(
+    app, "InfraStack", env=cdk.Environment(account=account_id, region=region)
+)
 CWCommerceStack(
-    app,
-    "CommerceStack",
+    scope=app,
+    construct_id="CommerceStack",
+    cw_core_stack=cwCoreStack,
     env=cdk.Environment(account=account_id, region=region),
 )
 

@@ -98,8 +98,6 @@ function CWCartComponent() {
         params.api.sizeColumnsToFit();
         params.api.resetRowHeights();
     };
-
-    // TODO: Add logic to not apply x42 for >1 of an item
     const determineCartTableHeight = () => {
         let numRows = cwShoppingCart.size
         cwShoppingCart.contents.forEach((entry: CWShoppingCartEntry) => {

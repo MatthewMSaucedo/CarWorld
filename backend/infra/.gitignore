@@ -5,6 +5,10 @@ __pycache__
 .venv
 *.egg-info
 
+# Lambda Layers
+lambda/validator/jwt-dependency-layer
+lambda/validator/jwt-layer
+
 # CDK asset staging directory
 .cdk.staging
 cdk.out

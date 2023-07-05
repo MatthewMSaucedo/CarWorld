@@ -1,0 +1,64 @@
+###########################################################################
+title Refresh
+
+carworld.love->AuthLambda:/refresh request
+
+AuthLambda->InvalidTokenCache: #tokenInInvalidCache(refreshTokenJti)
+
+InvalidTokenCache->AuthLambda: tokenIsInvalid: false
+
+AuthLambda->carworld.love: jwtAuthToken
+
+
+
+###########################################################################
+title Refresh
+
+carworld.love->AuthLambda:/refresh request
+
+AuthLambda->InvalidTokenCache: #tokenInInvalidCache(refreshJTI)
+
+InvalidTokenCache->
+
+AuthLambda->carworld.love: JWT tokens: { auth, refresh }
+
+
+
+###########################################################################
+title Guest
+
+carworld.love->AuthLambda:/guest request
+
+AuthLambda->carworld.love: jwtGuestToken
+
+
+
+###########################################################################
+title Initiate PaymentIntent
+
+carworld.love->ValidatorLambda: request: { body, authToken }
+ValidatorLambda->CommerceLambda: request: { body, authToken }
+
+CommerceLambda->Stripe API: { amount, productDetails }
+Stripe API->CommerceLambda: { clientSecret, transactionID }
+
+CommerceLambda->carworld.love: clientSecret
+
+
+
+###########################################################################
+title Handle Transaction
+
+participant carworld.love
+participant CommerceLambda
+
+participant Stripe API
+
+participant CarWorld SES
+participant Store Administrator
+
+carworld.love->Stripe API: Payment and Shipping information, ClientSecret
+
+Stripe API->CommerceLambda: successEvent: { transactionID, shippingInfo, productDetails }
+CommerceLambda->CarWorld SES: { transactionID, shippingInfo, productDetails }
+CarWorld SES->Store Administrator: Email with Transaction details

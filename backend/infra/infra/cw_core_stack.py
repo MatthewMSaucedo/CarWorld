@@ -18,6 +18,8 @@ from aws_cdk.aws_apigatewayv2_integrations_alpha import (
 from constructs import Construct
 
 
+# (Car World Core Stack)
+#   This stack covers the core pieces of the Car World infra
 class CWCoreStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -26,18 +28,28 @@ class CWCoreStack(Stack):
         self.jwt_secret = self.obtain_ssm_client_secret(
             secret_name="/cw/auth/jwtSecret"
         )
+        self.jwt_exp_minutes = self.obtain_ssm_client_secret(
+            secret_name="/cw/auth/jwtExpMinutes"
+        )
 
         # Create the Users table
         self.cw_user_table = self.create_cw_user_table()
 
+        # Create the InvalidTokens Table
+        # NOTE: A hugely important mechanism to invalidate compromised Refresh tokens
+        self.cw_invalid_token_table = self.create_cw_invalid_token_table()
+
         # Create the AuthController Lambda
         self.cw_auth_lambda = self.create_cw_auth_lambda(
-            jwt_secret=self.jwt_secret, user_table=self.cw_user_table
+            jwt_secret=self.jwt_secret,
+            jwt_exp_minutes=self.jwt_exp_minutes,
+            user_table=self.cw_user_table,
+            invalid_token_table=self.cw_invalid_token_table,
         )
 
         # Create the AuthValidator Lambda
         self.cw_validator_lambda = self.create_cw_validator_lambda(
-            jwt_secret=self.jwt_secret
+            jwt_secret=self.jwt_secret, jwt_exp_minutes=self.jwt_exp_minutes
         )
 
         # Create the API Gateway
@@ -75,7 +87,29 @@ class CWCoreStack(Stack):
 
         return user_table
 
-    def create_cw_auth_lambda(self, jwt_secret, user_table):
+    def create_cw_invalid_token_table(self):
+        invalid_token_table = dynamodb.Table(
+            scope=self,
+            id="invalid_token",
+            table_name="invalid_tokens",
+            partition_key=dynamodb.Attribute(
+                name="jti",
+                type=dynamodb.AttributeType.STRING,
+            ),
+            removal_policy=RemovalPolicy.DESTROY,
+            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
+            encryption=dynamodb.TableEncryption.AWS_MANAGED,
+            # NOTE: Refresh tokens become invalid after hitting their
+            # expiry time, so there is no need to maintain them after that.
+            # Let's let Dynamo clean these up for us!
+            time_to_live_attribute="ttl",
+        )
+
+        return invalid_token_table
+
+    def create_cw_auth_lambda(
+        self, jwt_secret, jwt_exp_minutes, user_table, invalid_token_table
+    ):
         shared_lambda_role = iam.Role(
             scope=self,
             id="cw-auth-lambda-role",
@@ -87,7 +121,9 @@ class CWCoreStack(Stack):
                 )
             ],
         )
+        invalid_token_table.grant_read_data(shared_lambda_role)
         user_table.grant_read_write_data(shared_lambda_role)
+
         registration_lambda = lambdaFx.Function(
             scope=self,
             id="cw-auth-registration-lambda",
@@ -97,13 +133,13 @@ class CWCoreStack(Stack):
             # TODO: fix this, upload manually for now
             code=lambdaFx.Code.from_asset("./lambda/auth/zip"),
             description="CarWorld AuthController",
-            environment={"jwtSecret": self.jwt_secret},
+            environment={"jwtSecret": jwt_secret, "jwtExpMinutes": jwt_exp_minutes},
             timeout=Duration.seconds(15),
         )
 
         return {"function": registration_lambda, "role": shared_lambda_role}
 
-    def create_cw_validator_lambda(self, jwt_secret):
+    def create_cw_validator_lambda(self, jwt_secret, jwt_exp_minutes):
         validator_role = iam.Role(
             scope=self,
             id="cw-validator-lambda-role",
@@ -115,15 +151,35 @@ class CWCoreStack(Stack):
                 )
             ],
         )
+
+        # External Packages (JWT Library)
+        # NOTE: Generation guide:
+        #   https://medium.com/geekculture/deploying-aws-lambda-layers-with-python-8b15e24bdad2
+        #   So essentially, creating a `layer` folder, and running the following:
+        #   pip3 install [[PACKAGE]] --target ~/CarWorld/backend/infra/lambda/validator/layer/python/lib/python3.7/site-packages
+        jwt_lambda_layer = lambdaFx.LayerVersion(
+            self,
+            "jwt-lambda-layer",
+            code=lambdaFx.AssetCode("lambda/validator/jwt-layer/"),
+            compatible_runtimes=[lambdaFx.Runtime.PYTHON_3_7],
+        )
+        jwt_dependency_lambda_layer = lambdaFx.LayerVersion(
+            self,
+            "jwt-dependency-lambda-layer",
+            code=lambdaFx.AssetCode("lambda/validator/jwt-dependency-layer/"),
+            compatible_runtimes=[lambdaFx.Runtime.PYTHON_3_7],
+        )
+
         validator_lambda = lambdaFx.Function(
             scope=self,
             id="cw-validator-lambda",
-            runtime=lambdaFx.Runtime.NODEJS_18_X,
+            runtime=lambdaFx.Runtime.PYTHON_3_7,
             handler="index.handler",
             role=validator_role,
             code=lambdaFx.Code.from_asset("./lambda/validator/"),
             description="CarWorld Validator Lambda, to authenticate API requests",
-            environment={"jwtSecret": self.jwt_secret},
+            environment={"jwtSecret": jwt_secret, "jwtExpMinutes": jwt_exp_minutes},
+            layers=[jwt_lambda_layer, jwt_dependency_lambda_layer],
             timeout=Duration.seconds(15),
         )
 

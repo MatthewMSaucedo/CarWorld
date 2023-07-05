@@ -8,7 +8,6 @@ import boto3
 import hashlib
 
 # Environment Variables
-TRANSACTION_SALT = os.environ["transaction_salt"]
 SES_CONFIG_ID = os.environ["ses_config_id"]
 stripe.api_key = os.environ["stripe_secret"]
 
@@ -21,7 +20,7 @@ EMAIL_RECIPIENTS = [
     # "rkats0524@gmail.com",
 ]
 SES_SENDER_EMAIL = "themattsaucedo@gmail.com"
-CLOTHING_TYPE_VALUE = 1
+# NOTE: Must echo changes here to Stripe_Abrev_Name_Map
 COMMODITY_VALUE_MAP = {
     "save the attendants shirt": 2500,
     "magwadi shirt": 2500,
@@ -41,6 +40,46 @@ COMMODITY_VALUE_MAP = {
     "the artifact": 800000,
     "devotion point": 100,
 }
+# NOTE: Changes to price map must reflect here
+STRIPE_ABREVIATED_NAME_MAP = {
+    # Forward
+    "sa": "save the attendants shirt",
+    "ms": "magwadi shirt",
+    "qg": "quuarux gas wars shirt",
+    "ec": "enter car world shirt",
+    "tp": "tat pass bracelet",
+    "qe": "quuarux earrings",
+    "ce": "car world emblem earrings",
+    "dc": "william banks devotional candle",
+    "ap": "attendant pendant",
+    "vp": "vip pass",
+    "sb": "car world supper book",
+    "bk": "car world supper book 10 pack",
+    "pb": "pamphlet bundle",
+    "w": "car world water",
+    "p": "enter car world poster",
+    "a": "the artifact",
+    "dp": "devotion point",
+    # Backward
+    "save the attendants shirt": "sa",
+    "magwadi shirt": "ms",
+    "quuarux gas wars shirt": "qg",
+    "enter car world shirt": "ec",
+    "tat pass bracelet": "tp",
+    "quuarux earrings": "qe",
+    "car world emblem earrings": "ce",
+    "william banks devotional candle": "dc",
+    "attendant pendant": "ap",
+    "vip pass": "vp",
+    "car world supper book": "sb",
+    "car world supper book 10 pack": "bk",
+    "pamphlet bundle": "pb",
+    "car world water": "w",
+    "enter car world poster": "p",
+    "the artifact": "a",
+    "devotion point": "dp",
+}
+COMMODITY_TYPE_MAP = {0: "ticket", 1: "clothing", 2: "art"}
 
 
 # TODO: Make this into a lambda layer to be used as a common CWLibrary
@@ -85,7 +124,7 @@ class CWDynamoClient:
 
     # NOTE: This only works for 1mb of data atm (need to add logic for pagination)
     def get_all(self, table_name):
-        self.client.scan(TableName=table_name)["Items"]
+        return self.client.scan(TableName=table_name)["Items"]
 
     def create(
         self,
@@ -170,6 +209,35 @@ class CWDynamoClient:
             f"CWDynamo Client Error: Unhandled data type provided for value: {value}"
         )
 
+    # Example:
+    #   {"N": "991"}, {"S": "art"}, etc
+    def unformat_dynamo_value_mapping(self, dynamo_value_mapping):
+        dynamo_data_type = next(iter(dynamo_value_mapping.keys()))
+        value = next(iter(dynamo_value_mapping.values()))
+
+        if dynamo_data_type == "S":
+            return value
+        if dynamo_data_type == "N":
+            value = float(value)
+            return int(value) if value.is_integer() else value
+        if dynamo_data_type == "BOOL":
+            return bool(value)
+        # TODO: Implement
+        if dynamo_data_type == "M":
+            raise Exception(
+                "CWDynamo Client Error: Unpacking of SS type not yet supported"
+            )
+        # TODO: Implement
+        if dynamo_data_type == "SS":
+            raise Exception(
+                "CWDynamo Client Error: Unpacking of SS type not yet supported"
+            )
+
+        # Data type doesn't match an expected value
+        raise Exception(
+            f"CWDynamo Client Error: Unhandled data type provided: value/type - {value}/{dynamo_data_type}"
+        )
+
     def format_update_expression(self, field_name_list):
         update_expression = f"SET {field_name_list[0]} = :{field_name_list[0]}"
         field_name_list.remove(field_name_list[0])
@@ -180,74 +248,25 @@ class CWDynamoClient:
         return update_expression
 
 
-########################################################
-# Controller Action Handler
-########################################################
-def handler(event, context):
-    # parse request
-    try:
-        request = {
-            "type": event["requestContext"]["http"]["method"],
-            "action": event["rawPath"].replace("/commerce/", ""),
-            "body": json.loads(event["body"]),
-        }
-    except Exception as e:
-        error = {
-            "message": str(e),
-            "stack": traceback.format_exc(),
-        }
-        print(
-            f"SERVER_ERROR: Failed to parse event into request format: {event} | Encountered error -- {error}"
-        )
-        return {
-            "code": 500,
-            "message": f"SERVER_ERROR: Failed to parse event into request format: {event}",
-            "error": error,
-        }
-
-    # initialize dynamo client
-    cw_dynamo_client = CWDynamoClient()
-
-    try:
-        # direct to proper controller action
-        if request["action"] == "secret":
-            res = create_payment_intent(
-                create_payment_intent_body=request["body"],
-                dynamo_client=cw_dynamo_client,
-            )
-        elif request["action"] == "webhook":
-            res = handle_webhook(
-                stripe_event=request["body"], dynamo_client=cw_dynamo_client
-            )
-        elif request["action"] == "commodities":
-            res = get_commodity_list(dynamo_client=cw_dynamo_client)
-        elif request["action"] == "ses":
-            res = ses_test()
-    except Exception as e:
-        error = {
-            "message": str(e),
-            "stack": traceback.format_exc(),
-        }
-        print(f"SERVER_ERROR: Unhandled server error encountered -- {error}")
-        return {
-            "code": 500,
-            "message": "SERVER_ERROR: Unhandled server error encountered",
-            "error": error,
-        }
-
-    # add headers for CORS
-    res["headers"] = {
-        "Access-Control-Allow-Headers": "*",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "OPTIONS,POST,GET",
-    }
-
-    return res
-
-
 def get_commodity_list(dynamo_client):
     try:
+        # Retrieve backend list of commodities
         commodities = dynamo_client.get_all("commodities")
+
+        # Convert Dynamo values mappings to raw values
+        for commodity in commodities:
+            commodity["quantity"] = dynamo_client.unformat_dynamo_value_mapping(
+                commodity["quantity"]
+            )
+            commodity["price"] = dynamo_client.unformat_dynamo_value_mapping(
+                commodity["price"]
+            )
+            commodity["product_name"] = dynamo_client.unformat_dynamo_value_mapping(
+                commodity["product_name"]
+            )
+            commodity["product_type"] = dynamo_client.unformat_dynamo_value_mapping(
+                commodity["product_type"]
+            )
     except Exception as e:
         error = {
             "message": str(e),
@@ -307,17 +326,17 @@ def update_transaction(update_transaction_body, dynamo_client):
         }
 
 
-def create_payment_intent(create_payment_intent_body, dynamo_client):
+def create_payment_intent(create_payment_intent_body, user_id, dynamo_client):
     # Validate cart body
     try:
         cart = create_payment_intent_body["cart"]
         for commodity in cart:
             commodity_name = commodity["server_name"]
             quantity = commodity["quantity"]
-            type = commodity["type"]
+            type = int(commodity["type"])
 
             # Clothing has a size
-            if type == CLOTHING_TYPE_VALUE:
+            if COMMODITY_TYPE_MAP[type] == "clothing":
                 size = commodity["size"]
     except Exception as e:
         error = {
@@ -358,11 +377,21 @@ def create_payment_intent(create_payment_intent_body, dynamo_client):
     #   are communicated after-the-fact to Car World via our own subscription to processed
     #   payment events emitted by Stripe.
     try:
+        # NOTE: Convert Cart to short string
+        #   The Stripe metadata is limited in it's allowed size (discovered during testing).
+        #   To allow for varied and large orders, we do a manual "shortening" of the cart,
+        #   creating a string less suited for human-reading but better for transport.
+        #   This method takes this directly-translated map to string:
+        #     [{'server_name': 'magwadi shirt', 'quantity': 1, 'type': 1, 'size': 'l'}, {'server_name': 'quuarux earrings', 'quantity': 2, 'type': 2}]
+        #   and concatenates it to this:
+        #     1_ms_1_l*2_qe_2
+        short_cart_string = cw_cart_to_short_string(cart)
+
         stripe_payment_intent = stripe.PaymentIntent.create(
             amount=amount,
             currency="usd",
             automatic_payment_methods={"enabled": True},
-            metadata={"cart": str(cart)},
+            metadata={"cart": short_cart_string, "usr": user_id},
         )
 
         client_secret = stripe_payment_intent["client_secret"]
@@ -381,10 +410,10 @@ def create_payment_intent(create_payment_intent_body, dynamo_client):
 
     return {
         "code": 200,
-        "message": "Succesfully created transaction",
+        "message": "Succesfully created Stripe PaymentIntent",
         "body": {
             "client_secret": client_secret,
-            "transaction_record_id": transaction_id,
+            "stripe_payment_intent_id": transaction_id,
         },
     }
 
@@ -451,7 +480,7 @@ def format_commodity_list_from_cart(cart):
         )
 
         # postfix size if applicable
-        if commodity["type"] == CLOTHING_TYPE_VALUE:
+        if COMMODITY_TYPE_MAP[int(commodity["type"])] == "clothing":
             size = commodity["size"]
             formatted_commodity_name = formatted_commodity_name + "_" + size
 
@@ -499,6 +528,55 @@ def update_transaction_record_webhook_call(
     return response
 
 
+# Explanation on formatting:
+# type_shortName_quantity(_size)...*type_shortName_quantity(_size)
+# >>> string = "T_A_x*T_A_x_y*T_A_x"
+# >>> string.split("*")
+# ['1_sa_1_s', '2_tp_3', '1_ms_2_l']
+# >>>
+def cw_cart_to_short_string(cart):
+    short_string = ""
+    for index, commodity in enumerate(cart):
+        if not index == 0:
+            short_string += "*"
+
+        short_string += f'{commodity["quantity"]}_{STRIPE_ABREVIATED_NAME_MAP[commodity["server_name"]]}_{commodity["quantity"]}'
+
+        if "size" in commodity:
+            short_string += f'_{commodity["size"]}'
+    return short_string
+
+
+# Explanation on formatting:
+# type_shortName_quantity(_size)...*type_shortName_quantity(_size)
+# >>> string = "T_A_x*T_A_x_y*T_A_x"
+# >>> string.split("*")
+# ['1_sa_1_s', '2_tp_3', '1_ms_2_l']
+# >>>
+def cw_cart_from_short_string(short_string):
+    cart = []
+    commodity_list = short_string.split("*")
+    for commodity in commodity_list:
+        # Process shortened commodity string
+        commodity_props = commodity.split("_")
+        type = int(commodity_props[0])
+        abreviated_name = commodity_props[1]
+        quantity = int(commodity_props[2])
+
+        # Assign standard cart format
+        cart_obj = {
+            "type": type,
+            "server_name": STRIPE_ABREVIATED_NAME_MAP[abreviated_name],
+            "quantity": quantity,
+        }
+
+        if COMMODITY_TYPE_MAP[type] == "clothing":
+            cart_obj.update({"size": commodity_props[3]})
+
+        cart.append(cart_obj)
+    return cart
+
+
 def handle_webhook(stripe_event, dynamo_client):
     try:
         event = stripe.Event.construct_from(stripe_event, stripe.api_key)
@@ -528,12 +606,29 @@ def handle_webhook(stripe_event, dynamo_client):
 
         # Get dynamo-friendly commodity list
         # NOTE: use of #eval, as the cart dict is stored as a str on Stripe's end
-        cart = eval(event_data["metadata"]["cart"])
+        cart = cw_cart_from_short_string(cart)
         commodity_list = format_commodity_list_from_cart(cart)
+
+        user_id = event_data["metadata"]["usr"]
 
         print(f"DEBUG - cart metadata: {event_data['metadata']['cart']}")
         print(f"DEBUG - commodity_list: {commodity_list}")
+    except Exception as e:
+        error = {
+            "message": str(e),
+            "stack": traceback.format_exc(),
+        }
+        print(
+            f"SERVER_ERROR: Failed to parse Transaction data from Stripe callback | {error}"
+        )
+        return {
+            "code": 500,
+            "message": "SERVER_ERROR: Failed to parse Transaction data from Stripe callback",
+            "error": error,
+        }
 
+    try:
+        cw_user_record = dynamo_client.get(user_id)  # TODO: match actual method def
     except Exception as e:
         error = {
             "message": str(e),
@@ -758,57 +853,82 @@ def cw_email_format_shipping(shipping):
     return shipping_html
 
 
-def ses_test():
-    ses_client = boto3.client("ses")
-
-    products = ["array product", "another array product"]
-    body_html = f"""
-    <html>
-        <head></head>
-        <body>
-        <h1>Car World Store: Order Detail</h1>
-        <hr/>
-        <p>
-            stuff would go here!
-        </p>
-        <p>
-            {products}
-        </p>
-        <p>
-            another paragraph
-        </p>
-        </body>
-    </html>
-                    """
-
-    email_message = {
-        "Body": {
-            "Html": {
-                "Charset": "utf-8",
-                "Data": body_html,
-            },
-        },
-        "Subject": {
-            "Charset": "utf-8",
-            "Data": "New Order placed on carworld.love!",
-        },
-    }
-
-    ses_response = ses_client.send_email(
-        Destination={
-            "ToAddresses": ["themattsaucedo@gmail.com"],
-        },
-        Message=email_message,
-        Source=SES_SENDER_EMAIL,
-        ConfigurationSetName=SES_CONFIG_ID,
-    )
-
-    return {
-        "code": 200,
-        "message": f"ses response id received: {ses_response['MessageId']}.",
-    }
-
-
 # TODO: Queues a retry of a particular db write for the CWRetryDatabaseActionLambda
 def queue_cw_db_retry_lambda(controller, action, db_actions):
     """"""
+
+
+########################################################
+# Controller Action Handler
+########################################################
+def handler(event, context):
+    # parse request
+    try:
+        request = {
+            "type": event["requestContext"]["http"]["method"],
+            "action": event["rawPath"].replace("/commerce/", ""),
+        }
+    except Exception as e:
+        error = {
+            "message": str(e),
+            "stack": traceback.format_exc(),
+        }
+        print(
+            f"SERVER_ERROR: Failed to parse event into request format: {event} | Encountered error -- {error}"
+        )
+        return {
+            "code": 500,
+            "message": f"SERVER_ERROR: Failed to parse event into request format: {event}",
+            "error": error,
+        }
+
+    # initialize dynamo client
+    cw_dynamo_client = CWDynamoClient()
+
+    # direct to proper controller action
+    try:
+        if request["action"] == "secret":
+            # Given that this is a protected action, the JWT provided in the header
+            # has already been parsed, with the UserID being provided in the reqContext
+            user_id = event["requestContext"]["authorizer"]["lambda"]["user_id"]
+
+            # /secret has a request body
+            request["body"] = json.loads(event["body"])
+
+            # Create PaymentIntent
+            res = create_payment_intent(
+                create_payment_intent_body=request["body"],
+                user_id=user_id,
+                dynamo_client=cw_dynamo_client,
+            )
+        elif request["action"] == "webhook":
+            # /webhook has a request body
+            request["body"] = json.loads(event["body"])
+
+            res = handle_webhook(
+                stripe_event=request["body"], dynamo_client=cw_dynamo_client
+            )
+        elif request["action"] == "commodities":
+            res = get_commodity_list(dynamo_client=cw_dynamo_client)
+        else:
+            raise Exception(f'Invalid route: {request["action"]}')
+    except Exception as e:
+        error = {
+            "message": str(e),
+            "stack": traceback.format_exc(),
+        }
+        print(f"SERVER_ERROR: Unhandled server error encountered -- {error}")
+        return {
+            "code": 500,
+            "message": "SERVER_ERROR: Unhandled server error encountered",
+            "error": error,
+        }
+
+    # add headers for CORS
+    res["headers"] = {
+        "Access-Control-Allow-Headers": "*",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "OPTIONS,POST,GET",
+    }
+
+    return res

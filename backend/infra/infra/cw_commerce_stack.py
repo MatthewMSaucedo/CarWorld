@@ -15,22 +15,25 @@ from aws_cdk.aws_apigatewayv2_integrations_alpha import (
     HttpUrlIntegration,
     HttpLambdaIntegration,
 )
+from aws_cdk.aws_apigatewayv2_authorizers_alpha import (
+    HttpLambdaResponseType,
+    HttpLambdaAuthorizer,
+)
 from constructs import Construct
 
 
 class CWCommerceStack(Stack):
-    def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
+    def __init__(
+        self, scope: Construct, construct_id: str, cw_core_stack: Stack, **kwargs
+    ) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        boto_session = boto3.Session(profile_name="personal")
-        self.transaction_salt = "5@&uS2SWX^WAoSiZ"
-
         # Obtain secrets
+        boto_session = boto3.Session(profile_name="personal")
         self.ssm = boto_session.client("ssm", region_name="us-east-1")
         self.stripe_secret = self.obtain_ssm_client_secret(
             secret_name="/cw/commerce/stripe/dev/key"
         )
-        # self.jwt_secret = self.obtain_ssm_client_secret(secret_name="/cw/auth/jwtSecret")
 
         # Create commerce lambda controller and database
         self.cw_transaction_table = self.create_cw_transaction_table()
@@ -44,7 +47,11 @@ class CWCommerceStack(Stack):
         # Initialize AmazonSES and grant Send permissions to the Commerce Lambda
         self.cw_ses_service = self.create_cw_ses_service(self.cw_commerce_lambda)
 
-        self.create_commerce_api_gw(self.cw_commerce_lambda["function"])
+        # Tie Commerce Lambda to API Gateway
+        self.create_commerce_api_gw(
+            commerce_lambda=self.cw_commerce_lambda["function"],
+            validator_lambda=cw_core_stack.cw_validator_lambda["function"],
+        )
 
     def obtain_ssm_client_secret(self, secret_name):
         jwt_secret = self.ssm.get_parameter(Name=secret_name, WithDecryption=True)
@@ -139,10 +146,7 @@ class CWCommerceStack(Stack):
             role=commerce_lambda_role,
             code=lambdaFx.Code.from_asset("./lambda/commerce/"),
             description="CarWorld Commerce Lambda, to handle purchases",
-            environment={
-                "stripe_secret": stripe_secret,
-                "transaction_salt": self.transaction_salt,
-            },
+            environment={"stripe_secret": stripe_secret},
             layers=[lambda_layer],
             timeout=Duration.seconds(15),
         )
@@ -169,11 +173,6 @@ class CWCommerceStack(Stack):
                             "ses:SendBulkTemplatedEmail",
                         ],
                         resources=["*"],
-                        # conditions={
-                        # "StringEquals": {
-                        # "ses:FromAddress": "themattsaucedo@gmail.com",
-                        # },
-                        # },
                     )
                 ],
             )
@@ -184,7 +183,15 @@ class CWCommerceStack(Stack):
 
         return ses_config_set
 
-    def create_commerce_api_gw(self, commerce_lambda):
+    def create_commerce_api_gw(self, commerce_lambda, validator_lambda):
+        # Create CarWorld JWT Request Authorizer
+        lambda_authorizer = HttpLambdaAuthorizer(
+            "CWRequestValidator",
+            validator_lambda,
+            response_types=[HttpLambdaResponseType.SIMPLE],
+        )
+
+        # Create Commerce API GateWay
         commerce_api = apigw.HttpApi(
             scope=self,
             id="cw-commerce-api",
@@ -204,24 +211,25 @@ class CWCommerceStack(Stack):
         commerce_controller = HttpLambdaIntegration(
             "cw-commerce-controller", commerce_lambda
         )
+
+        # Provide unique Stripe PaymentIntent secret to client
         commerce_api.add_routes(
             path="/commerce/secret",
             methods=[apigw.HttpMethod.POST],
             integration=commerce_controller,
+            # This is a protected route
+            authorizer=lambda_authorizer,
         )
+        # Provide Stripe Servers an endpoint to update CW on Transactions
         commerce_api.add_routes(
             path="/commerce/webhook",
             methods=[apigw.HttpMethod.POST],
             integration=commerce_controller,
         )
+        # Provide commodity list to FE
         commerce_api.add_routes(
             path="/commerce/commodities",
             methods=[apigw.HttpMethod.GET],
-            integration=commerce_controller,
-        )
-        commerce_api.add_routes(
-            path="/commerce/ses",
-            methods=[apigw.HttpMethod.POST],
             integration=commerce_controller,
         )
 
