@@ -252,21 +252,6 @@ def get_commodity_list(dynamo_client):
     try:
         # Retrieve backend list of commodities
         commodities = dynamo_client.get_all("commodities")
-
-        # Convert Dynamo values mappings to raw values
-        for commodity in commodities:
-            commodity["quantity"] = dynamo_client.unformat_dynamo_value_mapping(
-                commodity["quantity"]
-            )
-            commodity["price"] = dynamo_client.unformat_dynamo_value_mapping(
-                commodity["price"]
-            )
-            commodity["product_name"] = dynamo_client.unformat_dynamo_value_mapping(
-                commodity["product_name"]
-            )
-            commodity["product_type"] = dynamo_client.unformat_dynamo_value_mapping(
-                commodity["product_type"]
-            )
     except Exception as e:
         error = {
             "message": str(e),
@@ -279,11 +264,79 @@ def get_commodity_list(dynamo_client):
             "error": error,
         }
 
+    try:
+        # Format commodities for FE
+        fe_commodity_map = fe_commodity_map_from_dynamo_list(commodities, dynamo_client)
+    except Exception as e:
+        error = {
+            "message": str(e),
+            "stack": traceback.format_exc(),
+        }
+        print(
+            f"SERVER_ERROR: Failed to convert Dynamo commodity list to FE Mapping -- {error}"
+        )
+        return {
+            "code": 500,
+            "message": "SERVER_ERROR: Failed to convert Dynamo commodity list to FE Mapping",
+            "error": error,
+        }
+
     return {
         "code": 200,
         "message": "Successfully retreived commodity list",
-        "body": {"commodity_list": commodities},
+        "body": {"commodityList": fe_commodity_map},
     }
+
+
+def fe_commodity_map_from_dynamo_list(dynamo_commodity_list, dynamo_client):
+    fe_commodity_map = {}
+    for commodity in dynamo_commodity_list:
+        # Convert Dynamo values mappings to raw values
+        commodity["quantity"] = dynamo_client.unformat_dynamo_value_mapping(
+            commodity["quantity"]
+        )
+        commodity["product_name"] = dynamo_client.unformat_dynamo_value_mapping(
+            commodity["product_name"]
+        )
+        commodity["product_type"] = dynamo_client.unformat_dynamo_value_mapping(
+            commodity["product_type"]
+        )
+
+        # Dynamo stores each size of clothing separately.
+        # Consequently, we must make sure to capture the quantity of all
+        # of these different sizes, and aggregate them.
+        if commodity["product_type"] == "clothing":
+            name_and_size_array = commodity["product_name"].split("_")
+            commodity_name = name_and_size_array[0]
+            commodity_size = name_and_size_array[1]
+
+            # If we have already added this commodity to the map,
+            # merely update with the quantity of this new size.
+            if commodity_name in fe_commodity_map:
+                fe_commodity_map[commodity_name]["quantity"].update(
+                    {commodity_size: commodity["quantity"]}
+                )
+            # If we have yet to add this commodity to the map,
+            # add the commodity with a format that allows for the other sizes.
+            else:
+                fe_commodity_map.update(
+                    {
+                        commodity_name: {
+                            "quantity": {commodity_size: commodity["quantity"]},
+                            "commodityType": commodity["product_type"],
+                        }
+                    }
+                )
+        else:
+            fe_commodity_map.update(
+                {
+                    commodity["product_name"]: {
+                        "quantity": commodity["quantity"],
+                        "commodityType": commodity["product_type"],
+                    },
+                }
+            )
+    return fe_commodity_map
 
 
 def update_transaction(update_transaction_body, dynamo_client):

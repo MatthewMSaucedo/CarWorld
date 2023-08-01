@@ -83,7 +83,11 @@ function StripePaymentComponent() {
         // Create PaymentIntent
         fetch(CW_API_ENDPOINTS.commerce.secret, {
             method: "POST",
-            headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*"},
+            headers: {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*",
+                "Authorization": "TODO" // Grab token state
+            },
             body: JSON.stringify(paymentIntentPayload),
         })
             .then((res) => res.json())

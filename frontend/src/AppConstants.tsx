@@ -58,7 +58,8 @@ export const STRIPE_PUB_KEY = "pk_test_51MVNG0Edd7yLru5yTI1lXrQ3y9cTs01dMpm1K5nF
 
 export const CW_API_ENDPOINTS = {
   "commerce": {
-    "secret": "https://6vikh38ev7.execute-api.us-east-1.amazonaws.com/commerce/secret"
+    "secret": "https://6vikh38ev7.execute-api.us-east-1.amazonaws.com/commerce/secret",
+    "commodities": "https://6vikh38ev7.execute-api.us-east-1.amazonaws.com/commerce/commodities"
   }
 }
 
