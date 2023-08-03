@@ -1,15 +1,15 @@
 .cw-store-container {
     display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: space-evenly;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
     align-items: stretch;
     align-content: center;
 
     background-color: #f0ead6;
     // background-color: #228B22;
 
-    padding-top: 4rem;
+    padding-bottom: 10rem;
 
     // For store component
     .cw-store-nav-shopping-cart {

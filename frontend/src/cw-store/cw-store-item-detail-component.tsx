@@ -42,7 +42,7 @@ function CWStoreItemDetailComponent() {
   useEffect(() => {
       console.log("Checking stock of commodities on backend...")
 
-      // Create PaymentIntent
+      // Grab commodity details from backend
       fetch(CW_API_ENDPOINTS.commerce.commodities, {
           method: "GET",
           headers: {

@@ -1,11 +1,23 @@
+// Local imports
 import '../../../App.scss';
 import './cw-common-navbar.scss'
 import * as AppConstants from '../../../AppConstants';
+
+// React imports
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
+
+// 3rd party import
 import Button from 'react-bootstrap/Button';
 
+
+export interface CWCommonNavbarLink {
+    url: string,
+    name: string
+}
+
 function CWCommonNavbarComponent() {
+    // Left-Oriented Navbar links
     let navbarComponentLinksLeft: CWCommonNavbarLink[] = [
         {
             url: '../' + AppConstants.CW_ROUTES[AppConstants.CW_ROUTE_ENUM['videos']].path,
@@ -16,16 +28,6 @@ function CWCommonNavbarComponent() {
             name: 'Merch',
         },
     ]
-    let navbarComponentLinksRight: CWCommonNavbarLink[] = [
-        {
-            url: '../' + AppConstants.CW_ROUTES[AppConstants.CW_ROUTE_ENUM['wiki']].path,
-            name: 'Wiki',
-        },
-        {
-            url: '../' + AppConstants.CW_ROUTES[AppConstants.CW_ROUTE_ENUM['home']].path,
-            name: 'My Car World',
-        },
-    ]
     let navItemsLeft = navbarComponentLinksLeft.map((navbarLink: CWCommonNavbarLink)=>{
         return (
             <div className="cw-common-navbar-item">
@@ -34,7 +36,6 @@ function CWCommonNavbarComponent() {
                         onClick={() => navButtonClick(navbarLink.url)}
                         variant="primary"
                         size="lg"
-                        disabled={ navbarLink.name === "My Car World" ? true: false }
                     >
                         { navbarLink.name }
                     </Button>
@@ -42,6 +43,18 @@ function CWCommonNavbarComponent() {
             </div>
         )
     })
+
+    // Right-Oriented Navbar links
+    let navbarComponentLinksRight: CWCommonNavbarLink[] = [
+        {
+            url: '../' + AppConstants.CW_ROUTES[AppConstants.CW_ROUTE_ENUM['wiki']].path,
+            name: 'Wiki',
+        },
+        {
+            url: '../' + AppConstants.CW_ROUTES[AppConstants.CW_ROUTE_ENUM['my_carworld']].path,
+            name: 'My Car World',
+        },
+    ]
     let navItemsRight = navbarComponentLinksRight.map((navbarLink: CWCommonNavbarLink)=>{
         return (
             <div className="cw-common-navbar-item">
@@ -50,7 +63,7 @@ function CWCommonNavbarComponent() {
                         onClick={() => navButtonClick(navbarLink.url)}
                         variant="primary"
                         size="lg"
-                        disabled={ navbarLink.name === "My Car World" ? true: false }
+                        disabled={ navbarLink.name === "My Car World__TODO: REMOVE ME__" ? true : false }
                     >
                         { navbarLink.name }
                     </Button>
@@ -59,9 +72,10 @@ function CWCommonNavbarComponent() {
         )
     })
 
+    // Central Navbar link
     const homeLink = '../'
 
-    // navigation
+    // Navigation
     const navigate = useNavigate()
     const navButtonClick = (route: string) => {
         navigate(route)
@@ -69,10 +83,12 @@ function CWCommonNavbarComponent() {
 
     return (
         <div className="cw-common-navbar-wrapper">
+            {/* Set of left-centered nav buttons */}
             <div className="cw-common-navbar-item-grouping">
-                {/* set of requested standard nav buttons */}
                 { navItemsLeft }
             </div>
+
+            {/* Central Navbar button */}
             <div className="cw-common-navbar-item-grouping">
                 <div className="cw-common-navbar-home">
                     <b>
@@ -84,19 +100,14 @@ function CWCommonNavbarComponent() {
                         </Link>
                     </b>
                 </div>
-
             </div>
+
+            {/* Set of left-centered nav buttons */}
             <div className="cw-common-navbar-item-grouping">
-                {/* set of requested standard nav buttons */}
                 { navItemsRight }
             </div>
         </div>
     )
-}
-
-export interface CWCommonNavbarLink {
-    url: string,
-    name: string
 }
 
 export default CWCommonNavbarComponent

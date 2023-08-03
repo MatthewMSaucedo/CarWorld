@@ -1,0 +1,13 @@
+.my-carworld-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    align-items: stretch;
+    align-content: center;
+
+    // background-color: #f0ead6;
+    background-color: #228B22;
+
+    padding-top: 4rem;
+}

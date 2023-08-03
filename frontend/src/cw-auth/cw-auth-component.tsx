@@ -1,18 +1,21 @@
+// Local imports
 import '../App.scss';
 import './cw-auth.scss';
+import CWCommonNavbarComponent from '../cw-common/components/navbar/cw-common-navbar-component'
 
-function CWAuthComponent() {
+function MyCarWorldComponent() {
 
   const isAuthenticated: boolean = true
 
   return (
-    <div className="cw-common-page-container">
-        <div className="cw-common-auth-container">
-          { isAuthenticated }
+        <div className="cw-common-page-container">
+          { CWCommonNavbarComponent() }
+            <div className="my-carworld-container">
+              Hi.
+            </div>
         </div>
-    </div>
   );
 }
 
 
-export default CWAuthComponent
+export default MyCarWorldComponent

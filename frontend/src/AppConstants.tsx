@@ -8,6 +8,7 @@ import CWStoreItemDetailComponent from './cw-store/cw-store-item-detail-componen
 import CWWikiComponent from './cw-wiki/cw-wiki-component'
 import CWCartComponent from './cw-store/cw-cart-component'
 import CWPaymentProcessedComponent from './cw-store/stripe-components/payment-processed-component'
+import CWAuthComponent from './cw-auth/cw-auth-component'
 
 export const enum CW_ROUTE_ENUM {
   'home',
@@ -17,7 +18,8 @@ export const enum CW_ROUTE_ENUM {
   'wiki',
   'cart',
   'product',
-  'payment_processed'
+  'payment_processed',
+  'my_carworld'
 }
 export const CW_ROUTES = [
   {
@@ -52,15 +54,30 @@ export const CW_ROUTES = [
     path: 'payment_processed',
     element: <CWPaymentProcessedComponent />
   },
+  {
+    path: 'my_carworld',
+    element: <CWAuthComponent />
+  },
 ]
 
 export const STRIPE_PUB_KEY = "pk_test_51MVNG0Edd7yLru5yTI1lXrQ3y9cTs01dMpm1K5nFqzVAHkZ0PEhp8gnpqpJyuB2cbbkLI3FSDcxR9MmgNDUgikXM00MHFJnNAs"
+
+export const API_RETRY = 3
 
 export const CW_API_ENDPOINTS = {
   "commerce": {
     "secret": "https://6vikh38ev7.execute-api.us-east-1.amazonaws.com/commerce/secret",
     "commodities": "https://6vikh38ev7.execute-api.us-east-1.amazonaws.com/commerce/commodities"
-  }
+  },
+  "auth": {
+    "refresh": "https://.execute-api.us-east-1.amazonaws.com/auth/secret",
+    "login": "https://.execute-api.us-east-1.amazonaws.com/auth/secret",
+    "register": "https://.execute-api.us-east-1.amazonaws.com/auth/secret",
+    "guest": "https://.execute-api.us-east-1.amazonaws.com/auth/commodities"
+  },
+  "user": {
+    "grantddp": "https://.execute-api.us-east-1.amazonaws.com/user/grantddp"
+  },
 }
 
 export const STORE_ITEMS: CWStoreItem[] = [

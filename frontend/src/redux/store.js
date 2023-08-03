@@ -1,14 +1,36 @@
-import { configureStore } from "@reduxjs/toolkit"
-import { cwShoppingCartReducer } from "./shoppingCartSlice"
+// Redux
+import { configureStore, combineReducers } from "@reduxjs/toolkit"
+import storage from 'redux-persist/lib/storage';
+import { persistReducer, persistStore } from 'redux-persist';
+import thunk from 'redux-thunk';
 
-export default configureStore({
-  reducer: {
-    cwShoppingCart: cwShoppingCartReducer
-  }
+// Local Imports
+import { cwShoppingCartReducer } from "./shoppingCartSlice"
+import { cwUserReducer } from "./userSlice"
+
+// Group Reducers
+const rootReducer = combineReducers({
+  cwUser: cwUserReducer,
+  cwShoppingCart: cwShoppingCartReducer
+})
+
+// Signals to use LocalStorage for persistance
+const persistConfig = {
+  key: 'root',
+  storage,
+}
+
+// Persist the Reducers
+const persistedReducers = persistReducer(persistConfig, rootReducer)
+
+// Configure the Redux Store with the Reducers
+export const store = configureStore({
+  reducer: persistedReducers,
+  // Required with Persisted Reducers to prevent a browser error
+  middleware: [thunk]
 })
 
 
-// Infer the `RootState` and `AppDispatch` types from the store itself
+export const persistor = persistStore(store)
 export type RootState = ReturnType<typeof store.getState>
-// Inferred type: {posts: PostsState, comments: CommentsState, users: UsersState}
 export type AppDispatch = typeof store.dispatch

@@ -15,6 +15,10 @@ export class CWShoppingCart {
         this.size = this.contents.length
     }
 
+    static clearCart() {
+        return new CWShoppingCart()
+    }
+
     static staticAddToCart(cart: CWShoppingCart, entry: CWShoppingCartEntry) {
         const itemIsInCart: [boolean, number | undefined] = this.itemAlreadyInCart(cart, entry)
 
@@ -65,6 +69,8 @@ export class CWShoppingCart {
         } else {
             console.log("Unhandled CW Error: item chosen to remove not found in cart")
         }
+
+        return cart
     }
 
     static itemAlreadyInCart(cart: CWShoppingCart, entry: CWShoppingCartEntry): [boolean, number | undefined] {

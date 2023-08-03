@@ -27,9 +27,12 @@ export const cwShoppingCartSlice = createSlice({
     removeFromCart: (state, action: PayloadAction<CWShoppingCartEntry>) => {
       state = CWShoppingCart.staticRemoveFromCart(state, action.payload)
     },
+    clearCart: (state) => {
+      state = CWShoppingCart.staticClearCart()
+    },
   },
 })
 
 
-export const { updateCart, addToCart, removeFromCart } = cwShoppingCartSlice.actions
+export const { clearCart, updateCart, addToCart, removeFromCart } = cwShoppingCartSlice.actions
 export const cwShoppingCartReducer = cwShoppingCartSlice.reducer
