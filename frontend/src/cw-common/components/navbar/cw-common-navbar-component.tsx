@@ -30,16 +30,10 @@ function CWCommonNavbarComponent() {
     ]
     let navItemsLeft = navbarComponentLinksLeft.map((navbarLink: CWCommonNavbarLink)=>{
         return (
-            <div className="cw-common-navbar-item">
-                <b>
-                    <Button
-                        onClick={() => navButtonClick(navbarLink.url)}
-                        variant="primary"
-                        size="lg"
+            <div className="cw-navbar-item"
+                 onClick={() => navButtonClick(navbarLink.url)}
                     >
                         { navbarLink.name }
-                    </Button>
-                </b>
             </div>
         )
     })
@@ -57,17 +51,10 @@ function CWCommonNavbarComponent() {
     ]
     let navItemsRight = navbarComponentLinksRight.map((navbarLink: CWCommonNavbarLink)=>{
         return (
-            <div className="cw-common-navbar-item">
-                <b>
-                    <Button
-                        onClick={() => navButtonClick(navbarLink.url)}
-                        variant="primary"
-                        size="lg"
-                        disabled={ navbarLink.name === "My Car World__TODO: REMOVE ME__" ? true : false }
+            <div className="cw-navbar-item"
+                 onClick={() => navButtonClick(navbarLink.url)}
                     >
                         { navbarLink.name }
-                    </Button>
-                </b>
             </div>
         )
     })
@@ -82,18 +69,17 @@ function CWCommonNavbarComponent() {
     }
 
     return (
-        <div className="cw-common-navbar-wrapper">
+        <nav className="cw-navbar">
             {/* Set of left-centered nav buttons */}
-            <div className="cw-common-navbar-item-grouping">
+            <div className="cw-navbar-left-grouping">
                 { navItemsLeft }
             </div>
-
             {/* Central Navbar button */}
-            <div className="cw-common-navbar-item-grouping">
-                <div className="cw-common-navbar-home">
+            <div className="cw-navbar-central-grouping">
+                <div className="cw-navbar-home">
                     <b>
                         <Link
-                        className="cw-common-link"
+                        className="cw-link"
                         to={ homeLink }
                         >
                             Home
@@ -103,10 +89,10 @@ function CWCommonNavbarComponent() {
             </div>
 
             {/* Set of left-centered nav buttons */}
-            <div className="cw-common-navbar-item-grouping">
+            <div className="cw-navbar-right-grouping">
                 { navItemsRight }
             </div>
-        </div>
+        </nav>
     )
 }
 
