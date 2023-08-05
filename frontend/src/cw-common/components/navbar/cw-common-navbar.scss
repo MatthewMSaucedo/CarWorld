@@ -6,7 +6,7 @@
 
   // position: relative;
   padding: 0.5rem 0rem;
-  background-color: #fff;
+  background-color: #2a2727;
   color: black;
   box-shadow: 0 2px 2px 2px rgba(9, 9, 9, 0.23);
 
@@ -26,8 +26,6 @@
         align-items: center;
         align-content: space-evenly;
 
-        // margin-right: 4rem;
-        // margin-left: 4rem;
 
         .cw-navbar-home {
           // dat sick style bby
@@ -56,6 +54,7 @@
           text-decoration: none;
           color: yellow;
           font-size: .8em;
+          font-weight: bold;
         }
 
         .cw-navbar-item {
@@ -91,10 +90,13 @@
         // width: 20rem;
         .cw-navbar-item {
           // Style
-          background-color: #8064A2;
+          // background-color: #8064A2;
+          // background-color: #393433;
+          background-color: #393433;
           color: white;
           box-shadow: 0 2px 2px 2px rgba(9, 9, 9, 0.23);
           cursor: pointer;
+          font-weight: bold;
 
           // Size
           padding-right: 1rem;
@@ -131,10 +133,11 @@
         // width: 20rem;
         .cw-navbar-item {
           // Style
-          background-color: #8064A2;
+          background-color: #393433;
           color: white;
           box-shadow: 0 2px 2px 2px rgba(9, 9, 9, 0.23);
           cursor: pointer;
+          font-weight: bold;
 
           // Size
           padding-right: 1rem;

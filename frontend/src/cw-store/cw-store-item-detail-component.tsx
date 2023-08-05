@@ -121,7 +121,7 @@ function CWStoreItemDetailComponent() {
           Add to Cart
         </Button>
       ) : (
-        <Button className="cw-product-action-button"
+        <Button className="cw-product-out-of-stock"
             size="sm"
             variant="danger">
             OUT OF STOCK
@@ -166,7 +166,7 @@ function CWStoreItemDetailComponent() {
   const buyNowButton = (
     shouldShowAddToCartButton() ? (
      backendCommodityStates !== undefined && productIsInStock() ? (
-        <Button className="cw-product-action-button"
+        <Button className="cw-product-buy-now"
           as="a"
           variant="primary"
           onClick={ () => onClickBuyNow() }>
@@ -256,7 +256,7 @@ function CWStoreItemDetailComponent() {
             <Button className="cw-product-action-button"
                     as="a"
                     variant="primary"
-                    onClick={ () => navigate('/', { replace: true }) }>
+                    onClick={ () => navigate('/store', { replace: true }) }>
               Back to Store
             </Button>
           </div>

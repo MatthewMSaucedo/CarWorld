@@ -3,13 +3,15 @@
     flex-direction: column;
     flex-wrap: nowrap;
     justify-content: flex-start;
-    align-items: stretch;
+    align-items: center;
     align-content: center;
 
-    background-color: #f0ead6;
+    // background-color: #f0ead6;
+    background-color: #181716;
     // background-color: #228B22;
 
     padding-bottom: 10rem;
+    padding-top: 5rem;
 
     // For store component
     .cw-store-nav-shopping-cart {
@@ -24,6 +26,12 @@
       align-items: stretch;
       align-content: center;
 
+      .btn-primary {
+        border-color: #393433;
+        background-color: #393433;
+        font-weight: bold;
+        box-shadow: 0 2px 2px 2px rgba(9, 9, 9, 0.23);
+      }
 
       .cw-shopping-link-white {
           margin-top: 1em;
@@ -43,7 +51,7 @@
       display: flex;
       flex-direction: row;
       flex-wrap: wrap;
-      justify-content: space-evenly;
+      justify-content: center;
       align-items: stretch;
       align-content: center;
 
@@ -51,7 +59,7 @@
       width: 30rem;
 
       // box
-      margin-left: 2rem;
+      // margin-left: 2rem;
       margin-bottom: 3rem;
 
       display: flex;
@@ -63,6 +71,7 @@
 
       .item-image {
         width: 12em;
+        cursor: pointer;
       }
       .content {
         padding-right: .5em;
@@ -70,7 +79,9 @@
 
         text-align: center;
 
-        color: blue;
+        color: white;
+
+        cursor: pointer;
 
         .cw-common-link {
             text-decoration: none;
