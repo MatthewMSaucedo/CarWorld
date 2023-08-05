@@ -15,6 +15,7 @@ import { Button } from 'react-bootstrap';
 import Form from 'react-bootstrap/Form';
 import { addToCart, updateCart } from '../redux/shoppingCartSlice';
 import CWCommonLoadingComponent from '../cw-common/components/loading/cw-common-loading-component';
+import CWCommonNavbarComponent from '../cw-common/components/navbar/cw-common-navbar-component';
 
 // TS type for page param
 export type CWStoreItemDetailParams = {
@@ -121,7 +122,7 @@ function CWStoreItemDetailComponent() {
           Add to Cart
         </Button>
       ) : (
-        <Button className="cw-product-action-button"
+        <Button className="cw-product-out-of-stock"
             size="sm"
             variant="danger">
             OUT OF STOCK
@@ -166,7 +167,7 @@ function CWStoreItemDetailComponent() {
   const buyNowButton = (
     shouldShowAddToCartButton() ? (
      backendCommodityStates !== undefined && productIsInStock() ? (
-        <Button className="cw-product-action-button"
+        <Button className="cw-product-buy-now"
           as="a"
           variant="primary"
           onClick={ () => onClickBuyNow() }>
@@ -218,48 +219,50 @@ function CWStoreItemDetailComponent() {
     // Ternary to show a spinner if the API data is still loading
     // for the commodity states
     backendCommodityStates !== undefined ? (
-      <div className="cw-product-page-container">
+      <div>
+        <div className="cw-product-page-container">
 
-          {/* Column of non-highlighted images */}
-          { productImageMulti }
+            {/* Column of non-highlighted images */}
+            { productImageMulti }
 
-          {/* Column of highlighted image and actions */}
-          <div className="cw-product-actions-col">
+            {/* Column of highlighted image and actions */}
+            <div className="cw-product-actions-col">
 
-            {/* Title */}
-            <div className="cw-product-title">
-              {cwStoreItem.title}
+              {/* Title */}
+              <div className="cw-product-title">
+                {cwStoreItem.title}
+              </div>
+
+              {/* Cost */}
+              <div className="cw-product-price">
+                ${cwStoreItem.price}
+              </div>
+
+              {/* Highlighted image */}
+              <img className="cw-product-highlighted-pic-img"
+                src={ process.env.PUBLIC_URL + imageDisplayArray[numImages - 1] }
+                alt="This is a very cool item you would love to own"
+              />
+
+              { /* Description */ }
+              { productDescription }
+
+              {/* Size selector, if applicable */}
+              { sizeForm }
+
+              {/* Actions (button group?) */}
+              { addToCartButton }
+              { buyNowButton }
+
+              {/* Back button */}
+              <Button className="cw-product-action-button"
+                      as="a"
+                      variant="primary"
+                      onClick={ () => navigate('/store', { replace: true }) }>
+                Back to Store
+              </Button>
             </div>
-
-            {/* Cost */}
-            <div className="cw-product-price">
-              ${cwStoreItem.price}
-            </div>
-
-            {/* Highlighted image */}
-            <img className="cw-product-highlighted-pic-img"
-              src={ process.env.PUBLIC_URL + imageDisplayArray[numImages - 1] }
-              alt="This is a very cool item you would love to own"
-            />
-
-            { /* Description */ }
-            { productDescription }
-
-            {/* Size selector, if applicable */}
-            { sizeForm }
-
-            {/* Actions (button group?) */}
-            { addToCartButton }
-            { buyNowButton }
-
-            {/* Back button */}
-            <Button className="cw-product-action-button"
-                    as="a"
-                    variant="primary"
-                    onClick={ () => navigate('/', { replace: true }) }>
-              Back to Store
-            </Button>
-          </div>
+        </div>
       </div>
     ) : (<CWCommonLoadingComponent />)
   )

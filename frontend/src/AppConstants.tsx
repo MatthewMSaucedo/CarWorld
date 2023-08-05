@@ -82,6 +82,44 @@ export const CW_API_ENDPOINTS = {
 
 export const STORE_ITEMS: CWStoreItem[] = [
   {
+    title: 'Attendant Sponsorship Certificates',
+    price: 20,
+    serverName: 'attendant sponsorship certificate',
+    images: [
+      IMAGE_SRC.attendantSponsorshipCertImg1,
+    ],
+    description_paragraphs: [
+      "Spice up any outfit with this cute devotional piece! Each charm depicts the Tat Passes brandished on the right arms of William Banks and his Apostles, as per the Bridgekeeper’s demand."
+    ],
+    type: CWShoppingItemType["Art"]
+  },
+  {
+    title: 'Quuarax Earrings',
+    price: 30,
+    serverName: 'quuarux earrings',
+    images: [
+      IMAGE_SRC.quuaruxEarringsImg1,
+      IMAGE_SRC.quuaruxEarringsImg2,
+      IMAGE_SRC.quuaruxEarringsImg3,
+    ],
+    description_paragraphs: [
+      "Show queen with these impressionistic danglers every day wherever you want to go. If Quuarux did the Gas Wars then so can you, bitch ;)"
+    ],
+    type: CWShoppingItemType["Art"]
+  },
+  {
+    title: 'Car World Emblem Earrings',
+    price: 20,
+    serverName: 'car world emblem earrings',
+    images: [
+      IMAGE_SRC.carWorldEmblemEarringsImg1,
+    ],
+    description_paragraphs: [
+      "These simple logo studs represent both the planet and the movement. Wear them when you want."
+    ],
+    type: CWShoppingItemType["Art"]
+  },
+  {
     title: 'Save The Attendants',
     price: 25,
     serverName: 'save the attendants shirt',
@@ -159,44 +197,6 @@ export const STORE_ITEMS: CWStoreItem[] = [
    *   ],
    *   type: CWShoppingItemType["Art"]
    * }, */
-  {
-    title: 'Attendant Sponsorship Certificates',
-    price: 20,
-    serverName: 'attendant sponsorship certificate',
-    images: [
-      IMAGE_SRC.attendantSponsorshipCertImg1,
-    ],
-    description_paragraphs: [
-      "Spice up any outfit with this cute devotional piece! Each charm depicts the Tat Passes brandished on the right arms of William Banks and his Apostles, as per the Bridgekeeper’s demand."
-    ],
-    type: CWShoppingItemType["Art"]
-  },
-  {
-    title: 'Quuarax Earrings',
-    price: 30,
-    serverName: 'quuarux earrings',
-    images: [
-      IMAGE_SRC.quuaruxEarringsImg1,
-      IMAGE_SRC.quuaruxEarringsImg2,
-      IMAGE_SRC.quuaruxEarringsImg3,
-    ],
-    description_paragraphs: [
-      "Show queen with these impressionistic danglers every day wherever you want to go. If Quuarux did the Gas Wars then so can you, bitch ;)"
-    ],
-    type: CWShoppingItemType["Art"]
-  },
-  {
-    title: 'Car World Emblem Earrings',
-    price: 20,
-    serverName: 'car world emblem earrings',
-    images: [
-      IMAGE_SRC.carWorldEmblemEarringsImg1,
-    ],
-    description_paragraphs: [
-      "These simple logo studs represent both the planet and the movement. Wear them when you want."
-    ],
-    type: CWShoppingItemType["Art"]
-  },
   {
     title: 'Devotion Candle',
     price: 12,

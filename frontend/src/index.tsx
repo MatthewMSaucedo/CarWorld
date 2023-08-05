@@ -1,11 +1,16 @@
+// React
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import reportWebVitals from './reportWebVitals';
 
+// Local Style
 import './index.scss';
 import './App.scss';
+
+// Components
 import App from './App'
 
+// Redux
 import { store } from './redux/store'
 import { Provider } from 'react-redux'
 

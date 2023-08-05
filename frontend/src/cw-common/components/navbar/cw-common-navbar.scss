@@ -1,21 +1,25 @@
-.cw-common-navbar-wrapper {
-    // element contents orientation
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    justify-content: center;
-    align-items: center;
-    align-content: stretch;
+.cw-navbar {
+  height: 4rem;
+  width: 100%;
+  position: sticky;
+  top: 0;
 
-    // buffer inside navbar
-    // padding-left: 18rem;
-    // padding-right: 4rem;
+  // position: relative;
+  padding: 0.5rem 0rem;
+  // background: linear-gradient(#393433, #2a2727);
+  background: linear-gradient(#453f3d, #2a2727);
+  color: black;
+  box-shadow: 0 2px 2px 2px rgba(9, 9, 9, 0.23);
 
-    // padding outside navbar
-    padding-top: 1em;
-    padding-bottom: 4rem;
+  // element contents orientation
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: stretch;
+  align-content: space-evenly;
 
-    .cw-common-navbar-item-grouping {
+    .cw-navbar-central-grouping {
         display: flex;
         flex-direction: row;
         flex-wrap: wrap;
@@ -23,46 +27,51 @@
         align-items: center;
         align-content: space-evenly;
 
-        .cw-common-navbar-home {
-            // dat sick style bby
-            background-size: 6em 6em;
-            background-position: center center;
-            background-repeat: no-repeat;
-            background-image: url('/../public/cw-logo.svg');
 
-            min-height: 5em;
-            min-width: 6.5em;
+        .cw-navbar-home {
+          // dat sick style bby
+          background-size: 7em 7em;
+          background-position: center center;
+          background-repeat: no-repeat;
+          background-image: url('/../public/cw-logo.svg');
 
-            display: flex;
-            flex-direction: row;
-            flex-wrap: wrap;
-            justify-content: space-around;
-            align-items: center;
-            align-content: space-evenly;
+          min-height: 6em;
+          min-width: 6.5em;
 
+          cursor: pointer;
 
-            padding-bottom: 1.7em;
+          margin-top: 2rem;
 
-            .cw-common-link {
+          display: flex;
+          flex-direction: column;
+          flex-wrap: nowrap;
+          justify-content: flex-start;
+          align-items: stretch;
+          align-content: center;
 
-                text-decoration: none;
-                color: yellow;
-                // min-height: 100vh;
-                font-size: .6em;
-            }
-          }
-        .cw-common-navbar-item {
+          justify-content: center;
+          padding-bottom: 1.7em;
+          padding-left: 2.2em;
+        }
+        .cw-link {
+          text-decoration: none;
+          color: yellow;
+          font-size: .8em;
+          font-weight: bold;
+        }
+
+        .cw-navbar-item {
             .btn-primary, .btn-primary:hover, .btn-primary:active, .btn-primary:visited {
                 background-color: #8064A2 !important;
             }
 
             // box
-            margin-right: 6rem;
-            margin-left: 6rem;
+            // margin-right: 2rem;
+            // margin-left: 3rem;
             // margin-top: 1rem;
             // margin-bottom: 1rem;
 
-            .cw-common-link {
+            .cw-link {
                 text-decoration: none;
                 color: #379683;
                 // min-height: 100vh;
@@ -70,43 +79,89 @@
             }
         }
     }
-}
 
+    .cw-navbar-left-grouping {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        align-items: center;
+        align-content: center;
 
-.cw-landing-container {
-  /* orientation of contained html tags */
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: space-around;
-  align-items: center;
-  align-content: space-evenly;
+        flex: 0 0rem 20rem;
 
-  // page sizing
-  min-height: 100vh;
-  // font-size: calc(10px + 2vmin);
+        // width: 20rem;
+        .cw-navbar-item {
+          // Style
+          // background-color: #8064A2;
+          // background-color: #393433;
+          // background-color: #393433;
+          background: linear-gradient(#57504d, #393433);
+        // background: linear-gradient(#393433, #181716);
+          border-color: #393433;
+          color: white;
+          box-shadow: 0 2px 2px 2px rgba(9, 9, 9, 0.23);
+          cursor: pointer;
+          font-weight: bold;
 
-  // dat sick style bby
-  background-size: 1250px 1250px;
-  background-position: center center;
-  background-repeat: no-repeat;
-  background-image: url('/../public/cw-logo.svg');
+          // Size
+          padding-right: 1rem;
+          padding-left: 1rem;
+          padding-top: .8rem;
+          padding-bottom: .8rem;
 
-  .cw-landing-navbox {
-    min-height: 5vh;
-    min-height: 5vw;
+          // Border
+          margin-right: 1rem;
+          margin-left: 1rem;
+          margin-top: 3rem;
+          border-radius: 100%;
 
-    // border: 5px solid black;
+          .cw-navbar-link {
+              text-decoration: none;
+              color: #379683;
+              // min-height: 100vh;
+              // font-size: calc(5px + 2vmin);
+          }
+        }
 
-    margin-bottom: 190px;
-    .content {
-      // padding-top: 10px;
-      padding-right: 50px;
-      padding-left: 50px;
-      .cw-landing-link {
-        color: yellow;
-        text-decoration: none;
-      }
     }
-  }
+
+    .cw-navbar-right-grouping {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        align-items: center;
+        align-content: center;
+
+        flex: 0 0rem 20rem;
+
+        // width: 20rem;
+        .cw-navbar-item {
+          // Style
+          // background-color: #393433;
+          background: linear-gradient(#57504d, #393433);
+          color: white;
+          box-shadow: 0 2px 2px 2px rgba(9, 9, 9, 0.23);
+          cursor: pointer;
+          font-weight: bold;
+
+          // Size
+          padding-right: 1rem;
+          padding-left: 1rem;
+          padding-top: .8rem;
+          padding-bottom: .8rem;
+
+          // Border
+          margin-right: 1rem;
+          margin-left: 1rem;
+          margin-top: 3rem;
+          border-radius: 100%;
+
+          .cw-navbar-link {
+              text-decoration: none;
+              color: #379683;
+          }
+        }
+    }
 }

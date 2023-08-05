@@ -1,28 +1,32 @@
-import CWCommonNavbarComponent, { CWCommonNavbarLink } from '../cw-common/components/navbar/cw-common-navbar-component'
+import './cw-home.scss'
+import '../App.scss'
+
+// Local Components
+import CWCommonNavbarComponent from '../cw-common/components/navbar/cw-common-navbar-component'
 import CWStoreComponent from '../cw-store/cw-store-component'
 
+// Yt player
 import YouTube from 'react-youtube'
-
-import React from 'react'
 import ReactPlayer from 'react-player'
+
+// React
+import React from 'react'
 
 
 function CWHomeComponent() {
 
   return (
-    <div className="cw-common-page-container">
+    <div className="cw-home-container">
 
       {/* Navbar */}
       { CWCommonNavbarComponent() }
 
       {/* Enter CarWorld Video */}
-      <div className="cw-common-content-container">
+      <div className="cw-home-video-container">
         <ReactPlayer
           controls={true}
           playing={true}
           loop={true}
-          width={'35em'}
-          height={'20em'}
           url='https://www.youtube.com/watch?v=FDZsqouKQ3M&t=1s'
         />
       </div>

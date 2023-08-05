@@ -1,4 +1,5 @@
-import '../App.scss';
+import '../App.scss'
+import './cw-wiki.scss'
 
 import CWCommonNavbarComponent from '../cw-common/components/navbar/cw-common-navbar-component'
 
