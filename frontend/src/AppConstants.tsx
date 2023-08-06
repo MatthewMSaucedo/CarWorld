@@ -8,7 +8,7 @@ import CWStoreItemDetailComponent from './cw-store/cw-store-item-detail-componen
 import CWWikiComponent from './cw-wiki/cw-wiki-component'
 import CWCartComponent from './cw-store/cw-cart-component'
 import CWPaymentProcessedComponent from './cw-store/stripe-components/payment-processed-component'
-import CWAuthComponent from './cw-auth/cw-auth-component'
+import CWAuthComponent from './my-carworld/my-carworld-component'
 
 export const enum CW_ROUTE_ENUM {
   'home',

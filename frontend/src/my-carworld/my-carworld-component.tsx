@@ -1,7 +1,7 @@
 // Local imports
 import '../App.scss';
 import CWCommonNavbarComponent from '../cw-common/components/navbar/cw-common-navbar-component';
-import './cw-auth.scss';
+import './my-carworld.scss';
 
 function MyCarWorldComponent() {
 
