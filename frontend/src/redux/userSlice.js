@@ -1,10 +1,10 @@
 // Local Imports
-import { CWUser } from '../cw-auth/models/cw-user'
+import { CWUser } from '../my-carworld/auth/models/cw-user'
+import { CWUserType } from '../my-carworld/auth/models/cw-user'
 
 // Redux
 import { createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
-import { CWUserType } from '../cw-auth/models/cw-user'
 
 
 const initialState: CWUser = {

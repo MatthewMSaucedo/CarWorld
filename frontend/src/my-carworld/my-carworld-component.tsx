@@ -1,17 +1,31 @@
-// Local imports
+// Local Styled
 import '../App.scss';
-import CWCommonNavbarComponent from '../cw-common/components/navbar/cw-common-navbar-component';
 import './my-carworld.scss';
+
+// Local Components
+import CWCommonNavbarComponent from '../cw-common/components/navbar/cw-common-navbar-component';
+
+// Redux
+import { useState, useEffect } from "react"
+import { useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
+import { RootState } from '../redux/store'
+import CWProfileComponent from './cw-profile/cw-profile-component';
+import CWAuthComponent from './auth/auth-component';
+
 
 function MyCarWorldComponent() {
 
-  const isAuthenticated: boolean = true
+  // Redux
+  let { cwUser } = useSelector((state: RootState) => state)
+  const dispatch = useDispatch()
+
 
   return (
     <div>
       { CWCommonNavbarComponent() }
       <div className="my-carworld-container">
-        Nice
+        { cwUser.isLoggedIn ? CWProfileComponent() : CWAuthComponent() }
       </div>
     </div>
   )

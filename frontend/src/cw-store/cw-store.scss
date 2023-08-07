@@ -1,13 +1,14 @@
 .cw-store-container {
     display: flex;
-    flex-direction: column;
-    flex-wrap: nowrap;
-    justify-content: flex-start;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
     align-items: center;
-    align-content: center;
+    align-content: flex-start;
 
-    padding-bottom: 10rem;
-    padding-top: 5rem;
+    min-height: 100vh;
+
+    margin-top: 4rem;
 
     // For store component
     .cw-store-nav-shopping-cart {
@@ -21,6 +22,8 @@
       justify-content: space-evenly;
       align-items: stretch;
       align-content: center;
+
+      overflow: auto;
 
       .btn-primary {
         background: linear-gradient(#57504d, #393433);
@@ -44,12 +47,17 @@
     }
 
    .cw-store-items-container {
+      margin-top: 4rem;
+
       display: flex;
       flex-direction: row;
       flex-wrap: wrap;
       justify-content: space-around;
       align-items: stretch;
       align-content: center;
+
+      // flex: 0 0rem 120rem;
+      overflow: auto;
 
     .cw-store-item {
       width: 20rem;

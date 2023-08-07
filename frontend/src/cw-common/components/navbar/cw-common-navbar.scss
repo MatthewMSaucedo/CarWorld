@@ -1,3 +1,7 @@
+// TODO: For mitzi in morn
+// I need to investigate if there is an r packacgethat tells you
+// what packages your script depends on
+
 .cw-navbar {
   height: 4rem;
   width: 100%;
@@ -65,17 +69,9 @@
                 background-color: #8064A2 !important;
             }
 
-            // box
-            // margin-right: 2rem;
-            // margin-left: 3rem;
-            // margin-top: 1rem;
-            // margin-bottom: 1rem;
-
             .cw-link {
                 text-decoration: none;
                 color: #379683;
-                // min-height: 100vh;
-                // font-size: calc(5px + 2vmin);
             }
         }
     }
@@ -88,7 +84,7 @@
         align-items: center;
         align-content: center;
 
-        flex: 0 0rem 20rem;
+        flex: 0 0rem 40rem;
 
         // width: 20rem;
         .cw-navbar-item {
@@ -124,6 +120,35 @@
           }
         }
 
+        .cw-navbar-highlighted-item {
+          // Style
+          // background-color: #393433;
+          background: linear-gradient(#57504d, #393433);
+          // color: yellow;
+          color: #f8ed62;
+          cursor: pointer;
+          font-weight: bold;
+
+          box-shadow: 0 2px 2px 2px #e9d700;
+
+          // Size
+          padding-right: 1rem;
+          padding-left: 1rem;
+          padding-top: .8rem;
+          padding-bottom: .8rem;
+
+          // Border
+          margin-right: 1rem;
+          margin-left: 1rem;
+          margin-top: 3rem;
+          border-radius: 100%;
+
+          .cw-navbar-link {
+              text-decoration: none;
+              color: #379683;
+          }
+        }
+
     }
 
     .cw-navbar-right-grouping {
@@ -134,9 +159,20 @@
         align-items: center;
         align-content: center;
 
-        flex: 0 0rem 20rem;
+        // Force fixed size
+        flex: 0 0rem 40rem;
 
-        // width: 20rem;
+        .shopping-cart-img {
+          text-decoration: none;
+          color: #f8ed62;
+          // box-shadow: 0 0 0 2px #e9d700;
+          font-size: calc(20px + 2vmin);
+          // float-right: 50px;
+          // padding-bottom: 5px;
+          // padding-right: 300px;
+          // width: 20rem;
+        }
+
         .cw-navbar-item {
           // Style
           // background-color: #393433;
@@ -145,6 +181,40 @@
           box-shadow: 0 2px 2px 2px rgba(9, 9, 9, 0.23);
           cursor: pointer;
           font-weight: bold;
+
+          // Size
+          padding-right: 1rem;
+          padding-left: 1rem;
+          padding-top: .8rem;
+          padding-bottom: .8rem;
+
+          // Border
+          margin-right: 1rem;
+          margin-left: 1rem;
+          margin-top: 3rem;
+          border-radius: 100%;
+
+          .cw-navbar-link {
+              text-decoration: none;
+              color: #379683;
+          }
+        }
+        .cw-navbar-highlighted-item {
+          // Style
+          // background-color: #393433;
+          background: linear-gradient(#57504d, #393433);
+          // color: #e9d700;
+          // color: yellow;
+          color: #f8ed62;
+          // color: #FDDD5C;
+          // color: yellow;
+          cursor: pointer;
+          font-weight: bold;
+
+          // box-shadow: 0 2px 2px 2px #e9d700;
+          // box-shadow: 0 2px 2px 2px yellow;
+          box-shadow: 0 2px 2px 2px #e9d700;
+          // box-shadow: 0 0 0 2px #e9d700;
 
           // Size
           padding-right: 1rem;

@@ -6,7 +6,6 @@ import CWCommonNavbarComponent from '../cw-common/components/navbar/cw-common-na
 import CWStoreComponent from '../cw-store/cw-store-component'
 
 // Yt player
-import YouTube from 'react-youtube'
 import ReactPlayer from 'react-player'
 
 // React

@@ -1,3 +1,15 @@
 .cw-wiki-text-block {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    align-items: stretch;
+    align-content: center;
+
+    overflow: auto;
+
+    height: 100vh;
+
     color: white;
+
 }

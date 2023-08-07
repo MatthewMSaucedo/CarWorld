@@ -1,5 +1,5 @@
 import jwt_decode from "jwt-decode"
-import { CW_API_ENDPOINTS, API_RETRY } from '../../AppConstants'
+import { CW_API_ENDPOINTS, API_RETRY } from '../../../AppConstants'
 
 export type CWBackendTokenDecoded = {
     exp: number

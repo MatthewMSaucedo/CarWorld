@@ -6,10 +6,7 @@ import CWCommonNavbarComponent from '../cw-common/components/navbar/cw-common-na
 function CWWikiComponent() {
     return (
         <div>
-            <div className="cw-common-page-header">
-                { CWCommonNavbarComponent() }
-            </div>
-
+            { CWCommonNavbarComponent() }
             <div className="cw-common-page-container">
                 <div className="cw-wiki-text-block">
                     <p>
@@ -49,10 +46,12 @@ function CWWikiComponent() {
 
                     * = Fiancé-Apostle
                 </div>
-                <p>
-                    William Banks is physically cared for by Guardian Tej Khanna.
-                    William Banks is emotionally cared for by Actor Caroline Yost.
-                </p>
+                <div className="cw-wiki-text-block">
+                    <p>
+                        William Banks is physically cared for by Guardian Tej Khanna.
+                        William Banks is emotionally cared for by Actor Caroline Yost.
+                    </p>
+                </div>
             </div>
         </div>
     )

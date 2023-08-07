@@ -1,10 +1,15 @@
 .cw-home-container {
     display: flex;
     flex-direction: column;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     justify-content: flex-start;
     align-items: center;
     align-content: center;
+
+    // Makes background grow to fit components
+    overflow: auto;
+    color: white;
+
 
     .cw-home-video-container {
         padding-top: 6rem;

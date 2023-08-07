@@ -3,20 +3,43 @@ import '../../../App.scss';
 import './cw-common-navbar.scss'
 import * as AppConstants from '../../../AppConstants';
 
-// React imports
-import { Link } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
+// React Hooks
+import { useNavigate, useLocation } from 'react-router-dom'
+import { useState, useEffect } from "react"
 
-// 3rd party import
-import Button from 'react-bootstrap/Button';
+// Redux
+import { useSelector } from 'react-redux'
+import { RootState } from '../../../redux/store'
 
+// Icon
+import { IconContext } from "react-icons";
+import { MdShoppingCartCheckout, MdShoppingCart } from "react-icons/md";
 
 export interface CWCommonNavbarLink {
     url: string,
     name: string
 }
+export const urlToPathMapping: Record<string, string> = {
+    '/videos': 'Videos',
+    '/store': 'Merch',
+    '/wiki': 'Wiki',
+    '/my_carworld': 'My Car World',
+    '/': 'Home'
+}
 
 function CWCommonNavbarComponent() {
+    // Redux State
+    let { cwShoppingCart } = useSelector((state: RootState) => state)
+
+    // Get current url path
+    let url: string = useLocation().pathname;
+    const [selectedUrl, setSelectedUrl] = useState(url);
+
+    useEffect(() => {
+        console.log(selectedUrl)
+        console.log(urlToPathMapping[selectedUrl])
+    }, [selectedUrl, url])
+
     // Left-Oriented Navbar links
     let navbarComponentLinksLeft: CWCommonNavbarLink[] = [
         {
@@ -30,7 +53,7 @@ function CWCommonNavbarComponent() {
     ]
     let navItemsLeft = navbarComponentLinksLeft.map((navbarLink: CWCommonNavbarLink)=>{
         return (
-            <div className="cw-navbar-item"
+            <div className={ urlToPathMapping[selectedUrl] === navbarLink.name ? "cw-navbar-highlighted-item" : "cw-navbar-item" }
                  onClick={() => navButtonClick(navbarLink.url)}
                     >
                         { navbarLink.name }
@@ -51,7 +74,7 @@ function CWCommonNavbarComponent() {
     ]
     let navItemsRight = navbarComponentLinksRight.map((navbarLink: CWCommonNavbarLink)=>{
         return (
-            <div className="cw-navbar-item"
+            <div className={ urlToPathMapping[selectedUrl] === navbarLink.name ? "cw-navbar-highlighted-item" : "cw-navbar-item" }
                  onClick={() => navButtonClick(navbarLink.url)}
                     >
                         { navbarLink.name }
@@ -64,8 +87,11 @@ function CWCommonNavbarComponent() {
 
     // Navigation
     const navigate = useNavigate()
-    const navButtonClick = (route: string) => {
-        navigate(route)
+    const navButtonClick = (url: string) => {
+        console.log('button clicked')
+        console.log(url)
+        setSelectedUrl(url)
+        navigate(url)
     }
 
     return (
@@ -82,9 +108,19 @@ function CWCommonNavbarComponent() {
                 </div>
             </div>
 
-            {/* Set of left-centered nav buttons */}
+            {/* Set of right-centered nav buttons */}
             <div className="cw-navbar-right-grouping">
                 { navItemsRight }
+                { cwShoppingCart.size > 0 ? (
+                 <div
+                      className={ selectedUrl === "/cart" ? "cw-navbar-highlighted-item" : "cw-navbar-item" }
+                    onClick={() => navigate('/cart', { replace: true, state: cwShoppingCart })}>
+                    <IconContext.Provider value={{ className: "shopping-cart-img"}}>
+                        { selectedUrl === '/cart' ? <MdShoppingCart /> : <MdShoppingCartCheckout /> }
+                    </IconContext.Provider>
+                </div>
+                ) : <></> }
+
             </div>
         </nav>
     )

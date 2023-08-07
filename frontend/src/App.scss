@@ -19,18 +19,16 @@
 
   // Common container for served webpages
   .cw-common-page-container {
-      background-color: #181716;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: center;
+    align-content: center;
 
-    /* Orientation of contained html tags */
-      display: flex;
-      flex-direction: row;
-      flex-wrap: nowrap;
-      justify-content: center;
-      align-items: center;
-      align-content: center;
-
-
-    font-size: calc(10px + 2vmin);
+    // Makes background grow to fit components
+    overflow: auto;
+    color: white;
 
     .cw-common-content-container {
 

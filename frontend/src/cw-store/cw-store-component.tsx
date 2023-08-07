@@ -10,12 +10,13 @@ import CWStoreItemComponent from './cw-store-item-component'
 import CWCommonNavbarComponent from '../cw-common/components/navbar/cw-common-navbar-component'
 
 // React Hooks
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useNavigate, useLocation } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 import { RootState } from '../redux/store'
 
 // 3rd Party Lib
-import Button from 'react-bootstrap/Button';
+import Button from 'react-bootstrap/Button'
+import ReactPlayer from 'react-player'
 
 
 function CWStoreComponent() {
@@ -49,13 +50,25 @@ function CWStoreComponent() {
     })
 
     return (
-        <div className="cw-common-page-container">
-            { route === "/store" ? CWCommonNavbarComponent() : <></> }
+        <div>
+            {/* Navbar */}
+            { CWCommonNavbarComponent() }
 
             <div className="cw-store-container">
-                { shoppingCartButton }
+                {/* VideoPlayer if home screen */}
+                { route === "/" ? (
+                    <div className="cw-home-video-container">
+                        <ReactPlayer
+                        controls={true}
+                        playing={true}
+                        loop={true}
+                        url='https://www.youtube.com/watch?v=FDZsqouKQ3M&t=1s'
+                        />
+                    </div>) : <></>
+                }
+
+                {/* Store items */}
                 <div className="cw-store-items-container">
-                    {/* Items sold in shop */}
                     { storeItems }
                 </div>
             </div>

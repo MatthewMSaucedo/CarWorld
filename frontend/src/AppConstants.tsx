@@ -24,7 +24,7 @@ export const enum CW_ROUTE_ENUM {
 export const CW_ROUTES = [
   {
     path: '/',
-    element: <CWHomeComponent />
+    element: <CWStoreComponent />
   },
   {
     path: 'store',
