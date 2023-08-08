@@ -11,6 +11,9 @@ import CWCommonNavbarComponent from '../cw-common/components/navbar/cw-common-na
 
 // React Hooks
 import { useNavigate, useLocation } from 'react-router-dom'
+import { useState, useEffect } from "react"
+
+// React Redux
 import { useSelector } from 'react-redux'
 import { RootState } from '../redux/store'
 
@@ -26,7 +29,11 @@ function CWStoreComponent() {
 
     // Hooks
     const navigate = useNavigate()
-    const route = useLocation().pathname;
+    const location = useLocation()
+    let route = location.pathname;
+    useEffect(() => {
+        console.log(route)
+    }, [location])
 
     // CheckoutButton HTML
     const shoppingCartButton = (

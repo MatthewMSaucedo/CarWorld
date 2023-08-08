@@ -32,13 +32,21 @@ function CWCommonNavbarComponent() {
     let { cwShoppingCart } = useSelector((state: RootState) => state)
 
     // Get current url path
-    let url: string = useLocation().pathname;
-    const [selectedUrl, setSelectedUrl] = useState(url);
+    const location = useLocation()
+    let url: string = location.pathname
+    const [selectedUrl, setSelectedUrl] = useState(url)
 
+    // NOTE:
+    //   Trying to cause a re-render here to solve the open bug around
+    //   navbar highlight going from:
+    //     Home -> Merch (no highlight)
+    //     X -> Merch -> Home (Merch still highlight)
     useEffect(() => {
-        console.log(selectedUrl)
-        console.log(urlToPathMapping[selectedUrl])
-    }, [selectedUrl, url])
+        url = location.pathname
+        console.log("Inside Navbar UseEffect()")
+        console.log(url)
+        console.log(urlToPathMapping[url])
+    }, [location])
 
     // Left-Oriented Navbar links
     let navbarComponentLinksLeft: CWCommonNavbarLink[] = [
@@ -88,8 +96,6 @@ function CWCommonNavbarComponent() {
     // Navigation
     const navigate = useNavigate()
     const navButtonClick = (url: string) => {
-        console.log('button clicked')
-        console.log(url)
         setSelectedUrl(url)
         navigate(url)
     }
@@ -113,7 +119,7 @@ function CWCommonNavbarComponent() {
                 { navItemsRight }
                 { cwShoppingCart.size > 0 ? (
                  <div
-                      className={ selectedUrl === "/cart" ? "cw-navbar-highlighted-item" : "cw-navbar-item" }
+                    className={ selectedUrl === "/cart" ? "cw-navbar-highlighted-item" : "cw-navbar-item" }
                     onClick={() => navigate('/cart', { replace: true, state: cwShoppingCart })}>
                     <IconContext.Provider value={{ className: "shopping-cart-img"}}>
                         { selectedUrl === '/cart' ? <MdShoppingCart /> : <MdShoppingCartCheckout /> }
