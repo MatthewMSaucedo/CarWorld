@@ -1,3 +1,19 @@
+.Toastify__toast-icon {
+  padding-right: 3rem;
+}
+.Toastify__toast-body {
+  color: red;
+  font-weight: bold;
+}
+.Toastify__progress-bar-theme--dark {
+  background-color: red;
+}
+// This doesn't work
+.Toastify__toast-theme--dark {
+  background-color: linear-gradient(#57504d, #2a2727) !important;
+}
+
+
 .Auth-form-container {
   display: flex;
   justify-content: flex-start;
@@ -6,7 +22,9 @@
   width: 100vw;
   height: 100vh;
 
-  color: white !important;
+  overflow: auto;
+
+  color: white;
 }
 
 .Auth-form-login {
@@ -17,9 +35,12 @@
 
   margin-top: 10rem;
 
+
+  background: linear-gradient( #57504d, #453f3d, #393433, #2a2727, #181716);
+
   box-shadow: 0 .3rem .3rem .3rem rgba(9, 9, 9, 0.23);
   // background: linear-gradient(#453f3d, #2a2727);
-  background: linear-gradient( #57504d, #2a2727);
+  // background: linear-gradient(#57504d, #2a2727);
   // background: linear-gradient(#453f3d, #181716);
 }
 
@@ -32,22 +53,74 @@
   margin-top: 10rem;
 
   box-shadow: 0 .3rem .3rem .3rem rgba(9, 9, 9, 0.23);
+  background: linear-gradient( #57504d, #453f3d, #393433, #2a2727, #181716);
+  // background: linear-gradient( #57504d, #453f3d, #393433, #2a2727);
+  // background: linear-gradient( #57504d, #453f3d, #393433);
+  // background: linear-gradient( #453f3d, #393433, #2a2727, #181716);
+  // background: linear-gradient( #57504d, #181716);
+
   // background: linear-gradient(#453f3d, #2a2727);
-  background: linear-gradient( #57504d, #2a2727);
   // background: linear-gradient(#393433, #57504d);
   // background: linear-gradient(#453f3d, #181716);
+}
+
+.devotion-checkbox {
+  margin-top: .5rem;
+}
+
+.form-header {
+  .Auth-form-title {
+    text-align: center;
+    margin-bottom: 1em;
+    font-size: 24px;
+    font-weight: bold;
+  }
+
+  .displayed-form-toggle {
+    color: #f8ed62;
+    font-weight: bold;
+
+    cursor: pointer;
+  }
+}
+
+.form-error-container {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  align-items: stretch;
+  align-content: stretch;
+
+  margin-bottom: -.5rem;
+
+  .form-error {
+    color: red;
+    font-weight: bold;
+    font-size: 14px;
+  }
+}
+
+.submit-form-button {
+  margin-bottom: 1rem;
+  margin-left: 7rem;
+
+  border-radius: 10%;
+  width: 6rem;
+  height: 2rem;
+
+  background: linear-gradient(#57504d, #393433);
+  border-color: #f8ed62;
+
+  color: #f8ed62;
+  font-weight: bold;
+
+  cursor: pointer;
 }
 
 .Auth-form-content {
   padding-left: 12%;
   padding-right: 12%;
-}
-
-.Auth-form-title {
-  text-align: center;
-  margin-bottom: 1em;
-  font-size: 24px;
-  font-weight: 800;
 }
 
 label {

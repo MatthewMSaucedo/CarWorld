@@ -1,5 +1,8 @@
 import './App.scss';
+
+// 3rd Party CSS imports
 import 'bootstrap/dist/css/bootstrap.min.css';
+import 'react-toastify/dist/ReactToastify.css';
 
 import * as AppConstants from './AppConstants';
 
