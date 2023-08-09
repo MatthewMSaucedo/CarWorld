@@ -70,10 +70,10 @@ export const CW_API_ENDPOINTS = {
     "commodities": "https://6vikh38ev7.execute-api.us-east-1.amazonaws.com/commerce/commodities"
   },
   "auth": {
-    "refresh": "https://.execute-api.us-east-1.amazonaws.com/auth/secret",
-    "login": "https://.execute-api.us-east-1.amazonaws.com/auth/secret",
-    "register": "https://.execute-api.us-east-1.amazonaws.com/auth/secret",
-    "guest": "https://.execute-api.us-east-1.amazonaws.com/auth/commodities"
+    "refresh": "https://8duop2auq0.execute-api.us-east-1.amazonaws.com/auth/refresh",
+    "login": "https://8duop2auq0.execute-api.us-east-1.amazonaws.com/auth/login",
+    "register": "https://8duop2auq0.execute-api.us-east-1.amazonaws.com/auth/register",
+    "guest": "https://8duop2auq0.execute-api.us-east-1.amazonaws.com/auth/guest"
   },
   "user": {
     "grantddp": "https://.execute-api.us-east-1.amazonaws.com/user/grantddp"

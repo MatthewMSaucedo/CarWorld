@@ -10,11 +10,12 @@ import { useForm, SubmitHandler } from "react-hook-form"
 
 // Toast (yum!)
 import { ToastContainer, toast } from 'react-toastify';
+import { CW_API_ENDPOINTS } from '../../AppConstants';
 
 type Inputs = {
   devotion: boolean
   email: string
-  fullName: string
+  username: string
   password: string
 }
 
@@ -43,20 +44,24 @@ function CWAuthComponent() {
         required: { value: true, message: "YOU MUST DEVOTE TO WILLIAM BANKS"},
         validate: checkboxValidator
     }
-    const fullNameRequirements = {
-        required: { value: true, message: "Full Name is required"},
-        minLength: { value: 6, message: "Full Name must be at least 6 characters long" },
+    const usernameRequirements = {
+        required: { value: true, message: "Username is required"},
+        minLength: { value: 6, message: "Username must be at least 6 characters long" },
+        maxLength: { value: 64, message: "Username cannot exceed 64 characters long" },
     }
     const emailRequirements = {
         required: { value: true, message: "Valid Email is required"},
-
+        maxLength: { value: 84, message: "Email cannot exceed 84 characters long" },
     }
     const passwordRequirements = {
         required: { value: true, message: "Password is required"},
         minLength: { value: 6, message: "Password must be at least 6 characters long" },
+        maxLength: { value: 64, message: "Password cannot exceed 64 characters long" },
     }
 
-    // Form submission
+    // ERROR HANDLING
+    // This section ensure failed form submissions spit out specific errors,
+    // as toasts, to the user
     const onClickLogin = () => {
         console.log("in onClickLogin")
         console.log(errors)
@@ -78,17 +83,47 @@ function CWAuthComponent() {
         if(errors?.password) {
             notify(errors?.password?.message || "")
         }
-        if(errors?.fullName) {
-            notify(errors?.fullName?.message || "")
+        if(errors?.username) {
+            notify(errors?.username?.message || "")
         }
         if(errors?.devotion) {
             notify(errors?.devotion?.message || "")
         }
     }
-    const onSubmit: SubmitHandler<Inputs> = (data: any) => {
-        console.log("in onSubmit")
+
+    // FORM SUBMISSION
+    // Send validated input to backend, handle response
+    const onSubmit: SubmitHandler<Inputs> = async (data: any) => {
+        console.log(data)
+        const registerRawApiRes = await fetch(CW_API_ENDPOINTS.auth.register, {
+            method: "POST",
+            headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*"
+            },
+            body: JSON.stringify({ username: data.username, password: data.password, email: data.email }),
+        })
+        const registerRes = await registerRawApiRes.json()
+
+        console.log(registerRes)
+
+        if (registerRes.code === 200) {
+        // TODO: Get rid of body, but data in header
+         const loginRawApiRes = await fetch(CW_API_ENDPOINTS.auth.login, {
+            method: "GET",
+            headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*"
+            },
+            body: JSON.stringify({ username: data.username, password: data.password }),
+        })
+        const loginRes = await loginRawApiRes.json()
+
+        console.log(loginRes)
+        }
     }
 
+    // Register Form
     const registerForm = () => {
         return (
         <div className="Auth-form-container">
@@ -126,14 +161,14 @@ function CWAuthComponent() {
                         />
                     </div>
 
-                    { /* Full Name */ }
+                    { /* Username */ }
                     <div className="form-group mt-3">
-                        <label>Full Name</label>
+                        <label>Username</label>
                         <input
                         type="username"
                         className="form-control mt-1"
                         placeholder="e.g Jane Doe"
-                        {...register("fullName", fullNameRequirements)}
+                        {...register("username", usernameRequirements)}
                         />
                     </div>
 
@@ -174,6 +209,7 @@ function CWAuthComponent() {
         )
     }
 
+    // Login Form
     const loginForm = () => {
         return (
         <div className="Auth-form-container">
@@ -235,6 +271,7 @@ function CWAuthComponent() {
         </div>        )
     }
 
+    // Auth page
     return (
         <div>
             <ToastContainer toastStyle={{ backgroundColor: "linear-gradient(#57504d, #2a2727)" }}/>

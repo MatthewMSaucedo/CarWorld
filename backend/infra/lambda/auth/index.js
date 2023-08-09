@@ -49,18 +49,31 @@ exports.handler = async(event) => {
     return getRes.Items[0]
   }
 
-  function validateCredentialRequestInput(requestBody) {
+  function validateLoginRequestInput(requestBody) {
     // Valitdate username
     const username = requestBody.username
-    if (typeof username !== 'string' || username.length < 1 || username.length > 16 || username.includes(" ")) {
+    if (typeof username !== 'string' || username.length < 1 || username.length > 64 || username.includes(" ")) {
       throw new Error(`Provided username failed to validate: ${username}`)
     }
 
     // Valitdate password
     const password = requestBody.password
-    if (typeof password !== 'string' || password.length < 1 || password.length > 16 || password.includes(" ")) {
+    if (typeof password !== 'string' || password.length < 1 || password.length > 64 || password.includes(" ")) {
       // NOTE: Do NOT specify the password used, for security
       throw new Error("Provided password failed to validate")
+    }
+
+    return true
+  }
+
+  function validateRegisterRequestInput(requestBody) {
+    // Validate username and password
+    validateLoginRequestInput(requestBody)
+
+    // Valitdate email
+    const email = requestBody.email
+    if (typeof email !== 'string' || email.length < 1 || email.length > 84 || email.includes(" ")) {
+      throw new Error(`Provided email failed to validate: ${email}`)
     }
 
     return true
@@ -71,7 +84,7 @@ exports.handler = async(event) => {
 
     // Validate input
     try {
-      validateCredentialRequestInput(request.body)
+      validateRegisterRequestInput(request.body)
     } catch (error) {
       return {
         code: 400,
@@ -147,7 +160,6 @@ exports.handler = async(event) => {
       message: `Sucessfully created an account for user: ${username}`,
       body: {
         username: username,
-        password: password
       }
     }
   }
@@ -158,7 +170,7 @@ exports.handler = async(event) => {
 
     // Validate input
     try {
-      validateCredentialRequestInput(request.body)
+      validateLoginRequestInput(request.body)
     } catch (error) {
       return {
         code: 400,
