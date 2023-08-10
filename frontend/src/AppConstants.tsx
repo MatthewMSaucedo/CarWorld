@@ -9,6 +9,8 @@ import CWWikiComponent from './cw-wiki/cw-wiki-component'
 import CWCartComponent from './cw-store/cw-cart-component'
 import CWPaymentProcessedComponent from './cw-store/stripe-components/payment-processed-component'
 import CWAuthComponent from './my-carworld/my-carworld-component'
+import MyCarWorldComponent from './my-carworld/my-carworld-component'
+import CWProfileComponent from './my-carworld/cw-profile/cw-profile-component'
 
 export const enum CW_ROUTE_ENUM {
   'home',
@@ -19,7 +21,8 @@ export const enum CW_ROUTE_ENUM {
   'cart',
   'product',
   'payment_processed',
-  'my_carworld'
+  'my_carworld',
+  'auth'
 }
 export const CW_ROUTES = [
   {
@@ -56,6 +59,10 @@ export const CW_ROUTES = [
   },
   {
     path: 'my_carworld',
+    element: <CWProfileComponent />
+  },
+  {
+    path: 'auth',
     element: <CWAuthComponent />
   },
 ]

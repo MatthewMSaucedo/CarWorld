@@ -2,16 +2,28 @@
 import './auth.scss'
 import carWorldImg from '../../logo.svg'
 
-// React state
+// React State
 import { useState } from "react"
+
+// React Router
+import { useNavigate } from 'react-router-dom'
+
+// React Redux
+import { useDispatch } from 'react-redux';
+import { loginUser } from '../../redux/userSlice'
 
 // React Hook Form
 import { useForm, SubmitHandler } from "react-hook-form"
 
 // Toast (yum!)
 import { ToastContainer, toast } from 'react-toastify';
-import { CW_API_ENDPOINTS } from '../../AppConstants';
 
+// Local imports
+import { CW_API_ENDPOINTS } from '../../AppConstants';
+import CWCommonLoadingComponent from '../../cw-common/components/loading/cw-common-loading-component';
+import CWCommonNavbarComponent from '../../cw-common/components/navbar/cw-common-navbar-component';
+
+// Useful Typedefs
 type Inputs = {
   devotion: boolean
   email: string
@@ -20,6 +32,18 @@ type Inputs = {
 }
 
 function CWAuthComponent() {
+    // Stateful hooks
+    //   Change to loading-screen while we wait on API calls
+    //   Determine which form to show, login or register
+    const [apiIsLoading, setApiIsLoading] = useState(false);
+    const [showRegister, setShowRegister] = useState(true);
+
+    // Navigation
+    const navigate = useNavigate()
+
+    // Redux
+    const dispatch = useDispatch()
+
     // Toast
     const notify = (input: string) => {
         toast.error(input, {
@@ -30,8 +54,7 @@ function CWAuthComponent() {
         })
     }
 
-    // State-managed auth form toggle - Register or Login
-    const [showRegister, setShowRegister] = useState(true);
+    // Form inputs
     const {
         register,
         handleSubmit,
@@ -46,7 +69,7 @@ function CWAuthComponent() {
     }
     const usernameRequirements = {
         required: { value: true, message: "Username is required"},
-        minLength: { value: 6, message: "Username must be at least 6 characters long" },
+        minLength: { value: 4, message: "Username must be at least 4 characters long" },
         maxLength: { value: 64, message: "Username cannot exceed 64 characters long" },
     }
     const emailRequirements = {
@@ -62,10 +85,7 @@ function CWAuthComponent() {
     // ERROR HANDLING
     // This section ensure failed form submissions spit out specific errors,
     // as toasts, to the user
-    const onClickLogin = () => {
-        console.log("in onClickLogin")
-        console.log(errors)
-
+    const onClickLoginErrorHandling = () => {
         if(errors?.email) {
             notify(errors?.email?.message || "")
         }
@@ -73,10 +93,7 @@ function CWAuthComponent() {
             notify(errors?.password?.message || "")
         }
     }
-    const onClickRegister = () => {
-        console.log("in onClickRegister")
-        console.log(errors)
-
+    const onClickRegisterErrorHandling = () => {
         if(errors?.email) {
             notify(errors?.email?.message || "")
         }
@@ -91,36 +108,111 @@ function CWAuthComponent() {
         }
     }
 
-    // FORM SUBMISSION
-    // Send validated input to backend, handle response
-    const onSubmit: SubmitHandler<Inputs> = async (data: any) => {
-        console.log(data)
+    // API CALLS
+    // Make calls to register and login
+    const loginApiCall = async (username: string, password: string) => {
+        const loginRawApiRes = await fetch(CW_API_ENDPOINTS.auth.login, {
+            method: "POST",
+            headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*"
+        },
+        body: JSON.stringify({ username: username, password: password }),
+
+        })
+        const loginRes = await loginRawApiRes.json()
+
+        return loginRes
+    }
+    const registerApiCall = async (username: string, password: string, email: string) => {
         const registerRawApiRes = await fetch(CW_API_ENDPOINTS.auth.register, {
             method: "POST",
             headers: {
             "Content-Type": "application/json",
             "Access-Control-Allow-Origin": "*"
             },
-            body: JSON.stringify({ username: data.username, password: data.password, email: data.email }),
+            body: JSON.stringify({ username: username, password: password, email: email }),
         })
         const registerRes = await registerRawApiRes.json()
 
-        console.log(registerRes)
+        return registerRes
+    }
 
-        if (registerRes.code === 200) {
-        // TODO: Get rid of body, but data in header
-         const loginRawApiRes = await fetch(CW_API_ENDPOINTS.auth.login, {
-            method: "GET",
-            headers: {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*"
-            },
-            body: JSON.stringify({ username: data.username, password: data.password }),
-        })
-        const loginRes = await loginRawApiRes.json()
 
-        console.log(loginRes)
+    // FORM SUBMISSION
+    // Send validated input to backend, handle response
+    const onRegisterSubmit: SubmitHandler<Inputs> = async (data: any) => {
+        // Show loading screen while API calls take place
+        setApiIsLoading(true)
+
+        // Call register
+        const registerRes = await registerApiCall(data.username, data.password, data.email)
+        if (registerRes.code !== 200) {
+            // TODO: Error handle
+            return
         }
+
+        // Call login
+        const loginRes = await loginApiCall(data.username, data.password)
+        if (loginRes.code !== 200) {
+            // TODO: Error handle
+            return
+        }
+        // Parse login response
+        const authToken: string = loginRes.body.tokens.auth
+        const refreshToken: string = loginRes.body.tokens.refresh
+        const userType: string = loginRes.body.userType
+        const ddp: number = loginRes.body.ddp
+
+
+        // Update Redux store with new user info
+        dispatch(loginUser({
+            username: data.username,
+            userType: userType,
+            authToken: authToken,
+            refreshToken: refreshToken,
+            isLoggedIn: true,
+            ddp: ddp
+        }))
+
+        // Show loading screen while API calls take place
+        setApiIsLoading(true)
+
+        // Navigate to profile
+        navigate('/my_carworld')
+    }
+    const onLoginSubmit: SubmitHandler<Inputs> = async (data: any) => {
+        // Show loading screen while API calls take place
+        setApiIsLoading(true)
+
+        // Call login
+        const loginRes = await loginApiCall(data.username, data.password)
+        if (loginRes.code !== 200) {
+            // TODO: Error handle
+            return
+        }
+        // Parse login response
+        const authToken: string = loginRes.body.tokens.auth
+        const refreshToken: string = loginRes.body.tokens.refresh
+        const userType: string = loginRes.body.userType
+        const ddp: number = loginRes.body.ddp
+
+
+        // Update Redux store with new user info
+        dispatch(loginUser({
+            username: data.username,
+            userType: userType,
+            authToken: authToken,
+            refreshToken: refreshToken,
+            isLoggedIn: true,
+            ddp: ddp
+        }))
+
+        // Show loading screen while API calls take place
+        setApiIsLoading(true)
+
+        // Navigate to profile
+        navigate('/my_carworld')
     }
 
     // Register Form
@@ -128,7 +220,7 @@ function CWAuthComponent() {
         return (
         <div className="Auth-form-container">
             { /* RegisterForm */ }
-            <form className="Auth-form-register" onSubmit={handleSubmit(onSubmit)}>
+            <form className="Auth-form-register" onSubmit={handleSubmit(onRegisterSubmit)}>
                 <div className="Auth-form-content">
 
                     { /* Form Header */ }
@@ -198,7 +290,7 @@ function CWAuthComponent() {
                         <button
                             className="submit-form-button"
                             type="submit"
-                            onClick={ () => onClickRegister() }
+                            onClick={ () => onClickRegisterErrorHandling() }
                         >
                             Submit
                         </button>
@@ -214,7 +306,7 @@ function CWAuthComponent() {
         return (
         <div className="Auth-form-container">
             { /* Login form */ }
-            <form className="Auth-form-login" onSubmit={handleSubmit(onSubmit)}>
+            <form className="Auth-form-login" onSubmit={handleSubmit(onLoginSubmit)}>
                 <div className="Auth-form-content">
 
                     { /* Form Header */ }
@@ -237,13 +329,13 @@ function CWAuthComponent() {
                     { /* Email */ }
                     <div className="form-group mt-3">
                         <label>
-                            Email address
+                            Username
                         </label>
                         <input
-                            type="email"
+                            type="username"
                             className="form-control mt-1"
-                            placeholder="Email Address"
-                            {...register("email", emailRequirements)}
+                            placeholder="e.g Jane Doe"
+                            {...register("username", emailRequirements)}
                             />
                     </div>
 
@@ -261,7 +353,7 @@ function CWAuthComponent() {
                     { /* Submission Button */ }
                     <div className="d-grid gap-2 mt-3">
                         <button
-                            onClick={ () =>  onClickLogin() }
+                            onClick={ () =>  onClickLoginErrorHandling() }
                             className="submit-form-button">
                             Submit
                         </button>
@@ -273,10 +365,13 @@ function CWAuthComponent() {
 
     // Auth page
     return (
-        <div>
-            <ToastContainer toastStyle={{ backgroundColor: "linear-gradient(#57504d, #2a2727)" }}/>
-            { showRegister ? registerForm() : loginForm() }
-        </div>
+        apiIsLoading ? (<CWCommonLoadingComponent />) : (
+            <div className="my-carworld-container">
+                <CWCommonNavbarComponent />
+                <ToastContainer toastStyle={{ backgroundColor: "linear-gradient(#57504d, #2a2727)" }}/>
+                { showRegister ? registerForm() : loginForm() }
+            </div>
+        )
     )
 }
 

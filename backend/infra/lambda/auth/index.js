@@ -16,14 +16,16 @@ exports.handler = async(event) => {
     return result
   }
 
-  async function storeInDatabase(dbClient, username, hashedPassword) {
+  async function storeNewUserInDatabase(dbClient, username, hashedPassword, email) {
     const putParams = {
       TableName: "users",
       Item: {
         id: { S: crypto.randomUUID() },
         username: { S: username },
         password: { S: hashedPassword },
-        type: { S: "standard"}
+        email: { S: email },
+        type: { S: "standard" },
+        ddp: { N: '0' }
       }
     }
     const command = new PutItemCommand(putParams)
@@ -38,7 +40,7 @@ exports.handler = async(event) => {
       },
       KeyConditionExpression: "username = :u",
       TableName: "users",
-      IndexName: "username-lookup-index",
+      IndexName: "username-lookup-index"
     }
     const command = new QueryCommand(getParams)
     const getRes = await dbClient.send(command)
@@ -52,13 +54,13 @@ exports.handler = async(event) => {
   function validateLoginRequestInput(requestBody) {
     // Valitdate username
     const username = requestBody.username
-    if (typeof username !== 'string' || username.length < 1 || username.length > 64 || username.includes(" ")) {
+    if (typeof username !== 'string' || username.length < 4 || username.length > 64) {
       throw new Error(`Provided username failed to validate: ${username}`)
     }
 
     // Valitdate password
     const password = requestBody.password
-    if (typeof password !== 'string' || password.length < 1 || password.length > 64 || password.includes(" ")) {
+    if (typeof password !== 'string' || password.length < 6 || password.length > 64 || password.includes(" ")) {
       // NOTE: Do NOT specify the password used, for security
       throw new Error("Provided password failed to validate")
     }
@@ -72,7 +74,7 @@ exports.handler = async(event) => {
 
     // Valitdate email
     const email = requestBody.email
-    if (typeof email !== 'string' || email.length < 1 || email.length > 84 || email.includes(" ")) {
+    if (typeof email !== 'string' || email.length < 6 || email.length > 84 || email.includes(" ")) {
       throw new Error(`Provided email failed to validate: ${email}`)
     }
 
@@ -84,6 +86,7 @@ exports.handler = async(event) => {
 
     // Validate input
     try {
+      validateLoginRequestInput(request.body)
       validateRegisterRequestInput(request.body)
     } catch (error) {
       return {
@@ -100,6 +103,7 @@ exports.handler = async(event) => {
     // Obtain user input
     const password = request.body.password.toLowerCase()
     const username = request.body.username.toLowerCase()
+    const email = request.body.email.toLowerCase()
 
     // Hash password
     let hashedPassword = ""
@@ -141,7 +145,7 @@ exports.handler = async(event) => {
       }
 
       // Store new user in DB
-      await storeInDatabase(dbClient, username, hashedPassword)
+      await storeNewUserInDatabase(dbClient, username, hashedPassword, email)
     } catch (error) {
       return {
         code: 500,
@@ -278,6 +282,9 @@ exports.handler = async(event) => {
           code: 200,
           message: "Login request succeeded",
           body: {
+            username: getUserByUsernameRes.username.S,
+            userType: getUserByUsernameRes.type.S,
+            ddp: getUserByUsernameRes.ddp.N,
             tokens: jwtTokens
           }
         }

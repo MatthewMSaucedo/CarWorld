@@ -24,12 +24,14 @@ export const urlToPathMapping: Record<string, string> = {
     '/store': 'Merch',
     '/wiki': 'Wiki',
     '/my_carworld': 'My Car World',
+    '/auth': 'My Car World',
     '/': 'Home'
 }
 
 function CWCommonNavbarComponent() {
     // Redux State
     let { cwShoppingCart } = useSelector((state: RootState) => state)
+    let { cwUser } = useSelector((state: RootState) => state)
 
     // Get current url path
     const location = useLocation()
@@ -76,7 +78,11 @@ function CWCommonNavbarComponent() {
             name: 'Wiki',
         },
         {
-            url: '../' + AppConstants.CW_ROUTES[AppConstants.CW_ROUTE_ENUM['my_carworld']].path,
+            url: cwUser.isLoggedIn ? (
+                '../' + AppConstants.CW_ROUTES[AppConstants.CW_ROUTE_ENUM['my_carworld']].path
+            ) : (
+                '../' + AppConstants.CW_ROUTES[AppConstants.CW_ROUTE_ENUM['auth']].path
+            ),
             name: 'My Car World',
         },
     ]

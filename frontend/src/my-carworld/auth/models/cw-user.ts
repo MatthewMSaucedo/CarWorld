@@ -5,6 +5,15 @@ export type CWBackendTokenDecoded = {
     exp: number
 }
 
+export type CWReduxLoginUserReqBody = {
+    username: string,
+    userType: string,
+    authToken: string,
+    refreshToken: string,
+    isLoggedIn: boolean,
+    ddp: number
+}
+
 export enum CWUserType {
     Standard,
     Moderator,
@@ -12,14 +21,15 @@ export enum CWUserType {
     Guest
 }
 
+// TODO: Add try/catch wrappings
 export class CWUser {
     // User details
     username: string
     userType: CWUserType
 
     // Auth
-    authToken?: CWToken
-    refreshToken?: CWToken
+    authToken: CWToken
+    refreshToken: CWToken
     isLoggedIn: boolean
 
     // Digital Devotion Points
@@ -32,19 +42,29 @@ export class CWUser {
         ddp: number,
         isLoggedIn: boolean,
         authToken: string,
-        refreshToken?: string
+        refreshToken: string
     ) {
         this.username = username
         this.userType = userType
+
         this.ddp = ddp
+
         this.isLoggedIn = isLoggedIn
 
-        if (authToken) {
-            this.authToken = new CWToken(authToken)
-        }
-        if (refreshToken) {
-            this.refreshToken = new CWToken(refreshToken) 
-        }
+        this.authToken = new CWToken(authToken)
+        this.refreshToken = new CWToken(refreshToken)
+    }
+
+    static staticLogin(loginReq: CWReduxLoginUserReqBody): CWUser {
+        return new CWUser(
+            loginReq.username,
+            // NOTE: TypeScript 2.1 added keyof to allow string index here
+            CWUserType[loginReq.userType as keyof typeof CWUserType],
+            loginReq.ddp,
+            loginReq.isLoggedIn,
+            loginReq.authToken,
+            loginReq.refreshToken,
+        )
     }
 
     async grantDDP(quantity: number): Promise<boolean> {
@@ -62,7 +82,7 @@ export class CWUser {
         //       itself. That should trigger a re-render, if false.
         // Update Authtoken if neccessary
         const currentTime = new Date()
-        if ((this.refreshToken?.expiration || new Date(0)) < currentTime) {
+        if (this.refreshToken.expiration < currentTime) {
             const refreshWorked = await this.refreshAuth()
             if (!refreshWorked) {
                 this.isLoggedIn = false
@@ -76,12 +96,13 @@ export class CWUser {
             waitTime = 2 ** attempts * 100
 
             // POST DDP to CWApi
+            // TODO: wrap in try/catch, return false on failure
             res = await fetch(CW_API_ENDPOINTS.user.grantddp, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "Access-Control-Allow-Origin": "*",
-                    "Authorization": this.authToken?.token || ""
+                    "Authorization": this.authToken.token
                 },
                 body: JSON.stringify({ ddpGranted: quantity }),
             })
@@ -108,7 +129,7 @@ export class CWUser {
     async refreshAuth(): Promise<boolean> {
         // Make sure refresh token is still valid
         const currentTime = new Date()
-        if ((this.refreshToken?.expiration || new Date(0)) < currentTime) {
+        if (this.refreshToken.expiration < currentTime) {
             return false
         }
 
@@ -119,7 +140,7 @@ export class CWUser {
                 "Content-Type": "application/json",
                 "Access-Control-Allow-Origin": "*"
             },
-            body: JSON.stringify({ token: this.refreshToken?.token }),
+            body: JSON.stringify({ token: this.refreshToken.token }),
         })
 
         // Update authtoken or log error
@@ -129,7 +150,7 @@ export class CWUser {
             console.log("Failed to refresh authtoken")
             return false
         } else {
-            this.authToken?.updateToken(jsonRes.body.token)
+            this.authToken.updateToken(jsonRes.body.token)
             return true
         }
     }
@@ -149,7 +170,13 @@ export class CWToken {
     }
 
     static determineExpiration(token: string): Date {
+        // This defaults to some date from 1980
         const expDate = new Date(0)
+
+        // Dummy token for initialization of Redux store
+        if (token === "") {
+            return expDate
+        }
 
         const decodedToken: CWBackendTokenDecoded = jwt_decode(token)
         expDate.setUTCSeconds(decodedToken.exp)
@@ -161,4 +188,9 @@ export class CWToken {
         this.token = token
         this.expiration = CWToken.determineExpiration(token)
     }
+
+    // static updateToken(token: string) {
+        // this.token = token
+        // this.expiration = CWToken.determineExpiration(token)
+    // }
 }

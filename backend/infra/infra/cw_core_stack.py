@@ -205,7 +205,7 @@ class CWCoreStack(Stack):
         authController = HttpLambdaIntegration("cw-auth-controller", auth_lambda)
         auth_api.add_routes(
             path="/auth/login",
-            methods=[apigw.HttpMethod.GET],
+            methods=[apigw.HttpMethod.POST],
             integration=authController,
         )
         auth_api.add_routes(
@@ -215,7 +215,7 @@ class CWCoreStack(Stack):
         )
         auth_api.add_routes(
             path="/auth/refresh",
-            methods=[apigw.HttpMethod.GET],
+            methods=[apigw.HttpMethod.POST],
             integration=authController,
         )
 

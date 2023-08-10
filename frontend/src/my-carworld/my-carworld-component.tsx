@@ -12,21 +12,18 @@ import { useDispatch } from 'react-redux';
 import { RootState } from '../redux/store'
 import CWProfileComponent from './cw-profile/cw-profile-component';
 import CWAuthComponent from './auth/auth-component';
+import CWStoreComponent from '../cw-store/cw-store-component';
 
 
 function MyCarWorldComponent() {
-
   // Redux
   let { cwUser } = useSelector((state: RootState) => state)
-  const dispatch = useDispatch()
-
 
   return (
     <div>
-      { CWCommonNavbarComponent() }
-      <div className="my-carworld-container">
-        { cwUser.isLoggedIn ? CWProfileComponent() : CWAuthComponent() }
-      </div>
+      {
+        cwUser.isLoggedIn ? CWStoreComponent() : CWAuthComponent()
+      }
     </div>
   )
 }
