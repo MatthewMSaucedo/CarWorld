@@ -44,6 +44,21 @@
   // background: linear-gradient(#453f3d, #181716);
 }
 
+.cw-auth-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: center;
+    align-content: center;
+
+    overflow: auto;
+    height: 100vh;
+
+    color: white;
+
+}
+
 .Auth-form-register {
   width: 30rem;
   height: 36rem;

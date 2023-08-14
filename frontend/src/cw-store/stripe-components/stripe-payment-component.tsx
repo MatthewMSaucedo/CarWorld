@@ -7,6 +7,7 @@ import { CWShoppingCart, CWShoppingCartEntry } from '../cw-shopping-cart';
 import CheckoutForm from "./CheckoutForm";
 import { CWShoppingItemType } from '../cw-store-item';
 import { CW_API_ENDPOINTS } from '../../AppConstants';
+import { CWUser } from '../../my-carworld/auth/models/cw-user';
 
 // React Hooks
 import { useState, useEffect } from "react"
@@ -32,6 +33,9 @@ export interface BackendCWShoppingCartEntry {
     server_name: string,
     size?: string
 }
+export interface UseSelectorUser {
+    cwUser: CWUser
+}
 
 function StripePaymentComponent() {
     // Stateful variables
@@ -39,6 +43,7 @@ function StripePaymentComponent() {
 
     // Redux State variable
     let { cwShoppingCart } = useSelector((state: RootState) => state)
+    let { cwUser }: UseSelectorUser = useSelector((state: RootState) => state)
 
     // Formatting helper for server
     const convertFrontendCartToBackendCart = (cwShoppingCart: CWShoppingCart) => {
@@ -86,14 +91,17 @@ function StripePaymentComponent() {
             headers: {
                 "Content-Type": "application/json",
                 "Access-Control-Allow-Origin": "*",
-                "Authorization": "TODO" // Grab token state
+                "Authorization": cwUser.authToken.token // Grab token state
             },
             body: JSON.stringify(paymentIntentPayload),
         })
             .then((res) => res.json())
             .then((data) => {
                 console.log(data)
-                setClientSecret(data.body.client_secret)
+                if (data.message === "Forbidden") {
+                    console.log("401 Error")
+                }
+                /* setClientSecret(data.body?.client_secret) */
             });
     // NOTE:
     //   Empty dependency array to prevent re-rendering

@@ -1,91 +1,143 @@
-.my-carworld-card {
-    box-shadow: 0 2px 2px 2px rgba(9, 9, 9, 0.23);
-    // box
-    margin-left: 2rem;
-    margin-bottom: 3rem;
-    margin-right: 8rem;
+.ag-theme-alpine {
+    // Header text color
+    --ag-header-foreground-color: #f8ed62;
+    // Header background
+    --ag-header-background-color: #393433;
 
-    // width: 19rem;
-    // height: 22rem;
-    border-radius: 10%;
-    margin-right: 2rem;
-    margin-left: 2rem;
+    // Data text color
+    --ag-foreground-color: rgb(126, 46, 132);
+    // Data background (even)
+    --ag-background-color: rgb(249, 245, 227);
+    // Data background (odd)
+    --ag-odd-row-background-color: rgb(0, 0, 0, 0.03);
 
+    // No idea what this does
+    // --ag-header-column-resize-handle-color: rgb(126, 46, 132);
+
+    // Table font
+    --ag-font-size: 17px;
+    --ag-font-family: monospace;
+}
+
+.cw-profile-container {
     display: flex;
     flex-direction: column;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     justify-content: flex-start;
     align-items: center;
-    align-content: stretch;
+    align-content: center;
 
-    background: linear-gradient(#57504d, #2a2727);
-    border-color: #393433;
+    margin-top: 5rem;
 
-    .card-content {
-        // padding-right: .5em;
-        // padding-left: .5em;
-        margin-top: 2rem;
-        margin-left: 4rem;
-        margin-right: 4rem;
-        margin-bottom: .5rem;
+    overflow: auto;
+    height: 100vh;
+
+    color: white;
+
+    .my-carworld-card {
+        box-shadow: 0 2px 2px 2px rgba(9, 9, 9, 0.23);
+        // box
+        margin-left: 2rem;
+        margin-bottom: 3rem;
+        margin-right: 8rem;
+
+        // width: 19rem;
+        // height: 22rem;
+        border-radius: 10%;
+        margin-right: 2rem;
+        margin-left: 2rem;
 
         display: flex;
         flex-direction: column;
         flex-wrap: nowrap;
-        justify-content: space-evenly;
+        justify-content: flex-start;
         align-items: center;
         align-content: stretch;
 
-        color: white;
-        font-weight: bold;
+        background: linear-gradient(#57504d, #2a2727);
+        border-color: #393433;
 
-        cursor: pointer;
+        .card-content {
+            // padding-right: .5em;
+            // padding-left: .5em;
+            margin-top: 2rem;
+            margin-left: 4rem;
+            margin-right: 4rem;
+            margin-bottom: .5rem;
 
-        .devoted-since {
-            font-size: .8em;
-            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            flex-wrap: nowrap;
+            justify-content: space-evenly;
+            align-items: center;
+            align-content: stretch;
 
-            // border-bottom: 3px solid #181716;
-        }
-        .username {
-            font-size: 4em;
-            font-weight: bolder;
-
-            border-bottom: 3px solid #181716;
-        }
-        .buy-ddp {
-            margin-bottom: 1rem;
-            // margin-left: 7rem;
-
-            border-radius: 10%;
-            width: 6rem;
-            // height: 2rem;
-
-            background: linear-gradient(#57504d, #393433);
-            border-color: #f8ed62;
-
-            color: #f8ed62;
+            color: white;
             font-weight: bold;
 
             cursor: pointer;
+
+            .devoted-since {
+                font-size: .8em;
+                font-weight: bold;
+
+                // border-bottom: 3px solid #181716;
+            }
+
+            .devotion-point-title {
+                font-weight: bold;
+            }
+
+            .username {
+                font-size: 4em;
+                font-weight: bolder;
+
+                border-bottom: 3px solid #393433;
+                // color: #181716;
+                color: #f8ed62
+            }
+
+            // .ag-theme-alpine {
+            //     background: linear-gradient(#57504d, #2a2727);
+            //     border-color: #393433;
+            //     color: #f8ed62 !important;
+            // }
+
+            .buy-ddp {
+                margin-bottom: 1rem;
+                // margin-left: 7rem;
+
+                border-radius: 10%;
+                width: 6rem;
+                // height: 2rem;
+
+                background: linear-gradient(#57504d, #393433);
+                border-color: #f8ed62;
+
+                color: #f8ed62;
+                font-weight: bold;
+
+                cursor: pointer;
+            }
         }
     }
-}
 
-.log-out {
-    margin-bottom: 1rem;
-    // margin-left: 7rem;
+    .log-out {
+        cursor: default;
 
-    border-radius: 10%;
-    width: 6rem;
-    // height: 2rem;
+        padding-top: .5rem;
+        padding-bottom: .5rem;
+        padding-left: .5rem;
+        padding-right: .5rem;
 
-    border-color: dark-red;
-    background: linear-gradient(red, #8b0000);
+        border-radius: 10%;
 
-    // color: #f8ed62;
-    color: white;
-    font-weight: bold;
+        margin-bottom: 2rem;
 
-    cursor: pointer;
+        border-color: #f8ed62;
+        background: linear-gradient(red, #8b0000);
+
+        color: #f8ed62;
+        font-weight: bolder;
+    }
 }

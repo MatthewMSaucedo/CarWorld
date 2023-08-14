@@ -366,7 +366,7 @@ function CWAuthComponent() {
     // Auth page
     return (
         apiIsLoading ? (<CWCommonLoadingComponent />) : (
-            <div className="my-carworld-container">
+            <div className="cw-auth-container">
                 <CWCommonNavbarComponent />
                 <ToastContainer toastStyle={{ backgroundColor: "linear-gradient(#57504d, #2a2727)" }}/>
                 { showRegister ? registerForm() : loginForm() }
