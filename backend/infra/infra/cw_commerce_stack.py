@@ -28,20 +28,21 @@ class CWCommerceStack(Stack):
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        # Obtain secrets
+        # Obtain stripe secret
         boto_session = boto3.Session(profile_name="personal")
         self.ssm = boto_session.client("ssm", region_name="us-east-1")
         self.stripe_secret = self.obtain_ssm_client_secret(
             secret_name="/cw/commerce/stripe/dev/key"
         )
 
-        # Create commerce lambda controller and database
+        # Create Commerce lambda controller and database
         self.cw_transaction_table = self.create_cw_transaction_table()
         self.cw_commodity_table = self.create_cw_commodity_table()
         self.cw_commerce_lambda = self.create_cw_commerce_lambda(
             stripe_secret=self.stripe_secret,
             transaction_table=self.cw_transaction_table,
             commodity_table=self.cw_commodity_table,
+            user_table=cw_core_stack.cw_user_table,
         )
 
         # Initialize AmazonSES and grant Send permissions to the Commerce Lambda
@@ -107,7 +108,7 @@ class CWCommerceStack(Stack):
         return commodity_table
 
     def create_cw_commerce_lambda(
-        self, stripe_secret, transaction_table, commodity_table
+        self, stripe_secret, transaction_table, commodity_table, user_table
     ):
         commerce_lambda_role = iam.Role(
             scope=self,
@@ -136,6 +137,7 @@ class CWCommerceStack(Stack):
 
         # Grant db access
         transaction_table.grant_read_write_data(commerce_lambda_role)
+        user_table.grant_read_write_data(commerce_lambda_role)
         commodity_table.grant_read_write_data(commerce_lambda_role)
 
         commerce_lambda = lambdaFx.Function(
@@ -184,9 +186,9 @@ class CWCommerceStack(Stack):
         return ses_config_set
 
     def create_commerce_api_gw(self, commerce_lambda, validator_lambda):
-        # Create CarWorld JWT Request Authorizer
+        # Create Commerce JWT Request Authorizer lambda
         lambda_authorizer = HttpLambdaAuthorizer(
-            "CWRequestValidator",
+            "CWCommerceRequestValidator",
             validator_lambda,
             response_types=[HttpLambdaResponseType.SIMPLE],
         )
@@ -195,7 +197,7 @@ class CWCommerceStack(Stack):
         commerce_api = apigw.HttpApi(
             scope=self,
             id="cw-commerce-api",
-            description="CarWorld Commerce Endpoints",
+            description="CarWorld Commerce API",
             cors_preflight=apigw.CorsPreflightOptions(
                 allow_headers=["*"],
                 allow_methods=[
@@ -208,10 +210,15 @@ class CWCommerceStack(Stack):
                 max_age=Duration.days(10),
             ),
         )
+
+        # Create CarWorld Commerce Controller lambda association
         commerce_controller = HttpLambdaIntegration(
             "cw-commerce-controller", commerce_lambda
         )
 
+        # Create CommerceAPI routes
+        #
+        # /secret
         # Provide unique Stripe PaymentIntent secret to client
         commerce_api.add_routes(
             path="/commerce/secret",
@@ -220,12 +227,14 @@ class CWCommerceStack(Stack):
             # This is a protected route
             authorizer=lambda_authorizer,
         )
+        # /webhook
         # Provide Stripe Servers an endpoint to update CW on Transactions
         commerce_api.add_routes(
             path="/commerce/webhook",
             methods=[apigw.HttpMethod.POST],
             integration=commerce_controller,
         )
+        # /commodities
         # Provide commodity list to FE
         commerce_api.add_routes(
             path="/commerce/commodities",

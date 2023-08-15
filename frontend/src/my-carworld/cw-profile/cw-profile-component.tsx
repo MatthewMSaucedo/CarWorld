@@ -62,6 +62,11 @@ function CWProfileComponent() {
         navigate('/auth')
     }
 
+    const onClickBuyDDP = () => {
+        // navigate to a DDP store page
+        /* navigate('/auth') */
+    }
+
     return (
         <div>
             <CWCommonNavbarComponent />

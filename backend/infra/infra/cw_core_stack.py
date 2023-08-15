@@ -12,8 +12,11 @@ from aws_cdk import (
     aws_apigatewayv2_alpha as apigw,
 )
 from aws_cdk.aws_apigatewayv2_integrations_alpha import (
-    HttpUrlIntegration,
     HttpLambdaIntegration,
+)
+from aws_cdk.aws_apigatewayv2_authorizers_alpha import (
+    HttpLambdaResponseType,
+    HttpLambdaAuthorizer,
 )
 from constructs import Construct
 
@@ -54,7 +57,8 @@ class CWCoreStack(Stack):
 
         # Create the API Gateway
         self.cw_api_gw = self.create_cw_api_gw(
-            auth_lambda=self.cw_auth_lambda["function"]
+            auth_lambda=self.cw_auth_lambda["function"],
+            validator_lambda=self.cw_validator_lambda["function"],
         )
 
         # TODO: Lambda to handle db retries for sensitive writes
@@ -66,6 +70,7 @@ class CWCoreStack(Stack):
         return jwt_secret["Parameter"]["Value"]
 
     def create_cw_user_table(self):
+        # Create User table
         user_table = dynamodb.Table(
             scope=self,
             id="user",
@@ -78,10 +83,20 @@ class CWCoreStack(Stack):
             billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
             encryption=dynamodb.TableEncryption.AWS_MANAGED,
         )
+
+        # Search user by username
         user_table.add_global_secondary_index(
             index_name="username-lookup-index",
             partition_key=dynamodb.Attribute(
                 name="username", type=dynamodb.AttributeType.STRING
+            ),
+        )
+
+        # Search/sort users by DDP
+        user_table.add_global_secondary_index(
+            index_name="ddp-rank-index",
+            partition_key=dynamodb.Attribute(
+                name="ddp", type=dynamodb.AttributeType.NUMBER
             ),
         )
 
@@ -185,11 +200,12 @@ class CWCoreStack(Stack):
 
         return {"function": validator_lambda, "role": validator_role}
 
-    def create_cw_api_gw(self, auth_lambda):
-        auth_api = apigw.HttpApi(
+    def create_cw_api_gw(self, auth_lambda, validator_lambda):
+        # Create CarWorld API Gateway
+        cw_api = apigw.HttpApi(
             scope=self,
             id="cw-auth-api",
-            description="CarWorld Auth Endpoints",
+            description="CarWorld Auth API",
             cors_preflight=apigw.CorsPreflightOptions(
                 allow_headers=["*"],
                 allow_methods=[
@@ -202,21 +218,23 @@ class CWCoreStack(Stack):
                 max_age=Duration.days(10),
             ),
         )
-        authController = HttpLambdaIntegration("cw-auth-controller", auth_lambda)
-        auth_api.add_routes(
+
+        # Create Auth API Routes
+        auth_controller = HttpLambdaIntegration("cw-auth-controller", auth_lambda)
+        cw_api.add_routes(
             path="/auth/login",
             methods=[apigw.HttpMethod.POST],
-            integration=authController,
+            integration=auth_controller,
         )
-        auth_api.add_routes(
+        cw_api.add_routes(
             path="/auth/register",
             methods=[apigw.HttpMethod.POST],
-            integration=authController,
+            integration=auth_controller,
         )
-        auth_api.add_routes(
+        cw_api.add_routes(
             path="/auth/refresh",
             methods=[apigw.HttpMethod.POST],
-            integration=authController,
+            integration=auth_controller,
         )
 
-        return auth_api
+        return cw_api
