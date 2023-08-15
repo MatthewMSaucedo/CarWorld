@@ -687,14 +687,13 @@ def handle_webhook(stripe_event, dynamo_client):
             "message": str(e),
             "stack": traceback.format_exc(),
         }
-        print(
-            f"SERVER_ERROR: Failed to parse Transaction data from Stripe callback | {error}"
-        )
-        return {
-            "code": 500,
-            "message": "SERVER_ERROR: Failed to parse Transaction data from Stripe callback",
-            "error": error,
-        }
+        print(f"SERVER_ERROR: Failed to parse UserID from Stripe callback | {error}")
+        # NOTE: This is not a fatal error - we should still record transaction
+        # return {
+        #     "code": 500,
+        #     "message": "SERVER_ERROR: Failed to parse Transaction data from Stripe callback",
+        #     "error": error,
+        # }
 
     try:
         # TODO: Once auth is accounted for, override is_guest here if applicable
@@ -706,6 +705,7 @@ def handle_webhook(stripe_event, dynamo_client):
             name=name,
             commodity_list=commodity_list,
             dynamo_client=dynamo_client,
+            user_id=user_id,
         )
     except Exception as e:
         error = {
@@ -722,8 +722,23 @@ def handle_webhook(stripe_event, dynamo_client):
     # NOTE:
     #   This update method would not scale (dynamo atomicity) to scores of concurrent payments.
     #   What a beautiful problem that would be to have one day!
+    # NOTE:
+    #   No external error handling here - as this is not a blocking error, it catches and logs any
+    #   errors itself.
     remove_purchased_commodities_from_stock(commodity_list, dynamo_client)
 
+    # Grant DDP to non-Guest user purchases
+    if cw_user_record["type"]["S"] != "guest":
+        # NOTE:
+        #   No external error handling here - as this is not a blocking error, it catches and logs any
+        #   errors itself.
+        grantDdpToUser(
+            cw_user_record=cw_user_record,
+            commodity_list=commodity_list,
+            dynamo_client=dynamo_client,
+        )
+
+    # Send an email to William and Russell about completed purchase
     try:
         ses_response = send_email_order_details(
             shipping=shipping,
@@ -743,6 +758,58 @@ def handle_webhook(stripe_event, dynamo_client):
             "message": "SERVER_ERROR: Failed to email about commodity purchase",
             "error": error,
         }
+
+
+def grantDdpToUser(cw_user_record, commodity_list, dynamo_client):
+    # Count items in transaction
+    item_count = 0
+    for commodity in commodity_list:
+        # NOTE:
+        #   See cw_cart_from_short_string() for explanation of formatting
+        commodity_count = commodity.split("_")[0]
+        item_count += commodity_count
+
+    current_ddp = int(cw_user_record["ddp"]["N"])
+    new_ddp = current_ddp + item_count
+
+    # Update user with new DDP count
+    cw_user_table_key_expr = {"id": {"S": cw_user_record["id"]["S"]}}
+    try:
+        updated_cw_user = dynamo_client.update(
+            table_name="users",
+            key_expression=cw_user_table_key_expr,
+            field_value_map={"ddp": new_ddp},
+        )
+    except Exception as e:
+        error = {
+            "message": str(e),
+            "stack": traceback.format_exc(),
+        }
+        print(
+            f'SERVER_ERROR: Failed to update ddp for user:{cw_user_record["id"]["S"]} | {error}'
+        )
+
+        # NOTE: Queue DynamoDB-Error Retries
+        queue_cw_db_retry_lambda(
+            controller="commerce",
+            action="grant_ddp",
+            db_actions=[
+                {
+                    "operation": "update",
+                    "table_name": "users",
+                    "key_expression": cw_user_table_key_expr,
+                    "field_value_map": {"ddp": new_ddp},
+                },
+                {
+                    "operation": "update",
+                    "table_name": "commodities",
+                    "key_expression": {"product_name": {"S": product_name}},
+                    "field_value_map": {"quantity": new_quantity},
+                },
+            ],
+        )
+
+    return
 
 
 def remove_purchased_commodities_from_stock(commodity_list, dynamo_client):
