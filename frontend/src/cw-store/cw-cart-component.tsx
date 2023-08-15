@@ -108,7 +108,7 @@ function CWCartComponent() {
     }
 
     return (
-        <div className="cw-common-page-container">
+        <div>
             {/* Navbar */}
             { CWCommonNavbarComponent() }
 

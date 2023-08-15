@@ -1,3 +1,5 @@
+import './stripe-payment.scss'
+
 import React, { useEffect, useState } from "react";
 import {
   PaymentElement,
@@ -95,7 +97,7 @@ export default function CheckoutForm() {
   }
 
   return (
-    <form id="payment-form" onSubmit={handleSubmit} className="white-background">
+    <form id="payment-form" onSubmit={handleSubmit} className="stripe-form-body">
       <LinkAuthenticationElement
         id="link-authentication-element"
         onChange={(e) => setEmail(e.target.value)}

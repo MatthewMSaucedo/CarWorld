@@ -4,10 +4,15 @@
     flex-wrap: nowrap;
     justify-content: flex-start;
     align-items: center;
-    align-content: stretch;
+    align-content: center;
 
-    height: 100%;
-    background-color: #f0ead6;
+    padding-top: 4rem;
+    padding-bottom: 2rem;
+
+    overflow: auto;
+    height: 100vh;
+
+    color: white;
 
     .cw-cart-header {
         display: flex;
@@ -20,7 +25,7 @@
         padding-bottom: 1em;
 
         .cw-cart-link {
-            color: black;
+            color: white;
         }
     }
 

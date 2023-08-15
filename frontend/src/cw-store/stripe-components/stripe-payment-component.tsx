@@ -84,7 +84,6 @@ function StripePaymentComponent() {
         console.log("payload for backend:")
         console.log(JSON.stringify(paymentIntentPayload))
 
-        // TODO: this url should be sourced from App Constants
         // Create PaymentIntent
         fetch(CW_API_ENDPOINTS.commerce.secret, {
             method: "POST",
@@ -101,11 +100,10 @@ function StripePaymentComponent() {
                 if (data.message === "Forbidden") {
                     console.log("401 Error")
                 }
-                /* setClientSecret(data.body?.client_secret) */
+                setClientSecret(data.body?.client_secret)
             });
     // NOTE:
     //   Empty dependency array to prevent re-rendering
-    //   (either react is stupid, or I'm stupid... I'd believe either)
     }, []);
 
     // Stripe Checkout Config
