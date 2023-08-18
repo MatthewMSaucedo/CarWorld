@@ -27,6 +27,10 @@ export const cwUserSlice = createSlice({
     updateUser: (state, action: PayloadAction<CWUser>) => {
       return action.payload
     },
+    fetchGuestToken: (state, action: PayloadAction<string>) => {
+      return CWUser.staticUserFromGuestToken(action.payload)
+
+    },
     logoutUser: (state, action: PayloadAction<null>) => {
       return initialState
     },
@@ -37,5 +41,5 @@ export const cwUserSlice = createSlice({
 })
 
 
-export const { updateUser, loginUser, logoutUser } = cwUserSlice.actions
+export const { updateUser, loginUser, logoutUser, fetchGuestToken } = cwUserSlice.actions
 export const cwUserReducer = cwUserSlice.reducer

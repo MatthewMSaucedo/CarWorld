@@ -16,7 +16,7 @@ function CWPaymentProcessedComponent() {
     const dispatch = useDispatch()
 
     // Clear the cart, now that the items have been purchased
-    dispatch(clearCart())
+    dispatch(clearCart(null))
 
     return (
         <div className="cw-common-page-container">

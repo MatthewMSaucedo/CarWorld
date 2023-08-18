@@ -6,32 +6,31 @@
 // body {
 // }
 
-.strip-form-body {
-  background-color: #5d5c61 !IMPORTANT;
-
-  width: 30rem;
-  min-width: 30rem;;
-  align-self: center;
-  box-shadow: 0px 0px 0px 0.5px rgba(50, 50, 93, 0.1),
-    0px 2px 5px 0px rgba(50, 50, 93, 0.1), 0px 1px 1.5px 0px rgba(0, 0, 0, 0.07);
-  border-radius: 7px;
-  padding: 40px;
-
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 16px;
-  -webkit-font-smoothing: antialiased;
+#payment-form {
+  // background-color: #5d5c61 !IMPORTANT;
+  // background: linear-gradient( #57504d, #453f3d, #393433, #2a2727, #181716) !IMPORTANT;
+  background: linear-gradient(#2a2727, #181716);
   display: flex;
-  justify-content: center;
-  align-content: center;
-  height: 100vh;
+  justify-content: flex-start;
+  flex-direction: column;
+  align-items: center;
   // width: 100vw;
+  height: 100vh;
 
+  overflow: auto;
+  padding-top: 3rem;
+
+  color: white;
 
   /* Buttons and links */
   button {
+    width: 8rem;
+
     background: #5469d4;
-    font-family: Arial, sans-serif;
     color: #ffffff;
+
+    font-family: Arial, sans-serif;
+
     border-radius: 4px;
     border: 0;
     padding: 12px 16px;
@@ -41,7 +40,6 @@
     display: block;
     transition: all 0.2s ease;
     box-shadow: 0px 4px 5.5px 0px rgba(0, 0, 0, 0.07);
-    width: 100%;
   }
 
   button:hover {

@@ -10,6 +10,12 @@ import jwt
 # Environment Variable
 JWT_SECRET = os.environ["jwtSecret"]
 
+# NOTE: Ideally being taken is as a configurable env var as well,
+#       but hardcoded for now to save costs from Param Store
+# Constants
+GUEST_TOKEN_ACTION_LIST = ["secret"]
+ADMIN_TOKEN_ACTION_LIST = ["secret"]
+
 
 ########################################################
 # Controller Action Handler
@@ -40,13 +46,24 @@ def handler(event, context):
             },
         }
 
+    # JWT Validation
     try:
-        # Validate JWT
-        payload = jwt.decode(encoded_jwt, JWT_SECRET, algorithms=["HS256"])
+        # Decode, using secret
+        jwt_payload = jwt.decode(encoded_jwt, JWT_SECRET, algorithms=["HS256"])
 
         # Ensure this is indeed an AuthToken, and not a Refresh
-        if payload["isRefresh"]:
+        if jwt_payload["type"] == "refresh":
             raise Exception("Refresh token provided in header, instead of Auth token")
+
+        # Decline GuestTokens, with exceptions
+        if jwt_payload["type"] == "guest":
+            if action not in GUEST_TOKEN_ACTION_LIST:
+                raise Exception(
+                    "Refresh token provided in header, instead of Auth token"
+                )
+
+        if jwt_payload["sub"] ADMIN_TOKEN_ACTION_LIST
+
     except Exception as e:
         error = {
             "context": str(e),
@@ -66,10 +83,12 @@ def handler(event, context):
     # Successful validation
     result = {
         "isAuthorized": True,
+        # This is sent to the Lambda being fired, and follows this format:
+        #   event["requestContext"]["authorizer"]["lambda"][YOUR_CONTEXT_KEY_HERE]
         "context": {
             "action": action,
-            "user_id": payload["sub"],
-            "user_type": payload["role"],
+            "user_id": jwt_payload["sub"],
+            "user_type": jwt_payload["role"],
         },
     }
     print(result)

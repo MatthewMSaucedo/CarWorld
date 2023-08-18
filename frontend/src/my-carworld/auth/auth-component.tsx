@@ -114,11 +114,10 @@ function CWAuthComponent() {
         const loginRawApiRes = await fetch(CW_API_ENDPOINTS.auth.login, {
             method: "POST",
             headers: {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*"
-        },
-        body: JSON.stringify({ username: username, password: password }),
-
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*"
+            },
+            body: JSON.stringify({ username: username, password: password }),
         })
         const loginRes = await loginRawApiRes.json()
 

@@ -263,13 +263,13 @@ exports.handler = async(event) => {
           "jti": crypto.randomUUID(),
           "sub": getUserByUsernameRes.id.S,
           "role": getUserByUsernameRes.type.S,
-          "isRefresh": false
+          "type": "auth"
         }
         const refreshClaims = {
           "jti": crypto.randomUUID(),
           "sub": getUserByUsernameRes.id.S,
           "role": getUserByUsernameRes.type.S,
-          "isRefresh": true
+          "type": "refresh"
         }
 
         // Generate signed JWTs
@@ -329,7 +329,6 @@ exports.handler = async(event) => {
     // Validate input
     let refreshToken
     try {
-      // TODO: Add check for isRefresh
       refreshToken = await validateRefreshRequestInput(request.body, dbClient)
     } catch (error) {
       // Client should redirect user to login
@@ -343,7 +342,7 @@ exports.handler = async(event) => {
         }
       }
     }
-    console.log(`DEBUG -- Refresh Token jti/sub/role/isRefresh: ${refreshToken.jti}/${refreshToken.sub}/${refreshToken.role}/${refreshToken.isRefresh}`)
+    console.log(`DEBUG -- Refresh Token jti/sub/role/type: ${refreshToken.jti}/${refreshToken.sub}/${refreshToken.role}/${refreshToken.type}`)
 
     try {
       // Assign claims (payload)
@@ -351,7 +350,7 @@ exports.handler = async(event) => {
         "jti": crypto.randomUUID(),
         "sub": refreshToken.sub,
         "role": refreshToken.role,
-        "isRefresh": false
+        "type": 'auth'
       }
 
       // Generate signed JWT
@@ -393,10 +392,10 @@ exports.handler = async(event) => {
 
     // Verify refresh token
     // NOTE: This will throw if validation fails, bubbling up to the caller
-    const decodedToken = jwt.verify(refreshToken, JWT_SECRET)
+    const decodedRefreshToken = jwt.verify(refreshToken, JWT_SECRET)
 
     // Check against InvalidTokenCache
-    const tokenIsBlacklisted = await tokenInInvalidCache(decodedToken.jti, dbClient)
+    const tokenIsBlacklisted = await tokenInInvalidCache(decodedRefreshToken.jti, dbClient)
     if (tokenIsBlacklisted) {
       const illegalAccessError = 'Provided Token has been Blacklisted. The United Nations has been notified and will convene shortly.'
       console.log(illegalAccessError)
@@ -404,13 +403,13 @@ exports.handler = async(event) => {
     }
 
     // Ensure the token is, indeed, a refresh token
-    if (!decodedToken.isRefresh) {
+    if (decodedRefreshToken.type !== "refresh") {
       const incorrectTokenTypeError = 'Provided Token is not a refresh token'
       console.log(incorrectTokenTypeError)
       throw new Error(incorrectTokenTypeError)
     }
 
-    return decodedToken
+    return decodedRefreshToken
   }
 
   function guestRequest(request) {
@@ -419,7 +418,7 @@ exports.handler = async(event) => {
       const guestClaims = {
         "sub": "guest",
         "role": "guest",
-        "isRefresh": false
+        "type": "guest"
       }
 
       // Generate guest JWT

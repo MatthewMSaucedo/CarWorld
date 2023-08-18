@@ -4,9 +4,6 @@ import { createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 
 
-// export interface CWShoppingCartState {
-  // cart: CWShoppingCart
-// }
 const initialState: CWShoppingCart = {
   contents: [],
   size: 0
@@ -27,8 +24,8 @@ export const cwShoppingCartSlice = createSlice({
     removeFromCart: (state, action: PayloadAction<CWShoppingCartEntry>) => {
       return CWShoppingCart.staticRemoveFromCart(state, action.payload)
     },
-    clearCart: (state) => {
-      return CWShoppingCart.staticClearCart()
+    clearCart: (state, action: PayloadAction<null>) => {
+      return initialState
     },
   },
 })

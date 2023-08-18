@@ -236,5 +236,10 @@ class CWCoreStack(Stack):
             methods=[apigw.HttpMethod.POST],
             integration=auth_controller,
         )
+        cw_api.add_routes(
+            path="/auth/guest",
+            methods=[apigw.HttpMethod.GET],
+            integration=auth_controller,
+        )
 
         return cw_api

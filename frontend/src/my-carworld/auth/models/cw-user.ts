@@ -67,6 +67,17 @@ export class CWUser {
         )
     }
 
+    static userFromGuestToken(guestToken: string): CWUser {
+        return new CWUser(
+            "guest",
+            CWUserType.Guest,
+            0,
+            false,
+            guestToken,
+            "",
+        )
+    }
+
     async grantDDP(quantity: number): Promise<boolean> {
         let waitTime = 0
         let attempts = 0
@@ -169,6 +180,11 @@ export class CWToken {
         this.expiration = CWToken.determineExpiration(token)
     }
 
+    static isExpired(expiration: Date): boolean {
+        const exp = new Date(expiration)
+        return new Date() > exp
+    }
+
     static determineExpiration(token: string): Date {
         // This defaults to some date from 1980
         const expDate = new Date(0)
@@ -188,6 +204,7 @@ export class CWToken {
         this.token = token
         this.expiration = CWToken.determineExpiration(token)
     }
+
 
     // static updateToken(token: string) {
         // this.token = token

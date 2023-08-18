@@ -4,7 +4,14 @@
     flex-wrap: nowrap;
     justify-content: flex-start;
     align-items: center;
-    align-content: stretch;
+    align-content: center;
 
-    background-color: #f0ead6;
+    padding-top: 4rem;
+    padding-bottom: 2rem;
+
+    overflow: auto;
+    height: 100vh;
+
+    color: white;
+
 }

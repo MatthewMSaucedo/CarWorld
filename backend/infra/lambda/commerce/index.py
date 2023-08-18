@@ -492,8 +492,8 @@ def create_transaction_record(
     amount,
     name,
     commodity_list,
+    user_id,
     dynamo_client,
-    is_guest=True,
 ):
     dynamo_client = dynamo_client.client
 
@@ -517,7 +517,7 @@ def create_transaction_record(
             "amount": {"N": str(amount)},
             "customer": {"S": name},
             "commodity_list": {"SS": commodity_list},
-            "guest": {"BOOL": is_guest},
+            "user_id": {"S": user_id},
         },
     )
 
@@ -593,9 +593,9 @@ def cw_cart_to_short_string(cart):
         if not index == 0:
             short_string += "*"
 
-        short_string += f'{commodity["quantity"]}_{STRIPE_ABREVIATED_NAME_MAP[commodity["server_name"]]}_{commodity["quantity"]}'
+        short_string += f'{commodity["type"]}_{STRIPE_ABREVIATED_NAME_MAP[commodity["server_name"]]}_{commodity["quantity"]}'
 
-        if "size" in commodity:
+        if COMMODITY_TYPE_MAP[commodity["type"]] == "clothing":
             short_string += f'_{commodity["size"]}'
     return short_string
 
@@ -659,10 +659,12 @@ def handle_webhook(stripe_event, dynamo_client):
 
         # Get dynamo-friendly commodity list
         # NOTE: use of #eval, as the cart dict is stored as a str on Stripe's end
-        cart = cw_cart_from_short_string(cart)
+        cart = cw_cart_from_short_string(event_data["metadata"]["cart"])
         commodity_list = format_commodity_list_from_cart(cart)
 
+        # Grab user ID for user followup actions
         user_id = event_data["metadata"]["usr"]
+        is_guest_purchase = user_id == "guest"
 
         print(f"DEBUG - cart metadata: {event_data['metadata']['cart']}")
         print(f"DEBUG - commodity_list: {commodity_list}")
@@ -681,7 +683,8 @@ def handle_webhook(stripe_event, dynamo_client):
         }
 
     try:
-        cw_user_record = dynamo_client.get(user_id)  # TODO: match actual method def
+        if not is_guest_purchase:
+            cw_user_record = dynamo_client.get("users", {"id": {"S": user_id}})
     except Exception as e:
         error = {
             "message": str(e),
@@ -696,7 +699,6 @@ def handle_webhook(stripe_event, dynamo_client):
         # }
 
     try:
-        # TODO: Once auth is accounted for, override is_guest here if applicable
         transaction_record = create_transaction_record(
             transaction_id=transaction_id,
             shipping=shipping,
@@ -704,8 +706,8 @@ def handle_webhook(stripe_event, dynamo_client):
             amount=amount,
             name=name,
             commodity_list=commodity_list,
+            user_id=user_id,  # 'guest', for guest purchases
             dynamo_client=dynamo_client,
-            user_id=user_id,
         )
     except Exception as e:
         error = {
@@ -727,8 +729,8 @@ def handle_webhook(stripe_event, dynamo_client):
     #   errors itself.
     remove_purchased_commodities_from_stock(commodity_list, dynamo_client)
 
-    # Grant DDP to non-Guest user purchases
-    if cw_user_record["type"]["S"] != "guest":
+    # Grant DDP to user purchases
+    if not is_guest_purchase:
         # NOTE:
         #   No external error handling here - as this is not a blocking error, it catches and logs any
         #   errors itself.
@@ -745,6 +747,8 @@ def handle_webhook(stripe_event, dynamo_client):
             customer_name=name,
             products=commodity_list,
             amt_in_cents=amount,
+            username=cw_user_record["username"]["S"],
+            is_guest_purchase=is_guest_purchase,
         )
         return {"code": 200, "message": ses_response}
     except Exception as e:
@@ -766,7 +770,7 @@ def grantDdpToUser(cw_user_record, commodity_list, dynamo_client):
     for commodity in commodity_list:
         # NOTE:
         #   See cw_cart_from_short_string() for explanation of formatting
-        commodity_count = commodity.split("_")[0]
+        commodity_count = int(commodity.split("_")[0])
         item_count += commodity_count
 
     current_ddp = int(cw_user_record["ddp"]["N"])
@@ -869,8 +873,17 @@ def remove_purchased_commodities_from_stock(commodity_list, dynamo_client):
             )
 
 
-def send_email_order_details(shipping, customer_name, products, amt_in_cents):
+def send_email_order_details(
+    shipping, customer_name, products, amt_in_cents, username, is_guest_purchase
+):
     ses_client = boto3.client("ses")
+
+    if is_guest_purchase:
+        cw_user_string = f"{customer_name} is a guest user."
+    else:
+        cw_user_string = (
+            f"{customer_name} is a user of carworld.love with the username: {username}."
+        )
 
     product_table = cw_email_product_table(products)
     customer_shipping = cw_email_format_shipping(shipping)
@@ -883,6 +896,9 @@ def send_email_order_details(shipping, customer_name, products, amt_in_cents):
         <hr/>
         <p>
             An order in the amount of ${dollar_cost} has been placed by {customer_name}!
+        </p>
+        <p>
+            { cw_user_string }
         </p>
         {product_table}
         {customer_shipping}

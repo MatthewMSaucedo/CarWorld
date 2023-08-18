@@ -8,6 +8,7 @@ import {
   useStripe,
   useElements
 } from "@stripe/react-stripe-js";
+import CWCommonNavbarComponent from '../../cw-common/components/navbar/cw-common-navbar-component';
 
 export default function CheckoutForm() {
   // Stripe init
@@ -93,31 +94,36 @@ export default function CheckoutForm() {
   };
 
   const paymentElementOptions = {
-    layout: "tabs"
+    layout: "tabs",
+    business: {name: "Car World"}
   }
 
   return (
-    <form id="payment-form" onSubmit={handleSubmit} className="stripe-form-body">
-      <LinkAuthenticationElement
-        id="link-authentication-element"
-        onChange={(e) => setEmail(e.target.value)}
-      />
+    <div>
+      { CWCommonNavbarComponent() }
+      <form id="payment-form" onSubmit={handleSubmit} className="stripe-form-body">
+        <LinkAuthenticationElement
+          id="link-authentication-element"
+          onChange={(e) => setEmail(e.target.value)}
+        />
 
-      <br />
+        <br />
 
-      <h3>Shipping</h3>
-      <AddressElement options={{mode: 'shipping'}} />
+        <h3>Shipping</h3>
+        <AddressElement options={{mode: 'shipping'}} />
 
-      <br />
+        <br />
 
-      <PaymentElement id="payment-element" options={paymentElementOptions} />
-      <button disabled={isLoading || !stripe || !elements} id="submit">
-        <span id="button-text">
-          {isLoading ? <div className="spinner" id="spinner"></div> : "Pay now"}
-        </span>
-      </button>
-      {/* Show any error or success messages */}
-      {message && <div id="payment-message">{message}</div>}
-    </form>
+        <PaymentElement id="payment-element" options={paymentElementOptions} />
+        <button disabled={isLoading || !stripe || !elements} id="submit">
+          <span id="button-text">
+            {isLoading ? <div className="spinner" id="spinner"></div> : "Pay now"}
+          </span>
+        </button>
+        {/* Show any error or success messages */}
+        { /* TODO: Toast */ }
+        {message && <div id="payment-message">{message}</div>}
+      </form>
+    </div>
   );
 }

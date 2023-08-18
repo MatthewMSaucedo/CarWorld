@@ -28,11 +28,11 @@ function CWWikiComponent() {
                     </p>
                     <p>
                         Now, William Banks has returned to Earth World with a mission. <strong>The Bridgekeeper</strong> demands he
-                        gather <strong>12 Apostles</strong> complete with Tat Pass to return to Car World.
+                        gather <strong>12 Apostles</strong> complete with <strong>Tat Pass</strong> to return to Car World.
                         William must comply if he wishes to lead <strong>the Attendants Revolution</strong> against
                         Quuarux and restore a third <strong>Cartopia</strong>. Including <strong>Director Russell Katz </strong>
                         (Head Propagator & Dramatician of the movement), William has gathered 5 Apostles thus far, with
-                        his <strong>Fiancé-Apostle</strong> pledged to receive <strong>Tat Pass</strong> in the fall.
+                        his <strong>Fiancé-Apostle</strong> pledged to receive Tat Pass in the fall.
                     </p>
                 </div>
 
