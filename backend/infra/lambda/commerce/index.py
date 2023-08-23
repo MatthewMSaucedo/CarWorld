@@ -9,6 +9,9 @@ import hashlib
 
 # Environment Variables
 SES_CONFIG_ID = os.environ["ses_config_id"]
+USER_TABLE_NAME = os.environ["user_table_name"]
+COMMODITY_TABLE_NAME = os.environ["commodity_table_name"]
+TRANSACTION_TABLE_NAME = os.environ["transaction_table_name"]
 stripe.api_key = os.environ["stripe_secret"]
 
 # TODO: move these mapping to param store, shouldn't be hardcoded here
@@ -498,7 +501,7 @@ def create_transaction_record(
     dynamo_client = dynamo_client.client
 
     dynamo_client.put_item(
-        TableName="transactions",
+        TableName=TRANSACTION_TABLE_NAME,
         Item={
             "id": {"S": transaction_id},
             "shipping": {
@@ -544,7 +547,7 @@ def format_commodity_list_from_cart(cart):
 
 def update_transaction_record_client_call(transaction_id, status, dynamo_client):
     response = dynamo_client.update(
-        table_name="transactions",
+        table_name=TRANSACTION_TABLE_NAME,
         key_expression={"id": {"S": transaction_id}},
         field_value_map={"tx_status": status},
     )
@@ -555,7 +558,7 @@ def update_transaction_record_webhook_call(
     transaction_id, name, shipping, status, stripe_transaction_id, dynamo_client
 ):
     response = dynamo_client.update(
-        table_name="transactions",
+        table_name=TRANSACTION_TABLE_NAME,
         key_expression={"id": {"S": transaction_id}},
         field_value_map={
             "tx_status": status,
@@ -780,7 +783,7 @@ def grantDdpToUser(cw_user_record, commodity_list, dynamo_client):
     cw_user_table_key_expr = {"id": {"S": cw_user_record["id"]["S"]}}
     try:
         updated_cw_user = dynamo_client.update(
-            table_name="users",
+            table_name=USER_TABLE_NAME,
             key_expression=cw_user_table_key_expr,
             field_value_map={"ddp": new_ddp},
         )
@@ -824,7 +827,7 @@ def remove_purchased_commodities_from_stock(commodity_list, dynamo_client):
 
         try:
             old_quantity = dynamo_client.get(
-                table_name="commodities",
+                table_name=COMMODITY_TABLE_NAME,
                 key_expression={"product_name": {"S": product_name}},
             )["quantity"]["N"]
             new_quantity = int(old_quantity) - int(quantity_purchased)
@@ -834,7 +837,7 @@ def remove_purchased_commodities_from_stock(commodity_list, dynamo_client):
             )
 
             dynamo_client.update(
-                table_name="commodities",
+                table_name=COMMODITY_TABLE_NAME,
                 key_expression={"product_name": {"S": product_name}},
                 field_value_map={"quantity": new_quantity},
             )

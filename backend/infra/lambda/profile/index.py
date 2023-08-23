@@ -175,6 +175,49 @@ class CWDynamoClient:
 ########################################################
 # Controller Helper Methods
 ########################################################
+def get_cw_ddp_tier_list_and_rank(user_id, dynamo_client):
+    try:
+        # NOTE: Dynamo paginates a response after 1MB of data has been retrieved.
+        #       Due to the current scale of CW, this is not an issue for us.
+        #       HOWEVER, it's very important to note down this intentionality
+        #       now while I still remember. Tomorrow's bugs solved by yesterday's
+        #       comments :)
+        # Retrieve backend list of Users, ranked by DDP
+        commodities = dynamo_client.get_all("commodities")
+    except Exception as e:
+        error = {
+            "message": str(e),
+            "stack": traceback.format_exc(),
+        }
+        print(f"SERVER_ERROR: Failed to obtain Commodites from DB -- {error}")
+        return {
+            "code": 500,
+            "message": "SERVER_ERROR: Failed to obtain Commodites from DB",
+            "error": error,
+        }
+
+    try:
+        # Format commodities for FE
+        fe_commodity_map = fe_commodity_map_from_dynamo_list(commodities, dynamo_client)
+    except Exception as e:
+        error = {
+            "message": str(e),
+            "stack": traceback.format_exc(),
+        }
+        print(
+            f"SERVER_ERROR: Failed to convert Dynamo commodity list to FE Mapping -- {error}"
+        )
+        return {
+            "code": 500,
+            "message": "SERVER_ERROR: Failed to convert Dynamo commodity list to FE Mapping",
+            "error": error,
+        }
+
+    return {
+        "code": 200,
+        "message": "Successfully retreived commodity list",
+        "body": {"commodityList": fe_commodity_map},
+    }
 
 
 ########################################################
@@ -209,7 +252,10 @@ def handler(event, context):
         if request["action"] == "secret":
             # Given that this is a protected action, the JWT provided in the header
             # has already been parsed, with the UserID being provided in the reqContext
-            user_id = event["requestContext"]["authorizer"]["lambda"]["user_id"]
+            try:
+                user_id = event["requestContext"]["authorizer"]["lambda"]["user_id"]
+            except Exception as e:
+                raise Exception("User ID not included from Lambda Authorizer!")
 
             # Get DDP Tier list AND user's rank
             res = get_cw_ddp_tier_list_and_rank(

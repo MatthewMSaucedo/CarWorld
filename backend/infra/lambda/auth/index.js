@@ -9,6 +9,8 @@ exports.handler = async(event) => {
   // Environment Variables
   const JWT_SECRET = process.env.jwtSecret
   const JWT_EXPIRATION_TIME_IN_MINUTES = process.env.jwtExpMinutes
+  const USER_TABLE_NAME = process.env.userTableName
+  const INVALID_TOKEN_TABLE_NAME = process.env.invalidTokenTableName
   const MONTH_IN_MINUTES = "43200"
 
   async function isValidPassword(password, hash) {
@@ -18,7 +20,7 @@ exports.handler = async(event) => {
 
   async function storeNewUserInDatabase(dbClient, username, hashedPassword, email) {
     const putParams = {
-      TableName: "users",
+      TableName: USER_TABLE_NAME,
       Item: {
         id: { S: crypto.randomUUID() },
         username: { S: username },
@@ -39,7 +41,7 @@ exports.handler = async(event) => {
         ":u": { S: username },
       },
       KeyConditionExpression: "username = :u",
-      TableName: "users",
+      TableName: USER_TABLE_NAME,
       IndexName: "username-lookup-index"
     }
     const command = new QueryCommand(getParams)
@@ -457,7 +459,7 @@ exports.handler = async(event) => {
     // Lookup token in InvalidCache
     console.log(`DEBUG -- Checking to see if token jti, ${refreshTokenJti}, is invalid`)
     const getParams = {
-      TableName: "invalid_tokens",
+      TableName: INVALID_TOKEN_TABLE_NAME,
       Key: {
         jti: refreshTokenJti
       }

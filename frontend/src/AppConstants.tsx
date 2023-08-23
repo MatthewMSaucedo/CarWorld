@@ -72,17 +72,17 @@ export const API_RETRY = 3
 
 export const CW_API_ENDPOINTS = {
   "commerce": {
-    "secret": "https://6vikh38ev7.execute-api.us-east-1.amazonaws.com/commerce/secret",
-    "commodities": "https://6vikh38ev7.execute-api.us-east-1.amazonaws.com/commerce/commodities"
+    "secret": "https://v0z0lad7ni.execute-api.us-east-1.amazonaws.com/commerce/secret",
+    "commodities": "https://v0z0lad7ni.execute-api.us-east-1.amazonaws.com/commerce/commodities"
   },
   "auth": {
-    "refresh": "https://8duop2auq0.execute-api.us-east-1.amazonaws.com/auth/refresh",
-    "login": "https://8duop2auq0.execute-api.us-east-1.amazonaws.com/auth/login",
-    "register": "https://8duop2auq0.execute-api.us-east-1.amazonaws.com/auth/register",
-    "guest": "https://8duop2auq0.execute-api.us-east-1.amazonaws.com/auth/guest"
+    "refresh": "https://v0z0lad7ni.execute-api.us-east-1.amazonaws.com/auth/refresh",
+    "login": "https://v0z0lad7ni.execute-api.us-east-1.amazonaws.com/auth/login",
+    "register": "https://v0z0lad7ni.execute-api.us-east-1.amazonaws.com/auth/register",
+    "guest": "https://v0z0lad7ni.execute-api.us-east-1.amazonaws.com/auth/guest"
   },
   "user": {
-    "grantddp": "https://.execute-api.us-east-1.amazonaws.com/user/grantddp"
+    "ddp_rank": "https://v0z0lad7ni.execute-api.us-east-1.amazonaws.com/profile/ddp_rank"
   },
 }
 

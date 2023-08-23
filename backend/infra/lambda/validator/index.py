@@ -14,7 +14,7 @@ JWT_SECRET = os.environ["jwtSecret"]
 #       but hardcoded for now to save costs from Param Store
 # Constants
 GUEST_TOKEN_ACTION_LIST = ["secret"]
-ADMIN_TOKEN_ACTION_LIST = ["secret"]
+ADMIN_TOKEN_ACTION_LIST = [""]
 
 
 ########################################################
@@ -25,6 +25,7 @@ def handler(event, context):
         # Peel action off of endpoint
         # NOTE: rawPath is of form "/controller/action"
         action = event["rawPath"].split("/")[-1]
+        controller = event["rawPath"].split("/")[1]
 
         # Grab JWT from header
         encoded_jwt = event["headers"]["authorization"]
@@ -62,7 +63,12 @@ def handler(event, context):
                     "Refresh token provided in header, instead of Auth token"
                 )
 
-        if jwt_payload["sub"] ADMIN_TOKEN_ACTION_LIST
+        # Handle admin users
+        if controller == "admin":
+            # TODO: Admin check
+            #       No admin routes as of now, so no need to flesh this out atm
+            #       For now, just return an exception
+            raise Exception("Admin controller not accounted for in Validator Lambda")
 
     except Exception as e:
         error = {
