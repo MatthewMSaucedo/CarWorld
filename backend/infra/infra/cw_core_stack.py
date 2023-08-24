@@ -260,7 +260,7 @@ class CWCoreStack(Stack):
             scope=self,
             id=f"{self.stack_env}-cw-batch-write-store-items-lambda",
             runtime=lambdaFx.Runtime.PYTHON_3_7,
-            handler="function/batch_write_store_items.handler",
+            handler="batch_write_store_items.handler",
             role=batch_write_store_items_lambda_role,
             code=lambdaFx.Code.from_asset("./lambda/jobs/"),
             description="CarWorld Batch Commodity Writer",
