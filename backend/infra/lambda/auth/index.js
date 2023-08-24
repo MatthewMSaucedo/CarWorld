@@ -418,6 +418,7 @@ exports.handler = async(event) => {
     try {
       // Assign claims (payload)
       const guestClaims = {
+        "jti": crypto.randomUUID(),
         "sub": "guest",
         "role": "guest",
         "type": "guest"
@@ -482,8 +483,10 @@ exports.handler = async(event) => {
     request = {
       type: event.requestContext.http.method,
       action: event.requestContext.http.path.replace("/auth/", ""),
-      body: JSON.parse(event.body)
     }
+
+    // Guest req has no body
+    request.body = request.action != "guest" ? JSON.parse(event.body) : {}
   } catch (error) {
       return {
         code: 500,

@@ -67,7 +67,7 @@ export class CWUser {
         )
     }
 
-    static userFromGuestToken(guestToken: string): CWUser {
+    static staticUserFromGuestToken(guestToken: string): CWUser {
         return new CWUser(
             "guest",
             CWUserType.Guest,
@@ -76,65 +76,6 @@ export class CWUser {
             guestToken,
             "",
         )
-    }
-
-    async grantDDP(quantity: number): Promise<boolean> {
-        let waitTime = 0
-        let attempts = 0
-        let res: any | undefined = undefined;
-
-        // NOTE: I don't think the caller should have to use the Redux slice for this;
-        //       rather, I think it makes sense to do it under the hood here.
-        //       As long as we are always following these mutable actions with an update
-        //       to the Redux store, then this will handle itself. Sure; a failed refresh
-        //       looks the same, in the return of this function call, as a failed DDP grant.
-        //       However, since we will follow this call with an update to the Redux store,
-        //       the importation mutation difference (isLoggedIn == true/false) will present
-        //       itself. That should trigger a re-render, if false.
-        // Update Authtoken if neccessary
-        const currentTime = new Date()
-        if (this.refreshToken.expiration < currentTime) {
-            const refreshWorked = await this.refreshAuth()
-            if (!refreshWorked) {
-                this.isLoggedIn = false
-                return false
-            }
-        }
-
-        // Exponential backoff for retries
-        while(attempts < API_RETRY) {
-            await this.waitFor(waitTime)
-            waitTime = 2 ** attempts * 100
-
-            // POST DDP to CWApi
-            // TODO: wrap in try/catch, return false on failure
-            res = await fetch(CW_API_ENDPOINTS.user.grantddp, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Access-Control-Allow-Origin": "*",
-                    "Authorization": this.authToken.token
-                },
-                body: JSON.stringify({ ddpGranted: quantity }),
-            })
-            res = await res.json()
-
-            attempts++
-            if (res.code === 200) {
-                break
-            }
-        }
-
-        let ddpGrantSucceeded: boolean
-        if (attempts === 3) {
-            console.log(`Failed to add {quantity} DDP to user {this.username}`)
-            ddpGrantSucceeded = false
-        } else {
-            this.ddp += quantity
-            ddpGrantSucceeded = true
-        }
-
-        return ddpGrantSucceeded
     }
 
     async refreshAuth(): Promise<boolean> {

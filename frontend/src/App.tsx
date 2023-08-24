@@ -63,7 +63,7 @@ function App() {
             return
         }
         // Parse login response
-        const guestToken: string = guestTokenRes.body.token
+        const guestToken: string = guestTokenRes.body.guestToken
 
         dispatch(fetchGuestToken(guestToken))
       }

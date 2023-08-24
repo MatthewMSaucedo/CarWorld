@@ -1,4 +1,3 @@
-import CWHomeComponent from './cw-home/cw-home-component'
 import CWStoreComponent from './cw-store/cw-store-component'
 import CWVideosComponent from './cw-videos/cw-videos-component'
 import { CWShoppingItemType, CWStoreItem } from './cw-store/cw-store-item'
@@ -72,17 +71,17 @@ export const API_RETRY = 3
 
 export const CW_API_ENDPOINTS = {
   "commerce": {
-    "secret": "https://v0z0lad7ni.execute-api.us-east-1.amazonaws.com/commerce/secret",
-    "commodities": "https://v0z0lad7ni.execute-api.us-east-1.amazonaws.com/commerce/commodities"
+    "secret": "https://2x7mtrzbjh.execute-api.us-east-1.amazonaws.com/commerce/secret",
+    "commodities": "https://2x7mtrzbjh.execute-api.us-east-1.amazonaws.com/commerce/commodities"
   },
   "auth": {
-    "refresh": "https://v0z0lad7ni.execute-api.us-east-1.amazonaws.com/auth/refresh",
-    "login": "https://v0z0lad7ni.execute-api.us-east-1.amazonaws.com/auth/login",
-    "register": "https://v0z0lad7ni.execute-api.us-east-1.amazonaws.com/auth/register",
-    "guest": "https://v0z0lad7ni.execute-api.us-east-1.amazonaws.com/auth/guest"
+    "refresh": "https://2x7mtrzbjh.execute-api.us-east-1.amazonaws.com/auth/refresh",
+    "login": "https://2x7mtrzbjh.execute-api.us-east-1.amazonaws.com/auth/login",
+    "register": "https://2x7mtrzbjh.execute-api.us-east-1.amazonaws.com/auth/register",
+    "guest": "https://2x7mtrzbjh.execute-api.us-east-1.amazonaws.com/auth/guest"
   },
-  "user": {
-    "ddp_rank": "https://v0z0lad7ni.execute-api.us-east-1.amazonaws.com/profile/ddp_rank"
+  "profile": {
+    "ddp_rank": "https://2x7mtrzbjh.execute-api.us-east-1.amazonaws.com/profile/ddp_rank"
   },
 }
 

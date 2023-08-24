@@ -28,8 +28,9 @@ export const cwUserSlice = createSlice({
       return action.payload
     },
     fetchGuestToken: (state, action: PayloadAction<string>) => {
-      return CWUser.staticUserFromGuestToken(action.payload)
-
+      const user = CWUser.staticUserFromGuestToken(action.payload)
+      console.log(user)
+      return user
     },
     logoutUser: (state, action: PayloadAction<null>) => {
       return initialState

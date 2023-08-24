@@ -128,6 +128,14 @@ class CWCoreStack(Stack):
         # Initialize AmazonSES and grant Send permissions to the Commerce Lambda
         self.cw_ses_service = self.create_cw_ses_service(self.cw_commerce_lambda)
 
+        ###############################################
+        # CAR WORLD JOBS
+        ###############################################
+        # Init StoreItem db
+        self.create_cw_batch_write_store_items_lambda = (
+            self.cw_batch_write_store_items_lambda(self.cw_commodity_table)
+        )
+
         # TODO: Lambda to handle db retries for sensitive writes
         # Create the DB Retry Lambda for corrective actions
         # self.cw_db_retry_lambda = self.create_cw_db_retry_lambda()
@@ -234,10 +242,43 @@ class CWCoreStack(Stack):
         )
         return commodity_table
 
+    def cw_batch_write_store_items_lambda(self, cw_commodity_table):
+        batch_write_store_items_lambda_role = iam.Role(
+            scope=self,
+            id=f"{self.stack_env}-cw-batch-write-store-items-lambda-role",
+            assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
+            description="Lambda Role to populate CW Store Items in CWCommodity Table",
+            managed_policies=[
+                iam.ManagedPolicy.from_aws_managed_policy_name(
+                    "service-role/AWSLambdaBasicExecutionRole"
+                )
+            ],
+        )
+        cw_commodity_table.grant_write_data(batch_write_store_items_lambda_role)
+
+        batch_write_store_items_lambda = lambdaFx.Function(
+            scope=self,
+            id=f"{self.stack_env}-cw-batch-write-store-items-lambda",
+            runtime=lambdaFx.Runtime.PYTHON_3_7,
+            handler="function/batch_write_store_items.handler",
+            role=batch_write_store_items_lambda_role,
+            code=lambdaFx.Code.from_asset("./lambda/jobs/"),
+            description="CarWorld Batch Commodity Writer",
+            environment={
+                "commodity_table_name": cw_commodity_table.table_name,
+            },
+            timeout=Duration.seconds(15),
+        )
+
+        return {
+            "function": batch_write_store_items_lambda,
+            "role": batch_write_store_items_lambda_role,
+        }
+
     def create_cw_auth_lambda(
         self, jwt_secret, jwt_exp_minutes, user_table, invalid_token_table
     ):
-        shared_lambda_role = iam.Role(
+        auth_lambda_role = iam.Role(
             scope=self,
             id=f"{self.stack_env}-cw-auth-lambda-role",
             assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
@@ -248,15 +289,15 @@ class CWCoreStack(Stack):
                 )
             ],
         )
-        invalid_token_table.grant_read_data(shared_lambda_role)
-        user_table.grant_read_write_data(shared_lambda_role)
+        invalid_token_table.grant_read_data(auth_lambda_role)
+        user_table.grant_read_write_data(auth_lambda_role)
 
         registration_lambda = lambdaFx.Function(
             scope=self,
             id=f"{self.stack_env}-cw-auth-registration-lambda",
             runtime=lambdaFx.Runtime.NODEJS_18_X,
             handler="function/index.handler",
-            role=shared_lambda_role,
+            role=auth_lambda_role,
             # TODO: fix this, upload manually for now
             code=lambdaFx.Code.from_asset("./lambda/auth/zip"),
             description="CarWorld AuthController",
@@ -264,12 +305,13 @@ class CWCoreStack(Stack):
                 "jwtSecret": jwt_secret,
                 "jwtExpMinutes": jwt_exp_minutes,
                 "userTableName": user_table.table_name,
-                "invalidTokenTableName": user_table.table_name,
+                "invalidTokenTableName": invalid_token_table.table_name,
             },
+            memory_size=512,
             timeout=Duration.seconds(15),
         )
 
-        return {"function": registration_lambda, "role": shared_lambda_role}
+        return {"function": registration_lambda, "role": auth_lambda_role}
 
     def create_cw_validator_lambda(self, jwt_secret, jwt_exp_minutes):
         validator_role = iam.Role(
@@ -312,6 +354,7 @@ class CWCoreStack(Stack):
             description="CarWorld Validator Lambda, to authenticate API requests",
             environment={"jwtSecret": jwt_secret, "jwtExpMinutes": jwt_exp_minutes},
             layers=[jwt_lambda_layer, jwt_dependency_lambda_layer],
+            memory_size=512,
             timeout=Duration.seconds(15),
         )
 
@@ -386,6 +429,7 @@ class CWCoreStack(Stack):
                 "transaction_table_name": transaction_table.table_name,
             },
             layers=[lambda_layer],
+            memory_size=512,
             timeout=Duration.seconds(15),
         )
 
@@ -508,6 +552,7 @@ class CWCoreStack(Stack):
             code=lambdaFx.Code.from_asset("./lambda/profile/"),
             description="CarWorld Profile Lambda, to handle Profile-related actions",
             environment={"userTableName": user_table.table_name},
+            memory_size=512,
             timeout=Duration.seconds(15),
         )
 
