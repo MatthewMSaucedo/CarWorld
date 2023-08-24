@@ -162,7 +162,7 @@ function CWAuthComponent() {
         const refreshToken: string = loginRes.body.tokens.refresh
         const userType: string = loginRes.body.userType
         const ddp: number = loginRes.body.ddp
-
+        const joined: string = loginRes.body.joined
 
         // Update Redux store with new user info
         dispatch(loginUser({
@@ -171,7 +171,8 @@ function CWAuthComponent() {
             authToken: authToken,
             refreshToken: refreshToken,
             isLoggedIn: true,
-            ddp: ddp
+            ddp: ddp,
+            joined: joined
         }))
 
         // Show loading screen while API calls take place
@@ -195,6 +196,7 @@ function CWAuthComponent() {
         const refreshToken: string = loginRes.body.tokens.refresh
         const userType: string = loginRes.body.userType
         const ddp: number = loginRes.body.ddp
+        const joined: string = loginRes.body.joined
 
 
         // Update Redux store with new user info
@@ -204,7 +206,8 @@ function CWAuthComponent() {
             authToken: authToken,
             refreshToken: refreshToken,
             isLoggedIn: true,
-            ddp: ddp
+            ddp: ddp,
+            joined: joined
         }))
 
         // Show loading screen while API calls take place
@@ -352,7 +355,7 @@ function CWAuthComponent() {
                     { /* Submission Button */ }
                     <div className="d-grid gap-2 mt-3">
                         <button
-                            onClick={ () =>  onClickLoginErrorHandling() }
+                            onClick={ () => onClickLoginErrorHandling() }
                             className="submit-form-button">
                             Submit
                         </button>

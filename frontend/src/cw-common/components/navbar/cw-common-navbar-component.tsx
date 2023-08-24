@@ -45,9 +45,7 @@ function CWCommonNavbarComponent() {
     //     X -> Merch -> Home (Merch still highlight)
     useEffect(() => {
         url = location.pathname
-        console.log("Inside Navbar UseEffect()")
         console.log(url)
-        console.log(urlToPathMapping[url])
     }, [location])
 
     // Left-Oriented Navbar links

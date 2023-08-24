@@ -27,6 +27,7 @@ exports.handler = async(event) => {
         password: { S: hashedPassword },
         email: { S: email },
         type: { S: "standard" },
+        joined: { S: new Date().toDateString() },
         ddp: { N: '0' }
       }
     }
@@ -287,6 +288,7 @@ exports.handler = async(event) => {
             username: getUserByUsernameRes.username.S,
             userType: getUserByUsernameRes.type.S,
             ddp: getUserByUsernameRes.ddp.N,
+            joined: getUserByUsernameRes.joined.S,
             tokens: jwtTokens
           }
         }

@@ -11,6 +11,7 @@ export type CWReduxLoginUserReqBody = {
     authToken: string,
     refreshToken: string,
     isLoggedIn: boolean,
+    joined: string,
     ddp: number
 }
 
@@ -33,8 +34,10 @@ export class CWUser {
     isLoggedIn: boolean
 
     // Digital Devotion Points
-    // TODO: Get this number in the login response
     ddp: number
+
+    // Metadata, stringified Date() obj
+    joined?: string
 
     constructor(
         username: string,
@@ -42,7 +45,8 @@ export class CWUser {
         ddp: number,
         isLoggedIn: boolean,
         authToken: string,
-        refreshToken: string
+        refreshToken: string,
+        joined?: string
     ) {
         this.username = username
         this.userType = userType
@@ -53,6 +57,10 @@ export class CWUser {
 
         this.authToken = new CWToken(authToken)
         this.refreshToken = new CWToken(refreshToken)
+
+        if (joined) {
+            this.joined = joined
+        }
     }
 
     static staticLogin(loginReq: CWReduxLoginUserReqBody): CWUser {
@@ -64,6 +72,7 @@ export class CWUser {
             loginReq.isLoggedIn,
             loginReq.authToken,
             loginReq.refreshToken,
+            loginReq.joined,
         )
     }
 

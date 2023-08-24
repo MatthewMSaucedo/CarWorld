@@ -49,14 +49,12 @@ function App() {
   // On load
   useEffect(() => {
     (async () => {
-      console.log("App.tsx useEffect() called")
       const currentTokenIsGuest = (cwUser.userType === CWUserType.Guest)
 
       // Request guestToken iff
       //   a) current token is expired
       //   b) current token is a guest token (not logged in)
       if (CWToken.isExpired(cwUser.authToken.expiration) && currentTokenIsGuest) {
-        console.log("Test")
         const guestTokenRes = await guestTokenApiCall()
         if (guestTokenRes.code !== 200) {
             // TODO: Error handle

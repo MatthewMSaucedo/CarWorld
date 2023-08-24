@@ -63,8 +63,8 @@ function CWProfileComponent() {
     }
 
     const onClickBuyDDP = () => {
-        // navigate to a DDP store page
-        /* navigate('/auth') */
+        // TODO: navigate to SPECIFIC DDP store page
+        navigate('/store')
     }
 
     return (
@@ -75,7 +75,7 @@ function CWProfileComponent() {
                     <div className="card-content">
                         <p className="username"> {cwUser.username} </p>
                         <p className="devoted-since">
-                            Devoted since: { new Date(cwUser.refreshToken.expiration).toDateString() }
+                            Devoted since: { cwUser.joined }
                         </p>
                     </div>
                     <div className="card-content">
@@ -99,7 +99,7 @@ function CWProfileComponent() {
                         <p className="devotion-point-title">
                             My DDP: { cwUser.ddp }
                         </p>
-                        <button className="buy-ddp">
+                        <button className="buy-ddp" onClick={() => onClickBuyDDP()}>
                             BUY DDP
                         </button>
                     </div>

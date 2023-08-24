@@ -254,7 +254,7 @@ class CWDynamoClient:
 def get_commodity_list(dynamo_client):
     try:
         # Retrieve backend list of commodities
-        commodities = dynamo_client.get_all("commodities")
+        commodities = dynamo_client.get_all(COMMODITY_TABLE_NAME)
     except Exception as e:
         error = {
             "message": str(e),
@@ -685,9 +685,10 @@ def handle_webhook(stripe_event, dynamo_client):
             "error": error,
         }
 
+    cw_user_record = None
     try:
         if not is_guest_purchase:
-            cw_user_record = dynamo_client.get("users", {"id": {"S": user_id}})
+            cw_user_record = dynamo_client.get(USER_TABLE_NAME, {"id": {"S": user_id}})
     except Exception as e:
         error = {
             "message": str(e),
@@ -750,7 +751,7 @@ def handle_webhook(stripe_event, dynamo_client):
             customer_name=name,
             products=commodity_list,
             amt_in_cents=amount,
-            username=cw_user_record["username"]["S"],
+            username=(None if is_guest_purchase else cw_user_record["username"]["S"]),
             is_guest_purchase=is_guest_purchase,
         )
         return {"code": 200, "message": ses_response}
