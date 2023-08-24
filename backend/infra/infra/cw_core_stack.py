@@ -31,8 +31,12 @@ from constructs import Construct
 #     * Profile Controller and associated Databases
 #     * CarWorld SES (email service)
 class CWCoreStack(Stack):
-    def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
+    def __init__(
+        self, scope: Construct, construct_id: str, stack_env: str, **kwargs
+    ) -> None:
         super().__init__(scope, construct_id, **kwargs)
+        # Development environment (dev/prod)
+        self.stack_env = stack_env
 
         ###############################################
         # SECRETS (stored in AWS SSM ParamStore)
@@ -136,7 +140,7 @@ class CWCoreStack(Stack):
         # Create User table
         user_table = dynamodb.Table(
             scope=self,
-            id="users",
+            id=f"{self.stack_env}-users",
             # PK: id, a guuid
             partition_key=dynamodb.Attribute(
                 name="id",
@@ -162,7 +166,7 @@ class CWCoreStack(Stack):
     def create_cw_invalid_token_table(self):
         invalid_token_table = dynamodb.Table(
             scope=self,
-            id="invalid_tokens",
+            id=f"{self.stack_env}-invalid_tokens",
             # PK: jti, a guuid
             partition_key=dynamodb.Attribute(
                 name="jti",
@@ -182,7 +186,7 @@ class CWCoreStack(Stack):
     def create_cw_transaction_table(self):
         transaction_table = dynamodb.Table(
             scope=self,
-            id="transactions",
+            id=f"{self.stack_env}-transactions",
             # PK: id, a guuid
             partition_key=dynamodb.Attribute(
                 name="id",
@@ -212,7 +216,7 @@ class CWCoreStack(Stack):
     def create_cw_commodity_table(self):
         commodity_table = dynamodb.Table(
             scope=self,
-            id="commodities",
+            id=f"{self.stack_env}-commodities",
             # PK: product_name, a string
             partition_key=dynamodb.Attribute(
                 name="product_name",
@@ -235,7 +239,7 @@ class CWCoreStack(Stack):
     ):
         shared_lambda_role = iam.Role(
             scope=self,
-            id="cw-auth-lambda-role",
+            id=f"{self.stack_env}-cw-auth-lambda-role",
             assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
             description="Lambda Role with access to Auth table",
             managed_policies=[
@@ -249,7 +253,7 @@ class CWCoreStack(Stack):
 
         registration_lambda = lambdaFx.Function(
             scope=self,
-            id="cw-auth-registration-lambda",
+            id=f"{self.stack_env}-cw-auth-registration-lambda",
             runtime=lambdaFx.Runtime.NODEJS_18_X,
             handler="function/index.handler",
             role=shared_lambda_role,
@@ -270,7 +274,7 @@ class CWCoreStack(Stack):
     def create_cw_validator_lambda(self, jwt_secret, jwt_exp_minutes):
         validator_role = iam.Role(
             scope=self,
-            id="cw-validator-lambda-role",
+            id=f"{self.stack_env}-cw-validator-lambda-role",
             assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
             description="Validator Lambda Role",
             managed_policies=[
@@ -287,20 +291,20 @@ class CWCoreStack(Stack):
         #   pip3 install [[PACKAGE]] --target ~/CarWorld/backend/infra/lambda/validator/layer/python/lib/python3.7/site-packages
         jwt_lambda_layer = lambdaFx.LayerVersion(
             self,
-            "jwt-lambda-layer",
+            f"{self.stack_env}-jwt-lambda-layer",
             code=lambdaFx.AssetCode("lambda/validator/jwt-layer/"),
             compatible_runtimes=[lambdaFx.Runtime.PYTHON_3_7],
         )
         jwt_dependency_lambda_layer = lambdaFx.LayerVersion(
             self,
-            "jwt-dependency-lambda-layer",
+            f"{self.stack_env}-jwt-dependency-lambda-layer",
             code=lambdaFx.AssetCode("lambda/validator/jwt-dependency-layer/"),
             compatible_runtimes=[lambdaFx.Runtime.PYTHON_3_7],
         )
 
         validator_lambda = lambdaFx.Function(
             scope=self,
-            id="cw-validator-lambda",
+            id=f"{self.stack_env}-cw-validator-lambda",
             runtime=lambdaFx.Runtime.PYTHON_3_7,
             handler="index.handler",
             role=validator_role,
@@ -317,7 +321,7 @@ class CWCoreStack(Stack):
         # Create CarWorld API Gateway
         cw_api = apigw.HttpApi(
             scope=self,
-            id="cw-auth-api",
+            id=f"{self.stack_env}-cw-auth-api",
             description="CarWorld API Gateway",
             cors_preflight=apigw.CorsPreflightOptions(
                 allow_headers=["*"],
@@ -339,7 +343,7 @@ class CWCoreStack(Stack):
     ):
         commerce_lambda_role = iam.Role(
             scope=self,
-            id="cw-commerce-lambda-role",
+            id=f"{self.stack_env}-cw-commerce-lambda-role",
             assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
             description="Commerce Lambda Role",
             managed_policies=[
@@ -357,7 +361,7 @@ class CWCoreStack(Stack):
         #   https://medium.com/geekculture/deploying-aws-lambda-layers-with-python-8b15e24bdad2
         lambda_layer = lambdaFx.LayerVersion(
             self,
-            "lambda-layer",
+            f"{self.stack_env}-stripe-layer",
             code=lambdaFx.AssetCode("lambda/commerce/layer/"),
             compatible_runtimes=[lambdaFx.Runtime.PYTHON_3_7],
         )
@@ -369,7 +373,7 @@ class CWCoreStack(Stack):
 
         commerce_lambda = lambdaFx.Function(
             scope=self,
-            id="cw-commerce-lambda",
+            id=f"{self.stack_env}-cw-commerce-lambda",
             runtime=lambdaFx.Runtime.PYTHON_3_7,
             handler="index.handler",
             role=commerce_lambda_role,
@@ -389,7 +393,9 @@ class CWCoreStack(Stack):
 
     def add_auth_routes_to_api_gw(self, cw_api_gw, auth_lambda):
         # Create CarWorld Auth Controller lambda association
-        auth_controller = HttpLambdaIntegration("cw-auth-controller", auth_lambda)
+        auth_controller = HttpLambdaIntegration(
+            f"{self.stack_env}-cw-auth-controller", auth_lambda
+        )
 
         # Create AuthAPI routes
         #
@@ -432,14 +438,14 @@ class CWCoreStack(Stack):
     ):
         # Create Commerce JWT Request Authorizer lambda
         lambda_authorizer = HttpLambdaAuthorizer(
-            "CWCommerceRequestValidator",
+            f"{self.stack_env}-CWCommerceRequestValidator",
             validator_lambda,
             response_types=[HttpLambdaResponseType.SIMPLE],
         )
 
         # Create CarWorld Commerce Controller lambda association
         commerce_controller = HttpLambdaIntegration(
-            "cw-commerce-controller", commerce_lambda
+            f"{self.stack_env}-cw-commerce-controller", commerce_lambda
         )
 
         # Create CommerceAPI routes
@@ -476,7 +482,7 @@ class CWCoreStack(Stack):
         # Create lambda Role
         profile_lambda_role = iam.Role(
             scope=self,
-            id="cw-profile-lambda-role",
+            id=f"{self.stack_env}-cw-profile-lambda-role",
             assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
             description="Profile Lambda Role",
             managed_policies=[
@@ -495,7 +501,7 @@ class CWCoreStack(Stack):
         # Create lambda
         profile_lambda = lambdaFx.Function(
             scope=self,
-            id="cw-profile-lambda",
+            id=f"{self.stack_env}-cw-profile-lambda",
             runtime=lambdaFx.Runtime.PYTHON_3_7,
             handler="index.handler",
             role=profile_lambda_role,
@@ -510,14 +516,14 @@ class CWCoreStack(Stack):
     def add_profile_routes_to_api_gw(self, cw_api_gw, profile_lambda, validator_lambda):
         # Create Profile JWT Request Authorizer lambda
         lambda_authorizer = HttpLambdaAuthorizer(
-            "CWProfileRequestValidator",
+            f"{self.stack_env}-CWProfileRequestValidator",
             validator_lambda,
             response_types=[HttpLambdaResponseType.SIMPLE],
         )
 
         # Create CarWorld Commerce Controller lambda association
         profile_controller = HttpLambdaIntegration(
-            "cw-profile-controller", profile_lambda
+            f"{self.stack_env}-cw-profile-controller", profile_lambda
         )
 
         # Create ProfileAPI routes
@@ -537,7 +543,7 @@ class CWCoreStack(Stack):
     def create_cw_ses_service(self, cw_commerce_lambda):
         ses_config_set = ses.ConfigurationSet(
             self,
-            "cw-commerce-ses-configuration-set",
+            f"{self.stack_env}-cw-commerce-ses-configuration-set",
         )
 
         # Grant lambda role ses perms & share ses_id to function

@@ -17,7 +17,8 @@
   "context": {
     "config": {
       "account_id": "832303862315",
-      "region": "us-east-1"
+      "region": "us-east-1",
+      "stack_env": "dev"
     },
     "@aws-cdk/aws-lambda:recognizeLayerVersion": true,
     "@aws-cdk/core:checkSecretUsage": true,
