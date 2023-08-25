@@ -17,6 +17,7 @@ import { useState } from 'react'
 
 // AgGrid
 import { AgGridReact } from 'ag-grid-react' // the AG Grid React Component
+import CWFooterComponent from "../../cw-common/components/footer/cw-footer-component"
 
 // Redux typedef
 export interface UseSelectorUser {
@@ -112,6 +113,9 @@ function CWProfileComponent() {
                     </div>
                 </div>
             </div>
+
+            {/* Footer */}
+            { CWFooterComponent() }
         </div>
     )
 }

@@ -2,6 +2,7 @@ import '../App.scss'
 import './cw-wiki.scss'
 
 import CWCommonNavbarComponent from '../cw-common/components/navbar/cw-common-navbar-component'
+import CWFooterComponent from '../cw-common/components/footer/cw-footer-component'
 
 function CWWikiComponent() {
     return (
@@ -74,6 +75,9 @@ function CWWikiComponent() {
                     </p>
                 </div>
             </div>
+
+            {/* Footer */}
+            { CWFooterComponent() }
         </div>
     )
 }

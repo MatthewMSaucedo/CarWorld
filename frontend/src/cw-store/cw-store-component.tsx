@@ -20,6 +20,7 @@ import { RootState } from '../redux/store'
 // 3rd Party Lib
 import Button from 'react-bootstrap/Button'
 import ReactPlayer from 'react-player'
+import CWFooterComponent from '../cw-common/components/footer/cw-footer-component'
 
 
 function CWStoreComponent() {
@@ -61,6 +62,7 @@ function CWStoreComponent() {
             {/* Navbar */}
             { CWCommonNavbarComponent() }
 
+            {/* Store */}
             <div className="cw-store-container">
                 {/* VideoPlayer if home screen */}
                 { route === "/" ? (
@@ -79,6 +81,10 @@ function CWStoreComponent() {
                     { storeItems }
                 </div>
             </div>
+
+
+            {/* Footer */}
+            { CWFooterComponent() }
         </div>
     )
 }

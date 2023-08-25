@@ -11,6 +11,7 @@ import YouTube from 'react-youtube'
 
 import React from 'react'
 import ReactPlayer from 'react-player'
+import CWFooterComponent from '../cw-common/components/footer/cw-footer-component';
 
 function CWVideosComponent() {
 
@@ -78,6 +79,9 @@ function CWVideosComponent() {
                             url='https://www.youtube.com/watch?v=FDZsqouKQ3M&t=1s' />
                 </div>
             </div>
+
+            {/* Footer */}
+            { CWFooterComponent() }
         </div>
     )
 }

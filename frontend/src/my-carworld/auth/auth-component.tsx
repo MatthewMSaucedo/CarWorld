@@ -22,6 +22,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import { CW_API_ENDPOINTS } from '../../AppConstants';
 import CWCommonLoadingComponent from '../../cw-common/components/loading/cw-common-loading-component';
 import CWCommonNavbarComponent from '../../cw-common/components/navbar/cw-common-navbar-component';
+import CWFooterComponent from '../../cw-common/components/footer/cw-footer-component';
 
 // Useful Typedefs
 type Inputs = {
@@ -147,14 +148,16 @@ function CWAuthComponent() {
         // Call register
         const registerRes = await registerApiCall(data.username, data.password, data.email)
         if (registerRes.code !== 200) {
-            // TODO: Error handle
+            setApiIsLoading(false)
+            notify("Code " + registerRes.code + ": " + registerRes.message)
             return
         }
 
         // Call login
         const loginRes = await loginApiCall(data.username, data.password)
         if (loginRes.code !== 200) {
-            // TODO: Error handle
+            setApiIsLoading(false)
+            notify("Code " + loginRes.code + ": " + loginRes.message)
             return
         }
         // Parse login response
@@ -188,7 +191,8 @@ function CWAuthComponent() {
         // Call login
         const loginRes = await loginApiCall(data.username, data.password)
         if (loginRes.code !== 200) {
-            // TODO: Error handle
+            setApiIsLoading(false)
+            notify("Code " + loginRes.code + ": " + loginRes.message)
             return
         }
         // Parse login response
@@ -372,6 +376,8 @@ function CWAuthComponent() {
                 <CWCommonNavbarComponent />
                 <ToastContainer toastStyle={{ backgroundColor: "linear-gradient(#57504d, #2a2727)" }}/>
                 { showRegister ? registerForm() : loginForm() }
+                {/* Footer */}
+                { CWFooterComponent() }
             </div>
         )
     )

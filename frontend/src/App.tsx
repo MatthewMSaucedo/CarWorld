@@ -57,7 +57,7 @@ function App() {
       if (CWToken.isExpired(cwUser.authToken.expiration) && currentTokenIsGuest) {
         const guestTokenRes = await guestTokenApiCall()
         if (guestTokenRes.code !== 200) {
-            // TODO: Error handle
+            console.log("Failed to fetch guest token!")
             return
         }
         // Parse login response
