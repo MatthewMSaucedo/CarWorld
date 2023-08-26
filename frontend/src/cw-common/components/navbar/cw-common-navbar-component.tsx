@@ -22,7 +22,7 @@ export interface CWCommonNavbarLink {
 export const urlToPathMapping: Record<string, string> = {
     '/videos': 'Videos',
     '/store': 'Merch',
-    '/wiki': 'Wiki',
+    '/wiki': 'Our Mission',
     '/my_carworld': 'My Car World',
     '/auth': 'My Car World',
     '/': 'Home'
@@ -73,7 +73,7 @@ function CWCommonNavbarComponent() {
     let navbarComponentLinksRight: CWCommonNavbarLink[] = [
         {
             url: '../' + AppConstants.CW_ROUTES[AppConstants.CW_ROUTE_ENUM['wiki']].path,
-            name: 'Wiki',
+            name: 'Our Mission',
         },
         {
             url: cwUser.isLoggedIn ? (
