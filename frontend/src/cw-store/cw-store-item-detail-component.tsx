@@ -220,8 +220,6 @@ function CWStoreItemDetailComponent() {
     // for the commodity states
     backendCommodityStates !== undefined ? (
       <div>
-        {/* Navbar */}
-        { CWCommonNavbarComponent() }
 
         <div className="cw-product-page-container">
 
