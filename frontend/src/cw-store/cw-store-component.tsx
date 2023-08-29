@@ -12,6 +12,7 @@ import CWCommonNavbarComponent from '../cw-common/components/navbar/cw-common-na
 // React Hooks
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useState, useEffect } from "react"
+import useMediaQuery from '../cw-common/functions/cw-media-query' // custom hook
 
 // React Redux
 import { useSelector } from 'react-redux'
@@ -21,6 +22,7 @@ import { RootState } from '../redux/store'
 import Button from 'react-bootstrap/Button'
 import ReactPlayer from 'react-player'
 import CWFooterComponent from '../cw-common/components/footer/cw-footer-component'
+import CWMobileNavbarComponent from '../cw-common/components/navbar/cw-mobile-navbar-component'
 
 
 function CWStoreComponent() {
@@ -34,7 +36,13 @@ function CWStoreComponent() {
     let route = location.pathname;
     useEffect(() => {
         console.log(route)
-    }, [location])
+    }, [location, route])
+
+    // Media query
+    const isSmallDevice = useMediaQuery("only screen and (max-width : 768px)");
+    const isMediumDevice = useMediaQuery(
+        "only screen and (min-width : 769px) and (max-width : 992px)"
+    );
 
     // CheckoutButton HTML
     const shoppingCartButton = (
@@ -60,16 +68,21 @@ function CWStoreComponent() {
     return (
         <div>
             {/* Navbar */}
-            { CWCommonNavbarComponent() }
+            { isMediumDevice || isSmallDevice ? CWMobileNavbarComponent() : CWCommonNavbarComponent() }
 
             {/* Store */}
             <div className="cw-store-container">
+                {/* Add a yellow banner to mimic navbar for mobile */}
+                {isMediumDevice || isSmallDevice ? (
+                    <div className="cw-mobile-banner"></div>
+                ) : <></>}
+
                 {/* VideoPlayer if home screen */}
                 { route === "/" ? (
-                    <div className="cw-home-video-container">
+                    <div className="cw-video-container">
                         <ReactPlayer
                         controls={true}
-                        playing={true}
+                        playing={false}
                         loop={false}
                         url='https://www.youtube.com/watch?v=FDZsqouKQ3M&t=1s'
                         />

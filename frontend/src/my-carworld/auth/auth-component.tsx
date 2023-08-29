@@ -149,7 +149,7 @@ function CWAuthComponent() {
         const registerRes = await registerApiCall(data.username, data.password, data.email)
         if (registerRes.code !== 200) {
             setApiIsLoading(false)
-            notify("Code " + registerRes.code + ": " + registerRes.message)
+            notify(registerRes.message)
             return
         }
 
@@ -157,7 +157,7 @@ function CWAuthComponent() {
         const loginRes = await loginApiCall(data.username, data.password)
         if (loginRes.code !== 200) {
             setApiIsLoading(false)
-            notify("Code " + loginRes.code + ": " + loginRes.message)
+            notify(loginRes.message)
             return
         }
         // Parse login response
@@ -192,7 +192,7 @@ function CWAuthComponent() {
         const loginRes = await loginApiCall(data.username, data.password)
         if (loginRes.code !== 200) {
             setApiIsLoading(false)
-            notify("Code " + loginRes.code + ": " + loginRes.message)
+            notify(loginRes.message)
             return
         }
         // Parse login response

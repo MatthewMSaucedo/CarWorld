@@ -23,6 +23,8 @@ export { default as quuaruxGasWarsImg2 } from "./quuaruxGasWarsImg2.png";
 export { default as quuaruxGasWarsImg3 } from "./quuaruxGasWarsImg3.png";
 export { default as quuaruxGasWarsImg4 } from "./quuaruxGasWarsImg4.png";
 
+export { default as cwLogoImg } from "./logo.svg";
+
 // export { default as enterCarWorldImg1 } from "./enterCarWorldImg1.png";
 // export { default as enterCarWorldImg2 } from "./enterCarWorldImg2.png";
 // export { default as enterCarWorldImg3 } from "./enterCarWorldImg3.png";

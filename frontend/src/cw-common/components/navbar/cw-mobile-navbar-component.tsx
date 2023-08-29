@@ -1,6 +1,7 @@
 // Local imports
-import './cw-common-navbar.scss'
+import './cw-mobile-navbar.scss'
 import * as AppConstants from '../../../AppConstants';
+import * as IMAGE_SRC from '../../../assets/images'
 
 // React Hooks
 import { useNavigate, useLocation } from 'react-router-dom'
@@ -13,6 +14,10 @@ import { RootState } from '../../../redux/store'
 // Icon
 import { IconContext } from "react-icons";
 import { MdShoppingCartCheckout, MdShoppingCart } from "react-icons/md";
+import { FaBars } from "react-icons/fa";
+
+// Burger Menu
+import { slide as Menu } from 'react-burger-menu'
 
 export interface CWCommonNavbarLink {
     url: string,
@@ -28,7 +33,7 @@ export const urlToPathMapping: Record<string, string> = {
     '/': 'Home'
 }
 
-function CWCommonNavbarComponent() {
+function CWMobileNavbarComponent() {
     // Redux State
     let { cwUser } = useSelector((state: RootState) => state)
 
@@ -108,34 +113,20 @@ function CWCommonNavbarComponent() {
     }
 
     return (
-        <nav className="cw-navbar">
-            {/* Set of left-centered nav buttons */}
-            <div className="cw-navbar-left-grouping">
-                { navItemsLeft }
-            </div>
-            {/* Central Navbar button */}
-            <div className="cw-navbar-central-grouping">
-                <div className="cw-navbar-home"
-                    onClick={() => navigate(homeLink)}
-                >
-                </div>
-            </div>
-
-            {/* Set of right-centered nav buttons */}
-            <div className="cw-navbar-right-grouping">
-                { navItemsRight }
-
-                {/* Shopping Cart */}
-                <div
-                    className={ selectedUrl === "/cart" ? "cw-navbar-highlighted-item" : "cw-navbar-item" }
-                    onClick={() => navigate('/cart', { replace: true })}>
-                    <IconContext.Provider value={{ className: "shopping-cart-img"}}>
-                        { selectedUrl === '/cart' ? <MdShoppingCart /> : <MdShoppingCartCheckout /> }
-                    </IconContext.Provider>
-                </div>
-            </div>
-        </nav>
+        <div>
+            <Menu
+                customBurgerIcon={ <img src={process.env.PUBLIC_URL + IMAGE_SRC.cwLogoImg} /> }
+            >
+                <a id="Home" className="menu-item" href="/">Home</a>
+                <a id="Merch" className="menu-item" href="/store">Merch</a>
+                <a id="Videos" className="menu-item" href="/videos">Videos</a>
+                <a id="Our Mission" className="menu-item" href="/wiki">Our Mission</a>
+                <a id="Car World Nation" className="menu-item" href="/videos">Car World Nation</a>
+                <a id="My Profile" className="menu-item" href="/auth">My Profile</a>
+                <a id="Cart" className="menu-item" href="/cart">Cart</a>
+            </Menu>
+        </div>
     )
 }
 
-export default CWCommonNavbarComponent
+export default CWMobileNavbarComponent

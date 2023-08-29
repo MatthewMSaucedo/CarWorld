@@ -2,7 +2,7 @@
   padding-right: 3rem;
 }
 .Toastify__toast-body {
-  color: red;
+  color: yellow;
   font-weight: bold;
 }
 .Toastify__progress-bar-theme--dark {
@@ -10,7 +10,8 @@
 }
 // This doesn't work
 .Toastify__toast-theme--dark {
-  background-color: linear-gradient(#57504d, #2a2727) !important;
+  background-color: red !important;
+  // background-color: #8b0000 !important;
 }
 
 

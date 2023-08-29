@@ -29,6 +29,7 @@
     "react-aria": "^3.25.0",
     "react-aria-components": "^1.0.0-alpha.5",
     "react-bootstrap": "^2.7.0",
+    "react-burger-menu": "^3.0.9",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.45.4",
     "react-icons": "^4.10.1",
@@ -69,6 +70,7 @@
     ]
   },
   "devDependencies": {
+    "@types/react-burger-menu": "^2.8.3",
     "sass": "^1.57.1"
   }
 }
