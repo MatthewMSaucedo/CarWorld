@@ -2,6 +2,9 @@ import os
 import boto3
 import traceback
 
+# Environment Variables
+USER_TABLE_NAME = os.environ["user_table_name"]
+
 
 ########################################################
 # CWDynamo Client
@@ -183,7 +186,7 @@ def get_cw_ddp_tier_list_and_rank(user_id, dynamo_client):
         #       now while I still remember. Tomorrow's bugs solved by yesterday's
         #       comments :)
         # Retrieve backend list of Users, ranked by DDP
-        commodities = dynamo_client.get_all("commodities")
+        cwUsers = dynamo_client.get_all(USER_TABLE_NAME)
     except Exception as e:
         error = {
             "message": str(e),
@@ -198,7 +201,8 @@ def get_cw_ddp_tier_list_and_rank(user_id, dynamo_client):
 
     try:
         # Format commodities for FE
-        fe_commodity_map = fe_commodity_map_from_dynamo_list(commodities, dynamo_client)
+        ddp_top_five = ddp_top_five_list_from_users(cwUsers)
+        user_ddp_rank = determind_user_ddp_rank_from_users(cwUsers)
     except Exception as e:
         error = {
             "message": str(e),

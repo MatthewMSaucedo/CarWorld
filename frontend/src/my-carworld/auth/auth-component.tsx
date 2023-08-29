@@ -205,7 +205,7 @@ function CWAuthComponent() {
 
         // Update Redux store with new user info
         dispatch(loginUser({
-            username: data.username,
+            username: data.username.toLowerCase(),
             userType: userType,
             authToken: authToken,
             refreshToken: refreshToken,
@@ -249,23 +249,23 @@ function CWAuthComponent() {
                     { /* Email */ }
                     <div className="form-group mt-3">
                         <label>
-                            Email address
+                            Email Address
                         </label>
                         <input
                         type="email"
                         className="form-control mt-1"
-                        placeholder="Email Address"
+                        placeholder="e.g. williambanks500@gmail.com"
                         {...register("email", emailRequirements)}
                         />
                     </div>
 
                     { /* Username */ }
                     <div className="form-group mt-3">
-                        <label>Username</label>
+                        <label>Your Name</label>
                         <input
                         type="username"
                         className="form-control mt-1"
-                        placeholder="e.g Jane Doe"
+                        placeholder="e.g. William Banks"
                         {...register("username", usernameRequirements)}
                         />
                     </div>
@@ -277,24 +277,26 @@ function CWAuthComponent() {
 
                         type="password"
                         className="form-control mt-1"
-                        placeholder="Password"
+                        placeholder="e.g. kingmoon4"
                         {...register("password", passwordRequirements)}
                         />
                     </div>
 
                     { /* Devotion checkbox */ }
                     <div className="devotion-checkbox">
-                        <input type="checkbox"
+                        <input
+                            className="devotion-input"
+                            type="checkbox"
                             id="devotion"
                             {...register("devotion", checkboxRequirements)}
                         />
-                        <label>I hereby acknowledge my devotion to William Banks</label>
+                        <label>I hereby acknowledge my Devotion to William Banks.</label>
                     </div>
 
                     { /* Submission Button */ }
                     <div className="d-grid gap-2 mt-3">
                         <button
-                            className="submit-form-button"
+                            className="submit-form-button-register"
                             type="submit"
                             onClick={ () => onClickRegisterErrorHandling() }
                         >
@@ -335,12 +337,12 @@ function CWAuthComponent() {
                     { /* Email */ }
                     <div className="form-group mt-3">
                         <label>
-                            Username
+                            Your Name
                         </label>
                         <input
                             type="username"
                             className="form-control mt-1"
-                            placeholder="e.g Jane Doe"
+                            placeholder="e.g. William Banks"
                             {...register("username", emailRequirements)}
                             />
                     </div>
@@ -351,7 +353,7 @@ function CWAuthComponent() {
                         <input
                             type="password"
                             className="form-control mt-1"
-                            placeholder="Password"
+                            placeholder="e.g. kingmoon4"
                             {...register("password", passwordRequirements)}
                         />
                     </div>
@@ -360,7 +362,7 @@ function CWAuthComponent() {
                     <div className="d-grid gap-2 mt-3">
                         <button
                             onClick={ () => onClickLoginErrorHandling() }
-                            className="submit-form-button">
+                            className="submit-form-button-login">
                             Submit
                         </button>
                     </div>

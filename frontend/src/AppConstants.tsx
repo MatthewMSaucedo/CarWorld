@@ -71,35 +71,88 @@ export const API_RETRY = 3
 
 export const CW_API_ENDPOINTS = {
   "commerce": {
-    "secret": "https://2x7mtrzbjh.execute-api.us-east-1.amazonaws.com/commerce/secret",
-    "commodities": "https://2x7mtrzbjh.execute-api.us-east-1.amazonaws.com/commerce/commodities"
+    "secret": "https://01dkxmbxgh.execute-api.us-east-1.amazonaws.com/commerce/secret",
+    "commodities": "https://01dkxmbxgh.execute-api.us-east-1.amazonaws.com/commerce/commodities"
   },
   "auth": {
-    "refresh": "https://2x7mtrzbjh.execute-api.us-east-1.amazonaws.com/auth/refresh",
-    "login": "https://2x7mtrzbjh.execute-api.us-east-1.amazonaws.com/auth/login",
-    "register": "https://2x7mtrzbjh.execute-api.us-east-1.amazonaws.com/auth/register",
-    "guest": "https://2x7mtrzbjh.execute-api.us-east-1.amazonaws.com/auth/guest"
+    "refresh": "https://01dkxmbxgh.execute-api.us-east-1.amazonaws.com/auth/refresh",
+    "login": "https://01dkxmbxgh.execute-api.us-east-1.amazonaws.com/auth/login",
+    "register": "https://01dkxmbxgh.execute-api.us-east-1.amazonaws.com/auth/register",
+    "guest": "https://01dkxmbxgh.execute-api.us-east-1.amazonaws.com/auth/guest"
   },
   "profile": {
-    "ddp_rank": "https://2x7mtrzbjh.execute-api.us-east-1.amazonaws.com/profile/ddp_rank"
+    "ddp_rank": "https://01dkxmbxgh.execute-api.us-east-1.amazonaws.com/profile/ddp_rank"
   },
 }
 
 export const STORE_ITEMS: CWStoreItem[] = [
   {
-    title: 'Attendant Sponsorship Certificates',
-    price: 20,
-    serverName: 'attendant sponsorship certificate',
+    title: 'Save The Attendants',
+    price: 25,
+    serverName: 'save the attendants shirt',
     images: [
-      IMAGE_SRC.attendantSponsorshipCertImg1,
+      IMAGE_SRC.saveTheAttendantsImg1,
+      IMAGE_SRC.saveTheAttendantsImg2,
+      IMAGE_SRC.saveTheAttendantsImg3,
+      IMAGE_SRC.saveTheAttendantsImg4,
     ],
     description_paragraphs: [
-      "Spice up any outfit with this cute devotional piece! Each charm depicts the Tat Passes brandished on the right arms of William Banks and his Apostles, as per the Bridgekeeper’s demand."
+      "Attendants are the native species of Car World. They have suffered long enough under Quuarux’ rule. William Banks will bring about The Attendants Revolution when he returns to Car World with his 12 Apostles.",
+      "Artwork by A.T. Pratt"
     ],
-    type: CWShoppingItemType["Art"]
+    type: CWShoppingItemType["Clothing"]
+  },
+  // TODO: Tara's Trinkets Hyperlink
+  {
+    title: "Magwadi",
+    price: 25,
+    serverName: 'magwadi shirt',
+    images: [
+      IMAGE_SRC.magwadiImg1,
+      IMAGE_SRC.magwadiImg2,
+      IMAGE_SRC.magwadiImg3,
+      IMAGE_SRC.magwadiImg4,
+    ],
+    description_paragraphs: [
+      "Magwadi was the bird that William Banks bonded with in Car World. They would fly high above his citadel and go on many adventures together.",
+      "Artwork & Hand by Director Russell Katz"
+    ],
+    /* hyperLink: { */
+    /* text: "", */
+    /* link: "" */
+    /* } */
+    type: CWShoppingItemType["Clothing"]
   },
   {
-    title: 'Quuarax Earrings',
+    title: 'Quuarux Did the Gas Wars',
+    price: 25,
+    serverName: 'quuarux gas wars shirt',
+    images: [
+      IMAGE_SRC.quuaruxGasWarsImg1,
+      IMAGE_SRC.quuaruxGasWarsImg2,
+      IMAGE_SRC.quuaruxGasWarsImg3,
+      IMAGE_SRC.quuaruxGasWarsImg4,
+    ],
+    description_paragraphs: [
+      "William Banks is not responsible for Gas Wars I or II. Quuarux is. Wearing this shirt will help remind your friends that this is true.",
+      "Artwork by A.T. Pratt"
+    ],
+    type: CWShoppingItemType["Clothing"]
+  },
+  /* {
+   *   title: 'Attendant Sponsorship Certificates',
+   *   price: 20,
+   *   serverName: 'attendant sponsorship certificate',
+   *   images: [
+   *     IMAGE_SRC.attendantSponsorshipCertImg1,
+   *   ],
+   *   description_paragraphs: [
+   *     "Spice up any outfit with this cute devotional piece! Each charm depicts the Tat Passes brandished on the right arms of William Banks and his Apostles, as per the Bridgekeeper’s demand."
+   *   ],
+   *   type: CWShoppingItemType["Art"]
+   * }, */
+  {
+    title: 'Quuarux Earrings',
     price: 30,
     serverName: 'quuarux earrings',
     images: [
@@ -123,54 +176,6 @@ export const STORE_ITEMS: CWStoreItem[] = [
       "These simple logo studs represent both the planet and the movement. Wear them when you want."
     ],
     type: CWShoppingItemType["Art"]
-  },
-  {
-    title: 'Save The Attendants',
-    price: 25,
-    serverName: 'save the attendants shirt',
-    images: [
-      IMAGE_SRC.saveTheAttendantsImg1,
-      IMAGE_SRC.saveTheAttendantsImg2,
-      IMAGE_SRC.saveTheAttendantsImg3,
-      IMAGE_SRC.saveTheAttendantsImg4,
-    ],
-    description_paragraphs: [
-      "Attendants are the native species of Car World. They have suffered long enough under Quuarux’ rule. William Banks will bring about The Attendants Revolution when he returns to Car World with his 12 Apostles.",
-      "Artwork by A.T. Pratt"
-    ],
-    type: CWShoppingItemType["Clothing"]
-  },
-  {
-    title: "DRK's Magwadi",
-    price: 25,
-    serverName: 'magwadi shirt',
-    images: [
-      IMAGE_SRC.magwadiImg1,
-      IMAGE_SRC.magwadiImg2,
-      IMAGE_SRC.magwadiImg3,
-      IMAGE_SRC.magwadiImg4,
-    ],
-    description_paragraphs: [
-      "Magwadi was the bird that William Banks bonded with in Car World. They would fly high above his citadel and go on many adventures together.",
-      "Artwork & Hand by Director Russell Katz"
-    ],
-    type: CWShoppingItemType["Clothing"]
-  },
-  {
-    title: 'Quuarux Did the Gas Wars',
-    price: 25,
-    serverName: 'quuarux gas wars shirt',
-    images: [
-      IMAGE_SRC.quuaruxGasWarsImg1,
-      IMAGE_SRC.quuaruxGasWarsImg2,
-      IMAGE_SRC.quuaruxGasWarsImg3,
-      IMAGE_SRC.quuaruxGasWarsImg4,
-    ],
-    description_paragraphs: [
-      "William Banks is not responsible for Gas Wars I or II. Quuarux is. Wearing this shirt will help remind your friends that this is true.",
-      "Artwork by A.T. Pratt"
-    ],
-    type: CWShoppingItemType["Clothing"]
   },
   // TODO: add / obtain images
   /* {
@@ -257,22 +262,22 @@ export const STORE_ITEMS: CWStoreItem[] = [
     ],
     type: CWShoppingItemType["Art"]
   },
-  {
-    title: 'Car World Supper Book 10 pack',
-    price: 70,
-    serverName: 'car world supper book 10 pack',
-    images: [
-      IMAGE_SRC.carWorldSupperBookImg1,
-      IMAGE_SRC.carWorldSupperBookImg2,
-      IMAGE_SRC.carWorldSupperBookImg3,
-      IMAGE_SRC.carWorldSupperBookImg4,
-    ],
-    description_paragraphs: [
-      "This Book is required to celebrate your own Car World Supper. It contains a guide to our traditions and the words to our songs, written by William Banks and DRK. 19 branches of Car World Nation hosted Suppers this year.",
-      "Artwork by A.T. Pratt"
-    ],
-    type: CWShoppingItemType["Art"]
-  },
+  /* {
+   *   title: 'Car World Supper Book 10 pack',
+   *   price: 70,
+   *   serverName: 'car world supper book 10 pack',
+   *   images: [
+   *     IMAGE_SRC.carWorldSupperBookImg1,
+   *     IMAGE_SRC.carWorldSupperBookImg2,
+   *     IMAGE_SRC.carWorldSupperBookImg3,
+   *     IMAGE_SRC.carWorldSupperBookImg4,
+   *   ],
+   *   description_paragraphs: [
+   *     "This Book is required to celebrate your own Car World Supper. It contains a guide to our traditions and the words to our songs, written by William Banks and DRK. 19 branches of Car World Nation hosted Suppers this year.",
+   *     "Artwork by A.T. Pratt"
+   *   ],
+   *   type: CWShoppingItemType["Art"]
+   * }, */
   {
     title: 'Pamphlet Bundle',
     price: 10,
@@ -301,19 +306,19 @@ export const STORE_ITEMS: CWStoreItem[] = [
     ],
     type: CWShoppingItemType["Art"]
   },
-  {
-    title: 'Enter Car World Poster',
-    price: 1,
-    serverName: 'enter car world poster',
-    images: [
-      IMAGE_SRC.enterCarWorldPosterImg1,
-      IMAGE_SRC.enterCarWorldPosterImg2,
-    ],
-    description_paragraphs: [
-      "These are how you feel a sense of gratification. 1 DP is valued at 1 USD. Purchase of each Devotion Point comes with an equivalent Digital Devotion Point. DDP is projected to become incredibly valuable in the global marketplace."
-    ],
-    type: CWShoppingItemType["Art"]
-  },
+  /* {
+   *   title: 'Enter Car World Poster',
+   *   price: 1,
+   *   serverName: 'enter car world poster',
+   *   images: [
+   *     IMAGE_SRC.enterCarWorldPosterImg1,
+   *     IMAGE_SRC.enterCarWorldPosterImg2,
+   *   ],
+   *   description_paragraphs: [
+   *     "These are how you feel a sense of gratification. 1 DP is valued at 1 USD. Purchase of each Devotion Point comes with an equivalent Digital Devotion Point. DDP is projected to become incredibly valuable in the global marketplace."
+   *   ],
+   *   type: CWShoppingItemType["Art"]
+   * }, */
   {
     title: 'Devotion Point',
     price: 1,

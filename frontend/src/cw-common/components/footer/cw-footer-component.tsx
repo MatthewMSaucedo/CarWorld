@@ -15,19 +15,19 @@ function CWFooterComponent () {
     <footer className="cw-footer-container">
       <a href="https://www.instagram.com/carworld.nyc"
         className="social-icon">
-          <FontAwesomeIcon icon={faInstagram} inverse />
+          <FontAwesomeIcon icon={faInstagram} />
       </a>
       <a href="https://www.youtube.com/channel/UCp07rngbamZL70k0cNVAnQQ"
         className="social-icon">
-          <FontAwesomeIcon icon={faYoutube} inverse />
+          <FontAwesomeIcon icon={faYoutube} />
       </a>
       <a href="https://www.tiktok.com/@carworld.nyc"
         className="social-icon">
-          <FontAwesomeIcon icon={faTiktok} inverse />
+          <FontAwesomeIcon icon={faTiktok} />
       </a>
       <a href="https://twitter.com/williambanks_?lang=en"
         className="social-icon">
-          <FontAwesomeIcon icon={faTwitter} inverse />
+          <FontAwesomeIcon icon={faTwitter} />
       </a>
     </footer>
   )

@@ -25,7 +25,7 @@ function CWVideosComponent() {
 
                 {/* Playlist title and videos  */}
                 <div className="playlist-title-wrapper">
-                        The Gatherings of Car World
+                        The Gatherings of Car World (DOCUMENTARY)
                 </div>
                 <div className="non-carousel-container">
                     <div className="non-carousel-item">

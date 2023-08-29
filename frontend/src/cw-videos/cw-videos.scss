@@ -17,7 +17,7 @@
     overflow: auto;
     height: 100vh;
 
-    color: white;
+    color: black;
     .playlist-title-wrapper {
         width: 100%;
 
@@ -27,7 +27,6 @@
 
         font-size: 2.5rem;
         font-weight: 900;
-        color: white;
     }
 
     .non-carousel-container {
@@ -36,7 +35,7 @@
         flex-direction: row;
         flex-wrap: wrap;
         justify-content: space-evenly;
-        align-items: center;
+        align-items: flex-start;
         align-content: stretch;
 
         margin-bottom: 1rem;

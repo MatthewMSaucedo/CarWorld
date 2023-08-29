@@ -9,7 +9,8 @@
   // position: relative;
   padding: 0.5rem 0rem;
   // background: linear-gradient(#393433, #2a2727);
-  background: linear-gradient(#453f3d, #2a2727);
+  // background: linear-gradient(#453f3d, #2a2727);
+  background: linear-gradient(360deg, rgb(241, 242, 11) 0.00%, rgb(248, 161, 27) 100.00%);
   color: black;
   box-shadow: 0 2px 2px 2px rgba(9, 9, 9, 0.23);
 
@@ -24,5 +25,7 @@
   .social-icon {
       padding-left: 2em;
       padding-right: 2em;
+      margin-top: 5px;
+      color: #8b0000;
   }
 }

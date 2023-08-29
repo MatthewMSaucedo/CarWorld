@@ -1,3 +1,4 @@
+// For table
 .ag-theme-alpine {
     // Header text color
     --ag-header-foreground-color: #f8ed62;
@@ -54,16 +55,19 @@
         align-items: center;
         align-content: stretch;
 
-        background: linear-gradient(#57504d, #2a2727);
+        // background: linear-gradient(#57504d, #2a2727);
+        // background-image: linear-gradient(to right, #ff758c 0%, #ff7eb3 100%);
+        background: linear-gradient(red, #8b0000);
         border-color: #393433;
 
         .card-content {
             // padding-right: .5em;
             // padding-left: .5em;
-            margin-top: 2rem;
+            // margin-top: 2rem;
             margin-left: 4rem;
             margin-right: 4rem;
-            margin-bottom: .5rem;
+            // margin-bottom: .5rem;
+            margin-bottom: 0rem;
 
             display: flex;
             flex-direction: column;
@@ -76,14 +80,27 @@
             font-weight: bold;
 
             .devoted-since {
-                font-size: .8em;
+                font-size: 1.6em;
                 font-weight: bold;
+                padding-top: 5px;
 
+                // border-bottom: 3px solid #181716;
+            }
+
+            .user-ddp-point-value {
+                font-size: 8em;
+                font-weight: bold;
+                margin-top: -35px;
+                margin-bottom: -45px;
+                color: yellow;
+                // color: #f8ed62
                 // border-bottom: 3px solid #181716;
             }
 
             .devotion-point-title {
                 font-weight: bold;
+                font-size: 1.6em;
+                margin-bottom: -1px;
             }
 
             .username {
@@ -91,8 +108,8 @@
                 font-weight: bolder;
 
                 border-bottom: 3px solid #393433;
-                // color: #181716;
-                color: #f8ed62
+                // color: #f8ed62
+                color: yellow;
             }
 
             // .ag-theme-alpine {
@@ -112,7 +129,8 @@
                 background: linear-gradient(#57504d, #393433);
                 border-color: #f8ed62;
 
-                color: #f8ed62;
+                // color: #f8ed62;
+                color: yellow;
                 font-weight: bold;
 
                 cursor: pointer;

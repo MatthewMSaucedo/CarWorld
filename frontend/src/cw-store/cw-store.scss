@@ -68,8 +68,8 @@
       margin-bottom: 3rem;
       // margin-right: 8rem;
 
-      width: 19rem;
-      height: 22rem;
+      width: 14rem;
+      height: 20rem;
       border-radius: 10%;
       margin-right: 2rem;
       margin-left: 2rem;
@@ -81,28 +81,36 @@
       align-items: center;
       align-content: stretch;
 
-      background: linear-gradient(#57504d, #2a2727);
+      background: linear-gradient(red, #8b0000);
+      // background: linear-gradient(#f9f9f8, #f2f3f2, #ececeb);
+      // background-image: linear-gradient(to right, #ff758c 0%, #ff7eb3 100%);
+
       border-color: #393433;
 
       .item-image {
-        padding-top: 2rem;
         margin-top: 3rem;
+        margin-top: 3rem;
+        margin-bottom: 5px;
 
         width: 12em;
         cursor: pointer;
+
+        border-radius: 10%;
       }
       .content {
+        // margin-top: 5px;
         padding-right: .5em;
         padding-left: .5em;
 
         text-align: center;
         font-weight: bold;
 
-        color: white;
+        // color: #f8ed62;
+        color: yellow;
 
         cursor: pointer;
 
-        padding-bottom: 1rem;
+        padding-bottom: .5rem;
 
         .cw-common-link {
             text-decoration: none;

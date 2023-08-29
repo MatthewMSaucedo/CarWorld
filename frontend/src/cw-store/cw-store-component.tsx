@@ -70,7 +70,7 @@ function CWStoreComponent() {
                         <ReactPlayer
                         controls={true}
                         playing={true}
-                        loop={true}
+                        loop={false}
                         url='https://www.youtube.com/watch?v=FDZsqouKQ3M&t=1s'
                         />
                     </div>) : <></>

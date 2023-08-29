@@ -83,6 +83,10 @@
 
 .devotion-checkbox {
   margin-top: .5rem;
+
+  .devotion-input {
+    margin-right: 5px;
+  }
 }
 
 .form-header {
@@ -118,7 +122,41 @@
   }
 }
 
-.submit-form-button {
+.submit-form-button-login {
+  margin-bottom: 1rem;
+  margin-left: 7rem;
+
+  border-radius: 10%;
+  width: 6rem;
+  height: 2rem;
+
+  background: linear-gradient(#57504d, #393433);
+  border-color: #f8ed62;
+
+  color: #f8ed62;
+  font-weight: bold;
+
+  cursor: pointer;
+}
+
+.submit-form-button-register {
+  margin-bottom: 1rem;
+  margin-left: 8.5rem;
+
+  border-radius: 10%;
+  width: 6rem;
+  height: 2rem;
+
+  background: linear-gradient(#57504d, #393433);
+  border-color: #f8ed62;
+
+  color: #f8ed62;
+  font-weight: bold;
+
+  cursor: pointer;
+}
+
+.submit-form-button-login {
   margin-bottom: 1rem;
   margin-left: 7rem;
 

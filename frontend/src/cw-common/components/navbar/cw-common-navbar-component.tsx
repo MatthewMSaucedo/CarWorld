@@ -14,6 +14,7 @@ import { RootState } from '../../../redux/store'
 // Icon
 import { IconContext } from "react-icons";
 import { MdShoppingCartCheckout, MdShoppingCart } from "react-icons/md";
+import { FaBars } from "react-icons/fa";
 
 export interface CWCommonNavbarLink {
     url: string,
@@ -22,9 +23,10 @@ export interface CWCommonNavbarLink {
 export const urlToPathMapping: Record<string, string> = {
     '/videos': 'Videos',
     '/store': 'Merch',
+    '/carworld_nation': 'Car World Nation',
     '/wiki': 'Our Mission',
-    '/my_carworld': 'My Car World',
-    '/auth': 'My Car World',
+    '/my_carworld': 'My Profile',
+    '/auth': 'My Profile',
     '/': 'Home'
 }
 
@@ -58,6 +60,10 @@ function CWCommonNavbarComponent() {
             url: '../' + AppConstants.CW_ROUTES[AppConstants.CW_ROUTE_ENUM['store']].path,
             name: 'Merch',
         },
+        {
+            url: '../' + AppConstants.CW_ROUTES[AppConstants.CW_ROUTE_ENUM['videos']].path,
+            name: 'Car World Nation',
+        },
     ]
     let navItemsLeft = navbarComponentLinksLeft.map((navbarLink: CWCommonNavbarLink)=>{
         return (
@@ -81,7 +87,7 @@ function CWCommonNavbarComponent() {
             ) : (
                 '../' + AppConstants.CW_ROUTES[AppConstants.CW_ROUTE_ENUM['auth']].path
             ),
-            name: 'My Car World',
+            name: 'My Profile',
         },
     ]
     let navItemsRight = navbarComponentLinksRight.map((navbarLink: CWCommonNavbarLink)=>{
@@ -122,14 +128,24 @@ function CWCommonNavbarComponent() {
             <div className="cw-navbar-right-grouping">
                 { navItemsRight }
                 { cwShoppingCart.size > 0 ? (
-                 <div
+                // Cart is populated
+                <div
                     className={ selectedUrl === "/cart" ? "cw-navbar-highlighted-item" : "cw-navbar-item" }
                     onClick={() => navigate('/cart', { replace: true, state: cwShoppingCart })}>
                     <IconContext.Provider value={{ className: "shopping-cart-img"}}>
                         { selectedUrl === '/cart' ? <MdShoppingCart /> : <MdShoppingCartCheckout /> }
                     </IconContext.Provider>
                 </div>
-                ) : <></> }
+                ) : (
+                // Cart is empty
+                <div
+                    className={ selectedUrl === "/cart" ? "cw-navbar-highlighted-item" : "cw-navbar-item" }
+                    onClick={() => navigate('/cart', { replace: true, state: cwShoppingCart })}>
+                    <IconContext.Provider value={{ className: "shopping-cart-img"}}>
+                        { selectedUrl === '/cart' ? <MdShoppingCart /> : <MdShoppingCartCheckout /> }
+                    </IconContext.Provider>
+                </div>
+                  )}
 
             </div>
         </nav>

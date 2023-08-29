@@ -154,8 +154,6 @@ class CWCoreStack(Stack):
                 name="id",
                 type=dynamodb.AttributeType.STRING,
             ),
-            # SK: ddp, an int
-            sort_key=dynamodb.Attribute(name="ddp", type=dynamodb.AttributeType.NUMBER),
             removal_policy=RemovalPolicy.DESTROY,
             billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
             encryption=dynamodb.TableEncryption.AWS_MANAGED,

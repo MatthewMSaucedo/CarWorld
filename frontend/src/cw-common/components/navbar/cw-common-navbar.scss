@@ -6,10 +6,11 @@
 
   // position: relative;
   padding: 0.5rem 0rem;
-  // background: linear-gradient(#393433, #2a2727);
-  background: linear-gradient(#453f3d, #2a2727);
-  color: black;
+  // background: #f8ed62;
+  // background: white;
+  background: linear-gradient(360deg, rgb(241, 242, 11) 0.00%, rgb(248, 161, 27) 100.00%);
   box-shadow: 0 2px 2px 2px rgba(9, 9, 9, 0.23);
+  color: black;
 
   // element contents orientation
   display: flex;
@@ -19,6 +20,12 @@
   align-items: stretch;
   align-content: space-evenly;
 
+
+  // Button click
+  .cw-navbar-item:active{
+    transform: translateY(4px);
+  }
+
     .cw-navbar-central-grouping {
         display: flex;
         flex-direction: row;
@@ -27,6 +34,7 @@
         align-items: center;
         align-content: space-evenly;
 
+        padding-top: 1.4rem;
 
         .cw-navbar-home {
           // dat sick style bby
@@ -52,6 +60,8 @@
           justify-content: center;
           padding-bottom: 1.7em;
           padding-left: 2.2em;
+
+          // margin-top: 1rem;
         }
         .cw-link {
           text-decoration: none;
@@ -80,21 +90,23 @@
         align-items: center;
         align-content: center;
 
+        padding-top: .8rem;
         flex: 0 0rem 40rem;
 
         // width: 20rem;
         .cw-navbar-item {
           // Style
-          // background-color: #8064A2;
-          // background-color: #393433;
-          // background-color: #393433;
-          background: linear-gradient(#57504d, #393433);
-        // background: linear-gradient(#393433, #181716);
-          border-color: #393433;
+          background: linear-gradient(red, #8b0000);
+          border-color: yellow;
+          border-width: thick;
           color: white;
           box-shadow: 0 2px 2px 2px rgba(9, 9, 9, 0.23);
           cursor: pointer;
           font-weight: bold;
+
+          // Maybe?
+          transition: all 0.2s ease;
+          transition-property: transform, opacity, color, border-color, background-color;
 
           // Size
           padding-right: 1rem;
@@ -106,7 +118,8 @@
           margin-right: 1rem;
           margin-left: 1rem;
           margin-top: 3rem;
-          border-radius: 100%;
+          // border-radius: 100%;
+          border-radius: 30%;
 
           .cw-navbar-link {
               text-decoration: none;
@@ -118,14 +131,16 @@
 
         .cw-navbar-highlighted-item {
           // Style
-          // background-color: #393433;
-          background: linear-gradient(#57504d, #393433);
-          // color: yellow;
-          color: #f8ed62;
+          // background: linear-gradient(red, #8b0000);
+          background-image: linear-gradient(to top, #ff0844 0%, #ffb199 100%);
+          border-color: #393433;
+          color: white;
+          box-shadow: 0 2px 2px 2px rgba(9, 9, 9, 0.23);
           cursor: pointer;
           font-weight: bold;
 
-          box-shadow: 0 2px 2px 2px #e9d700;
+          // box-shadow: 0 2px 2px 3px black;
+          color: yellow;
 
           // Size
           padding-right: 1rem;
@@ -137,7 +152,7 @@
           margin-right: 1rem;
           margin-left: 1rem;
           margin-top: 3rem;
-          border-radius: 100%;
+          border-radius: 30%;
 
           .cw-navbar-link {
               text-decoration: none;
@@ -155,6 +170,8 @@
         align-items: center;
         align-content: center;
 
+        padding-top: .8rem;
+
         // Force fixed size
         flex: 0 0rem 40rem;
 
@@ -170,9 +187,8 @@
         }
 
         .cw-navbar-item {
-          // Style
-          // background-color: #393433;
-          background: linear-gradient(#57504d, #393433);
+          background: linear-gradient(red, #8b0000);
+          border-color: #393433;
           color: white;
           box-shadow: 0 2px 2px 2px rgba(9, 9, 9, 0.23);
           cursor: pointer;
@@ -188,7 +204,7 @@
           margin-right: 1rem;
           margin-left: 1rem;
           margin-top: 3rem;
-          border-radius: 100%;
+          border-radius: 30%;
 
           .cw-navbar-link {
               text-decoration: none;
@@ -197,20 +213,17 @@
         }
         .cw-navbar-highlighted-item {
           // Style
-          // background-color: #393433;
-          background: linear-gradient(#57504d, #393433);
-          // color: #e9d700;
-          // color: yellow;
-          color: #f8ed62;
-          // color: #FDDD5C;
-          // color: yellow;
+          background: linear-gradient(red, #8b0000);
+          // background-image: linear-gradient(to top, #ff0844 0%, #ffb199 100%);
+          border-color: #393433;
+          color: white;
+          // box-shadow: 0 2px 2px 2px rgba(9, 9, 9, 0.23);
+          box-shadow: 0 2px 2px 2px black;
           cursor: pointer;
           font-weight: bold;
 
-          // box-shadow: 0 2px 2px 2px #e9d700;
-          // box-shadow: 0 2px 2px 2px yellow;
-          box-shadow: 0 2px 2px 2px #e9d700;
-          // box-shadow: 0 0 0 2px #e9d700;
+          // box-shadow: 0 2px 2px 3px black;
+          color: yellow;
 
           // Size
           padding-right: 1rem;
@@ -222,7 +235,7 @@
           margin-right: 1rem;
           margin-left: 1rem;
           margin-top: 3rem;
-          border-radius: 100%;
+          border-radius: 30%;
 
           .cw-navbar-link {
               text-decoration: none;
