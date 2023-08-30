@@ -79,8 +79,9 @@ function CWStoreComponent() {
 
                 {/* VideoPlayer if home screen */}
                 { route === "/" ? (
-                    <div className="cw-video-container">
+                    <div className={`cw-video-container${ isMediumDevice || isSmallDevice ? "-mobile" : ""}`}>
                         <ReactPlayer
+                        className="cw-react-player"
                         controls={true}
                         playing={false}
                         loop={false}

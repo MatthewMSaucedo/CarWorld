@@ -1,14 +1,35 @@
+// Local styles
 import '../App.scss'
 import './cw-wiki.scss'
 
+// Local Imports
 import CWCommonNavbarComponent from '../cw-common/components/navbar/cw-common-navbar-component'
 import CWFooterComponent from '../cw-common/components/footer/cw-footer-component'
+import CWMobileNavbarComponent from '../cw-common/components/navbar/cw-mobile-navbar-component'
+
+// Custom Hook
+import useMediaQuery from '../cw-common/functions/cw-media-query' // custom hook
 
 function CWWikiComponent() {
+    // Media query
+    const isSmallDevice = useMediaQuery("only screen and (max-width : 768px)");
+    const isMediumDevice = useMediaQuery(
+        "only screen and (min-width : 769px) and (max-width : 992px)"
+    );
+
     return (
         <div>
-            { CWCommonNavbarComponent() }
+            {/* Navbar */}
+            { isMediumDevice || isSmallDevice ? CWMobileNavbarComponent() : CWCommonNavbarComponent() }
+
+            {/* Wiki */}
             <div className="cw-wiki-container">
+                {/* Add a yellow banner to mimic navbar for mobile */}
+                {isMediumDevice || isSmallDevice ? (
+                    <div className="cw-mobile-banner"></div>
+                ) : <></>}
+
+                { /* Wiki content */ }
                 <div className="cw-wiki-text-block">
                     <p>
                         Car World is a sci-non-fi community building project created to raise global concern for the
@@ -37,7 +58,7 @@ function CWWikiComponent() {
                     </p>
                 </div>
 
-                <div className="cw-wiki-text-block">
+                <div className={`cw-wiki-text-block${ isMediumDevice || isSmallDevice ? "-mobile" : "" }`}>
                     <p className="cw-wiki-apostle-block-title">
                         Apostles Gathered Thus Far:
                     </p>
