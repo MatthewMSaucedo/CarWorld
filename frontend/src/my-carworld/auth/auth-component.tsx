@@ -15,6 +15,9 @@ import { loginUser } from '../../redux/userSlice'
 // React Hook Form
 import { useForm, SubmitHandler } from "react-hook-form"
 
+// Custom Hook
+import useMediaQuery from '../../cw-common/functions/cw-media-query';
+
 // Toast (yum!)
 import { ToastContainer, toast } from 'react-toastify';
 
@@ -23,6 +26,7 @@ import { CW_API_ENDPOINTS } from '../../AppConstants';
 import CWCommonLoadingComponent from '../../cw-common/components/loading/cw-common-loading-component';
 import CWCommonNavbarComponent from '../../cw-common/components/navbar/cw-common-navbar-component';
 import CWFooterComponent from '../../cw-common/components/footer/cw-footer-component';
+import CWMobileNavbarComponent from '../../cw-common/components/navbar/cw-mobile-navbar-component';
 
 // Useful Typedefs
 type Inputs = {
@@ -224,20 +228,21 @@ function CWAuthComponent() {
     // Register Form
     const registerForm = () => {
         return (
-        <div className="Auth-form-container">
+        <div className="auth-form-container">
             { /* RegisterForm */ }
-            <form className="Auth-form-register" onSubmit={handleSubmit(onRegisterSubmit)}>
-                <div className="Auth-form-content">
+            <form className={`auth-form-register${ isMediumDevice || isSmallDevice ? "-mobile" : "" }`}
+                  onSubmit={handleSubmit(onRegisterSubmit)}>
+                <div className={"auth-form-content"}>
 
                     { /* Form Header */ }
-                    <div className="form-header">
+                    <div className="auth-form-header">
                         { /* Title */ }
-                        <div className="Auth-form-title">
+                        <div className="auth-form-title">
                             Register
                         </div>
 
                         { /* Toggle for Signup form */ }
-                        <div className="text-center">
+                        <div className="redirect-to-login">
                             Already registered?
                             <p className="displayed-form-toggle"
                             onClick={() => setShowRegister(false)}>
@@ -247,38 +252,41 @@ function CWAuthComponent() {
                     </div>
 
                     { /* Email */ }
-                    <div className="form-group mt-3">
-                        <label>
+                    <div className="auth-form-input">
+                        <label className="auth-form-input-label">
                             Email Address
                         </label>
                         <input
-                        type="email"
-                        className="form-control mt-1"
-                        placeholder="e.g. williambanks500@gmail.com"
-                        {...register("email", emailRequirements)}
+                            type="email"
+                            className="auth-form-input-field"
+                            placeholder="e.g. williambanks500@gmail.com"
+                            {...register("email", emailRequirements)}
                         />
                     </div>
 
                     { /* Username */ }
-                    <div className="form-group mt-3">
-                        <label>Your Name</label>
+                    <div className="auth-form-input">
+                        <label className="auth-form-input-label">
+                            Your Name
+                        </label>
                         <input
-                        type="username"
-                        className="form-control mt-1"
-                        placeholder="e.g. William Banks"
-                        {...register("username", usernameRequirements)}
+                            type="username"
+                            className="auth-form-input-field"
+                            placeholder="e.g. William Banks"
+                            {...register("username", usernameRequirements)}
                         />
                     </div>
 
                     { /* Password */ }
-                    <div className="form-group mt-3">
-                        <label>Password</label>
+                    <div className="auth-form-input">
+                        <label className="auth-form-input-label">
+                            Password
+                        </label>
                         <input
-
-                        type="password"
-                        className="form-control mt-1"
-                        placeholder="e.g. kingmoon4"
-                        {...register("password", passwordRequirements)}
+                            type="password"
+                            className="auth-form-input-field"
+                            placeholder="e.g. kingmoon4"
+                            {...register("password", passwordRequirements)}
                         />
                     </div>
 
@@ -290,11 +298,13 @@ function CWAuthComponent() {
                             id="devotion"
                             {...register("devotion", checkboxRequirements)}
                         />
-                        <label>I hereby acknowledge my Devotion to William Banks.</label>
+                        <label className="devotion-checkbox-label">
+                            I hereby acknowledge my Devotion to William Banks.
+                        </label>
                     </div>
 
                     { /* Submission Button */ }
-                    <div className="d-grid gap-2 mt-3">
+                    <div className="auth-form-submit">
                         <button
                             className="submit-form-button-register"
                             type="submit"
@@ -312,20 +322,21 @@ function CWAuthComponent() {
     // Login Form
     const loginForm = () => {
         return (
-        <div className="Auth-form-container">
+        <div className="auth-form-container">
             { /* Login form */ }
-            <form className="Auth-form-login" onSubmit={handleSubmit(onLoginSubmit)}>
-                <div className="Auth-form-content">
+            <form className={`auth-form-login${ isMediumDevice || isSmallDevice ? "-mobile" : "" }`}
+                  onSubmit={handleSubmit(onLoginSubmit)}>
+                <div className="auth-form-content">
 
                     { /* Form Header */ }
-                    <div className="form-header">
+                    <div className="auth-form-header">
                         { /* Title */ }
-                        <div className="Auth-form-title">
+                        <div className="auth-form-title">
                             Login
                         </div>
 
                         { /* Toggle for Signup form */ }
-                        <div className="text-center">
+                        <div className="redirect-to-login">
                             Not registered yet?
                             <p className="displayed-form-toggle"
                             onClick={() => setShowRegister(true)}>
@@ -335,31 +346,33 @@ function CWAuthComponent() {
                     </div>
 
                     { /* Email */ }
-                    <div className="form-group mt-3">
-                        <label>
+                    <div className="auth-form-input">
+                        <label className="auth-form-input-label">
                             Your Name
                         </label>
                         <input
                             type="username"
-                            className="form-control mt-1"
+                            className="auth-form-input-field"
                             placeholder="e.g. William Banks"
                             {...register("username", emailRequirements)}
                             />
                     </div>
 
                     { /* Password */ }
-                    <div className="form-group mt-3">
-                        <label>Password</label>
+                    <div className="auth-form-input">
+                        <label className="auth-form-input-label">
+                            Password
+                        </label>
                         <input
                             type="password"
-                            className="form-control mt-1"
+                            className="auth-form-input-field"
                             placeholder="e.g. kingmoon4"
                             {...register("password", passwordRequirements)}
                         />
                     </div>
 
                     { /* Submission Button */ }
-                    <div className="d-grid gap-2 mt-3">
+                    <div className="auth-form-submit">
                         <button
                             onClick={ () => onClickLoginErrorHandling() }
                             className="submit-form-button-login">
@@ -371,17 +384,36 @@ function CWAuthComponent() {
         </div>        )
     }
 
+    // Media query
+    const isSmallDevice = useMediaQuery("only screen and (max-width : 768px)");
+    const isMediumDevice = useMediaQuery(
+        "only screen and (min-width : 769px) and (max-width : 992px)"
+    );
+
     // Auth page
     return (
-        apiIsLoading ? (<CWCommonLoadingComponent />) : (
-            <div className="cw-auth-container">
-                <CWCommonNavbarComponent />
-                <ToastContainer toastStyle={{ backgroundColor: "linear-gradient(#57504d, #2a2727)" }}/>
-                { showRegister ? registerForm() : loginForm() }
-                {/* Footer */}
-                { CWFooterComponent() }
-            </div>
-        )
+        <div className="cw-auth-container">
+            {/* Navbar */}
+            { isMediumDevice || isSmallDevice ? CWMobileNavbarComponent() : CWCommonNavbarComponent() }
+
+            {/* Add a yellow banner to mimic navbar for mobile */}
+            { isMediumDevice || isSmallDevice ? (
+                <div className="cw-mobile-banner"></div>
+            ) : <></>}
+
+            {/* Toast */}
+            <ToastContainer
+                position="top-right"
+                toastStyle={{}}/>
+
+            {/* Forms */}
+            { apiIsLoading ? (<CWCommonLoadingComponent />) : (
+                showRegister ? registerForm() : loginForm()
+            )}
+
+            {/* Footer */}
+            { CWFooterComponent() }
+        </div>
     )
 }
 

@@ -126,8 +126,6 @@ def handler(event, context):
                     clothing_commodity[
                         "product_name"
                     ] = f'{commodity["product_name"]}_{size}'
-                    item = format_commodity_as_dynamo_item(clothing_commodity)
-
                     batch.put_item(Item=clothing_commodity)
             else:
                 batch.put_item(Item=commodity)

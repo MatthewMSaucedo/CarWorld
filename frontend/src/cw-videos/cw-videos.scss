@@ -1,50 +1,106 @@
-.cw-videos-playlist-container {
-    .cw-videos-playlist-item {
-
-    }
-}
 .cw-video-container {
     display: flex;
     flex-direction: column;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     justify-content: flex-start;
     align-items: center;
     align-content: center;
 
-    padding-top: 4rem;
-    padding-bottom: 2rem;
-
-    overflow: auto;
-    height: 100vh;
+    min-height: 100vh;
 
     color: black;
+
+    .non-carousel-container {
+        display: flex;
+        flex-direction: row;
+
+        .non-carousel-item {
+          margin-top: -7em;
+
+          border-radius: 3%;
+          width: 340px;
+          height: 300px;
+
+          align-items: center;
+          justify-content: center;
+
+          .videos-react-player {
+              height: 100%;
+              padding-top: 56.25%; /* 720 / 1280 = 0.5625 */
+          }
+        }
+    }
+    .non-carousel-container-mobile {
+        display: flex;
+        flex-direction: column;
+
+        margin-bottom: 2rem;
+
+        .non-carousel-item {
+          margin-top: -7em;
+
+          border-radius: 3%;
+          width: 340px;
+          height: 300px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+
+          .videos-react-player {
+              height: 100%;
+              padding-top: 56.25%; /* 720 / 1280 = 0.5625 */
+          }
+        }
+    }
+
     .playlist-title-wrapper {
         width: 100%;
 
         margin-bottom: 2rem;
+
         padding-left: 2rem;
 
 
         font-size: 2.5rem;
         font-weight: 900;
     }
+    .playlist-title-wrapper-mobile {
+        width: 100%;
 
-    .non-carousel-container {
-        // Flex layout
+        margin-bottom: -2rem;
+        margin-top: 2rem;
+
+        padding-left: 2rem;
+
+
+        font-size: 20px;
+        font-weight: 900;
+    }
+
+    .cw-mobile-banner {
+        height: 6rem;
+        width: 100%;
+        position: sticky;
+        top: 0;
+
+        padding: 0.5rem 0rem;
+        background: linear-gradient(360deg, rgb(241, 242, 11) 0.00%, rgb(248, 161, 27) 100.00%);
+        box-shadow: 0 2px 2px 2px rgba(9, 9, 9, 0.23);
+
+        font-weight: bold;
+        font-size: 2em;
+        color: #8b0000;
+
+        // element contents orientation
         display: flex;
         flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: space-evenly;
-        align-items: flex-start;
-        align-content: stretch;
-
-        margin-bottom: 1rem;
-
-        non-carousel-item {
-          margin-right: 1rem;
-          margin-left: 1rem;
-        }
+        flex-wrap: nowrap;
+        justify-content: center;
+        align-items: center;
+        align-content: center;
     }
+
     .non-carousel-container-left-align {
         width: 100%;
 

@@ -29,6 +29,10 @@ function CWFooterComponent () {
         className="social-icon">
           <FontAwesomeIcon icon={faTwitter} />
       </a>
+      {/* <a href="https://github.com/matthewmsaucedo/carworld"
+          className="social-icon">
+          <FontAwesomeIcon icon={faGithub} />
+          </a> */}
     </footer>
   )
 }

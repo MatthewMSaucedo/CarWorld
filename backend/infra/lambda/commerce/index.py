@@ -434,7 +434,7 @@ def create_payment_intent(create_payment_intent_body, user_id, dynamo_client):
     #   payment events emitted by Stripe.
     try:
         # NOTE: Convert Cart to short string
-        #   The Stripe metadata is limited in it's allowed size (discovered during testing).
+        #   The Stripe metadata is limited in its allowed size (discovered during testing).
         #   To allow for varied and large orders, we do a manual "shortening" of the cart,
         #   creating a string less suited for human-reading but better for transport.
         #   This method takes this directly-translated map to string:

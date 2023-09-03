@@ -1,3 +1,9 @@
+// TODO:
+// for mobile, just do a block of like
+// <div>{three display image group (class make up-down) IFF not mobile}</div>
+// <div>{main image}</div>
+// <div>{three display image group (class make left right) IFF mobile}</div>
+
 // Local Imports
 import '../App.scss';
 import './cw-commodity-display.scss';
@@ -27,8 +33,6 @@ function CWStoreItemDetailComponent() {
   const { store_item_index } = useParams<keyof CWStoreItemDetailParams>() as CWStoreItemDetailParams
   const cwStoreItem = STORE_ITEMS[+store_item_index]
 
-  // Hook
-  const dispatch = useDispatch()
 
   // NOTE:
   //   The prop "value" is is called VALUE and not SIZE bc of the <Form>'s <option> tag.
@@ -36,30 +40,52 @@ function CWStoreItemDetailComponent() {
   //   Worth revisiting.
   // Stateful variables
   const [value, setValue] = useState(undefined);
-  const [backendCommodityStates, setBackendCommodityStates] = useState(undefined);
   const [imageDisplayArray, setImageDisplayArray] = useState([...cwStoreItem.images].reverse())
 
-  // Backend call to check on the quantity of the commodity being observed
-  useEffect(() => {
-      console.log("Checking stock of commodities on backend...")
+  // Redux hook
+  const dispatch = useDispatch()
 
-      // Grab commodity details from backend
-      fetch(CW_API_ENDPOINTS.commerce.commodities, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*"
-          },
-      })
-          .then((res) => res.json())
-          .then((data) => {
-              console.log(data)
-              setBackendCommodityStates(data.body.commodityList)
-          });
-  // NOTE:
-  //   Empty dependency array to prevent re-rendering
-  //   (either react is stupid, or I'm stupid... I'd believe either)
-  }, []);
+  // NOTE: After a Discussion with William and Russell, it was determined that there is no desire
+  //       to gate a purchase by available stock -- supply will be made to meet demand.
+  //       Consequently, all logic to ensure availability will be disabled (though left in-tact
+  //       for the sake of changing business demands).
+  /* const [backendCommodityStates, setBackendCommodityStates] = useState(undefined); */
+  // Backend call to check on the quantity of the commodity being observed
+  /* useEffect(() => {
+   *     console.log("Checking stock of commodities on backend...")
+
+   *     // Grab commodity details from backend
+   *     fetch(CW_API_ENDPOINTS.commerce.commodities, {
+   *         method: "GET",
+   *         headers: {
+   *           "Content-Type": "application/json",
+   *           "Access-Control-Allow-Origin": "*"
+   *         },
+   *     })
+   *         .then((res) => res.json())
+   *         .then((data) => {
+   *             console.log(data)
+   *             setBackendCommodityStates(data.body.commodityList)
+   *         });
+   * // NOTE:
+   * //   Empty dependency array to prevent re-rendering
+   * //   (either react is stupid, or I'm stupid... I'd believe either)
+   * }, []);
+   *  // Check if product is in stock
+   * const productIsInStock = () => {
+   *   console.log("hmmm")
+   *   // Grab state of the specific commodity we are looking at
+   *  const backendCommodityState: any = backendCommodityStates![cwStoreItem.serverName]
+   *
+   *   // If this is clothing, check the stock of the specific size selected
+   *   if (backendCommodityState.commodityType === "clothing") {
+   *     return backendCommodityState.quantity[String(value)] > 0
+   *   }
+   *
+   *   // This isn't clothing; simply check the stock of the item
+   *   return backendCommodityState.quantity > 0
+   * }
+   */
 
   // Action performed when size is selected
   const handleChange = (e: any) => {
@@ -96,25 +122,13 @@ function CWStoreItemDetailComponent() {
     }
   }
 
-  // Check if product is in stock
-  const productIsInStock = () => {
-    console.log("hmmm")
-    // Grab state of the specific commodity we are looking at
-    const backendCommodityState: any = backendCommodityStates![cwStoreItem.serverName]
 
-    // If this is clothing, check the stock of the specific size selected
-    if (backendCommodityState.commodityType === "clothing") {
-      return backendCommodityState.quantity[String(value)] > 0
-    }
-
-    // This isn't clothing; simply check the stock of the item
-    return backendCommodityState.quantity > 0
-  }
 
   // Add item to Cart
   const addToCartButton = (
     shouldShowAddToCartButton() ? (
-     backendCommodityStates !== undefined && productIsInStock() ? (
+      // Removed for now, as ther is no desire to show "Out of Stock"
+      true /* backendCommodityStates !== undefined && productIsInStock() */ ? (
         <Button className="cw-product-action-button"
           as="a"
           variant="primary"
@@ -166,14 +180,12 @@ function CWStoreItemDetailComponent() {
 
   const buyNowButton = (
     shouldShowAddToCartButton() ? (
-     backendCommodityStates !== undefined && productIsInStock() ? (
-        <Button className="cw-product-buy-now"
-          as="a"
-          variant="primary"
-          onClick={ () => onClickBuyNow() }>
-          BUY NOW
-        </Button>
-      ) : ( <></> )
+      <Button className="cw-product-buy-now"
+        as="a"
+        variant="primary"
+        onClick={ () => onClickBuyNow() }>
+        BUY NOW
+      </Button>
     ) : ( <></> )
   )
   const onClickBuyNow = () => {
@@ -218,54 +230,52 @@ function CWStoreItemDetailComponent() {
   return (
     // Ternary to show a spinner if the API data is still loading
     // for the commodity states
-    backendCommodityStates !== undefined ? (
-      <div>
+    <div>
 
-        <div className="cw-product-page-container">
+      <div className="cw-product-page-container">
 
-            {/* Column of non-highlighted images */}
-            { productImageMulti }
+          {/* Column of non-highlighted images */}
+          { productImageMulti }
 
-            {/* Column of highlighted image and actions */}
-            <div className="cw-product-actions-col">
+          {/* Column of highlighted image and actions */}
+          <div className="cw-product-actions-col">
 
-              {/* Title */}
-              <div className="cw-product-title">
-                {cwStoreItem.title}
-              </div>
-
-              {/* Cost */}
-              <div className="cw-product-price">
-                ${cwStoreItem.price}
-              </div>
-
-              {/* Highlighted image */}
-              <img className="cw-product-highlighted-pic-img"
-                src={ process.env.PUBLIC_URL + imageDisplayArray[numImages - 1] }
-                alt="This is a very cool item you would love to own"
-              />
-
-              { /* Description */ }
-              { productDescription }
-
-              {/* Size selector, if applicable */}
-              { sizeForm }
-
-              {/* Actions (button group?) */}
-              { addToCartButton }
-              { buyNowButton }
-
-              {/* Back button */}
-              <Button className="cw-product-action-button"
-                      as="a"
-                      variant="primary"
-                      onClick={ () => navigate('/store', { replace: true }) }>
-                Back to Store
-              </Button>
+            {/* Title */}
+            <div className="cw-product-title">
+              {cwStoreItem.title}
             </div>
-        </div>
+
+            {/* Cost */}
+            <div className="cw-product-price">
+              ${cwStoreItem.price}
+            </div>
+
+            {/* Highlighted image */}
+            <img className="cw-product-highlighted-pic-img"
+              src={ process.env.PUBLIC_URL + imageDisplayArray[numImages - 1] }
+              alt="This is a very cool item you would love to own"
+            />
+
+            { /* Description */ }
+            { productDescription }
+
+            {/* Size selector, if applicable */}
+            { sizeForm }
+
+            {/* Actions (button group?) */}
+            { addToCartButton }
+            { buyNowButton }
+
+            {/* Back button */}
+            <Button className="cw-product-action-button"
+                    as="a"
+                    variant="primary"
+                    onClick={ () => navigate('/store', { replace: true }) }>
+              Back to Store
+            </Button>
+          </div>
       </div>
-    ) : (<CWCommonLoadingComponent />)
+    </div>
   )
 }
 

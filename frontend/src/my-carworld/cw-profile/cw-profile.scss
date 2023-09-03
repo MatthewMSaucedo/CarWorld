@@ -1,52 +1,49 @@
-// For table
-.ag-theme-alpine {
-    // Header text color
-    --ag-header-foreground-color: #f8ed62;
-    // Header background
-    --ag-header-background-color: #393433;
-
-    // Data text color
-    --ag-foreground-color: rgb(126, 46, 132);
-    // Data background (even)
-    --ag-background-color: rgb(249, 245, 227);
-    // Data background (odd)
-    --ag-odd-row-background-color: rgb(0, 0, 0, 0.03);
-
-    // No idea what this does
-    // --ag-header-column-resize-handle-color: rgb(126, 46, 132);
-
-    // Table font
-    --ag-font-size: 17px;
-    --ag-font-family: monospace;
-}
-
 .cw-profile-container {
     display: flex;
     flex-direction: column;
     flex-wrap: nowrap;
     justify-content: flex-start;
     align-items: center;
-    align-content: center;
+    align-content: flex-start;
 
-    margin-top: 5rem;
-
-    overflow: auto;
-    height: 100vh;
+    min-height: 100vh;
 
     color: white;
 
+    .cw-mobile-banner {
+        height: 6rem;
+        width: 100%;
+        position: sticky;
+        top: 0;
+
+        padding: 0.5rem 0rem;
+        background: linear-gradient(360deg, rgb(241, 242, 11) 0.00%, rgb(248, 161, 27) 100.00%);
+        box-shadow: 0 2px 2px 2px rgba(9, 9, 9, 0.23);
+
+        font-weight: bold;
+        font-size: 2em;
+        color: #8b0000;
+
+        // element contents orientation
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: center;
+        align-items: center;
+        align-content: center;
+    }
+
     .my-carworld-card {
         box-shadow: 0 2px 2px 2px rgba(9, 9, 9, 0.23);
-        // box
-        margin-left: 2rem;
-        margin-bottom: 3rem;
-        margin-right: 8rem;
 
-        // width: 19rem;
-        // height: 22rem;
-        border-radius: 10%;
+        margin-bottom: 3rem;
+        margin-top: 4rem;
         margin-right: 2rem;
         margin-left: 2rem;
+
+        padding-top: 2rem;
+
+        border-radius: 10%;
 
         display: flex;
         flex-direction: column;
@@ -55,8 +52,6 @@
         align-items: center;
         align-content: stretch;
 
-        // background: linear-gradient(#57504d, #2a2727);
-        // background-image: linear-gradient(to right, #ff758c 0%, #ff7eb3 100%);
         background: linear-gradient(red, #8b0000);
         border-color: #393433;
 
@@ -79,7 +74,7 @@
             color: white;
             font-weight: bold;
 
-            .devoted-since {
+            .card-content-my-ddp-text {
                 font-size: 1.6em;
                 font-weight: bold;
                 padding-top: 5px;
@@ -90,18 +85,55 @@
             .user-ddp-point-value {
                 font-size: 8em;
                 font-weight: bold;
-                margin-top: -35px;
-                margin-bottom: -45px;
+
+                margin-top: -45px;
+                margin-bottom: -20px;
+
                 color: yellow;
-                // color: #f8ed62
-                // border-bottom: 3px solid #181716;
             }
 
-            .devotion-point-title {
-                font-weight: bold;
-                font-size: 1.6em;
+            // For table
+            // For table
+            .devotion-point-header {
+                background: linear-gradient(#57504d, #393433);
+
+                text-align: center;
+                height: 2rem;
+
+                border-color: white;
+                color: #f8ed62;
+
+                width: 25em;
+
                 margin-bottom: -1px;
+
+                .devotion-point-title {
+                    font-weight: bold;
+                    font-size: 18px;
+
+                    padding-top: 4px;
+                }
             }
+            .ag-theme-alpine {
+                // Header text color
+                --ag-header-foreground-color: #f8ed62;
+                // Header background
+                --ag-header-background-color: #453f3d;
+
+                // Data text color
+                --ag-foreground-color: red;
+                // Data background (even)
+                --ag-background-color: rgb(241, 225, 27);
+                // Data background (odd)
+                --ag-odd-row-background-color: rgb(241, 245, 11);
+
+                // No idea what this does
+                // --ag-header-column-resize-handle-color: rgb(126, 46, 132);
+
+                // Table font
+                --ag-font-size: 14px;
+                --ag-font-family: monospace;
+             }
 
             .username {
                 font-size: 4em;
@@ -112,15 +144,9 @@
                 color: yellow;
             }
 
-            // .ag-theme-alpine {
-            //     background: linear-gradient(#57504d, #2a2727);
-            //     border-color: #393433;
-            //     color: #f8ed62 !important;
-            // }
-
             .buy-ddp {
                 margin-bottom: 1rem;
-                // margin-left: 7rem;
+                margin-top: 2rem;
 
                 border-radius: 10%;
                 width: 6rem;
@@ -138,8 +164,155 @@
         }
     }
 
+    .my-carworld-card-mobile {
+        box-shadow: 0 2px 2px 2px rgba(9, 9, 9, 0.23);
+
+        width: 16.5rem;
+
+        margin-bottom: 3rem;
+        margin-top: 2rem;
+        margin-right: 2rem;
+        margin-left: 2rem;
+
+        padding-top: 2rem;
+
+        border-radius: 10%;
+
+        display: flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        align-items: center;
+        align-content: stretch;
+
+        background: linear-gradient(red, #8b0000);
+        border-color: #393433;
+
+        .cw-mobile-banner {
+            height: 6rem;
+            width: 100%;
+            position: sticky;
+            top: 0;
+
+            padding: 0.5rem 0rem;
+            background: linear-gradient(360deg, rgb(241, 242, 11) 0.00%, rgb(248, 161, 27) 100.00%);
+            box-shadow: 0 2px 2px 2px rgba(9, 9, 9, 0.23);
+
+            font-weight: bold;
+            font-size: 2em;
+            color: #8b0000;
+
+            // element contents orientation
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            justify-content: center;
+            align-items: center;
+            align-content: center;
+        }
+
+        .card-content {
+            margin-top: -1rem;
+            padding-left: 2rem;
+            padding-right: 2rem;
+            margin-bottom: 2em;
+
+            display: flex;
+            flex-direction: column;
+            flex-wrap: nowrap;
+            justify-content: space-evenly;
+            align-items: center;
+            align-content: stretch;
+
+            color: white;
+            font-weight: bold;
+
+            .username {
+                font-size: 25px;
+                font-weight: bolder;
+
+                border-bottom: 3px solid #393433;
+                color: yellow;
+            }
+
+            .card-content-my-ddp-text {
+                font-size: 14px;
+                font-weight: bold;
+                padding-top: 5px;
+            }
+
+            .user-ddp-point-value {
+                font-size: 40px;
+                font-weight: bold;
+
+                margin-top: -20px;
+                margin-bottom: -10px;
+
+                color: yellow;
+            }
+
+            // For table
+            .devotion-point-header {
+                background: linear-gradient(#57504d, #393433);
+
+                text-align: center;
+                height: 2rem;
+
+                border-color: white;
+                color: #f8ed62;
+
+                width: 12.5em;
+
+                margin-bottom: -1px;
+
+                .devotion-point-title {
+                    font-weight: bold;
+                    font-size: 14px;
+
+                    padding-top: 4px;
+                }
+            }
+            .ag-theme-alpine {
+                // Header text color
+                --ag-header-foreground-color: #f8ed62;
+                // Header background
+                --ag-header-background-color: #453f3d;
+
+                // Data text color
+                --ag-foreground-color: red;
+                // Data background (even)
+                --ag-background-color: rgb(241, 225, 27);
+                // Data background (odd)
+                --ag-odd-row-background-color: rgb(241, 245, 11);
+
+                // No idea what this does
+                // --ag-header-column-resize-handle-color: rgb(126, 46, 132);
+
+                // Table font
+                --ag-font-size: 10px;
+                --ag-font-family: monospace;
+            }
+
+            .buy-ddp {
+                margin-bottom: -1em;
+                margin-top: 0.2em;
+
+                border-radius: 10%;
+                width: 6rem;
+
+                background: linear-gradient(#57504d, #393433);
+                border-color: #f8ed62;
+
+                color: yellow;
+                font-weight: bold;
+
+                cursor: pointer;
+            }
+        }
+    }
+
     .log-out {
-        cursor: default;
+        cursor: pointer;
 
         padding-top: .5rem;
         padding-bottom: .5rem;

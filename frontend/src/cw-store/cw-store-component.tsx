@@ -81,17 +81,17 @@ function CWStoreComponent() {
                 { route === "/" ? (
                     <div className={`cw-video-container${ isMediumDevice || isSmallDevice ? "-mobile" : ""}`}>
                         <ReactPlayer
-                        className="cw-react-player"
-                        controls={true}
-                        playing={false}
-                        loop={false}
-                        url='https://www.youtube.com/watch?v=FDZsqouKQ3M&t=1s'
+                            className="cw-react-player"
+                            controls={true}
+                            playing={false}
+                            loop={false}
+                            url='https://www.youtube.com/watch?v=FDZsqouKQ3M&t=1s'
                         />
                     </div>) : <></>
                 }
 
                 {/* Store items */}
-                <div className="cw-store-items-container">
+                <div className={`cw-store-items-container${ isMediumDevice || isSmallDevice ? "-mobile" : ""}`}>
                     { storeItems }
                 </div>
             </div>

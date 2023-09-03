@@ -8,6 +8,8 @@ import '../App.scss'
 import { CWShoppingCart, CWShoppingCartEntry } from './cw-shopping-cart'
 import CWCommonNavbarComponent from '../cw-common/components/navbar/cw-common-navbar-component'
 import CWCartDeletionRenderer from './cw-cart-deletion-renderer'
+import CWFooterComponent from '../cw-common/components/footer/cw-footer-component'
+import CWMobileNavbarComponent from '../cw-common/components/navbar/cw-mobile-navbar-component'
 
 // React Hooks
 import { useNavigate, Link } from 'react-router-dom';
@@ -16,12 +18,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../redux/store'
 import { removeFromCart } from '../redux/shoppingCartSlice';
 
+// Custom Hook
+import useMediaQuery from '../cw-common/functions/cw-media-query'
+
 // 3rd Party Lib
 import Button from 'react-bootstrap/Button';
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
 import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
-import CWFooterComponent from '../cw-common/components/footer/cw-footer-component'
 
 // Useful typedefs
 export interface UseSelectorCart {
@@ -55,6 +59,12 @@ function CWCartComponent() {
         {field: 'Action', minWidth: 175, cellRenderer: CWCartDeletionRenderer }
     ])
     const [rowData, setRowData] = useState<any>()
+
+    // Media query
+    const isSmallDevice = useMediaQuery("only screen and (max-width : 768px)");
+    const isMediumDevice = useMediaQuery(
+        "only screen and (min-width : 769px) and (max-width : 992px)"
+    );
 
     // Function called to remove an item from the cart
     const remove = (title: string, size?: string) => {
@@ -111,9 +121,13 @@ function CWCartComponent() {
     return (
         <div>
             {/* Navbar */}
-            { CWCommonNavbarComponent() }
+            { isMediumDevice || isSmallDevice ? CWMobileNavbarComponent() : CWCommonNavbarComponent() }
 
-            <div className="cw-cart-container">
+            <div className={`cw-cart-container${ isMediumDevice || isSmallDevice ? "-mobile" : ""}`}>
+                {/* Add a yellow banner to mimic navbar for mobile */}
+                {isMediumDevice || isSmallDevice ? (
+                    <div className="cw-mobile-banner"></div>
+                ) : <></>}
 
                 {/* Header */}
                 <div className="cw-cart-header">

@@ -14,21 +14,6 @@
 
     color: white;
 
-    .cw-cart-header {
-        display: flex;
-        flex-direction: row;
-        flex-wrap: nowrap;
-        justify-content: space-around;
-        align-items: stretch;
-        align-content: stretch;
-
-        padding-bottom: 1em;
-
-        .cw-cart-link {
-            color: black;
-        }
-    }
-
     .cw-cart-items-container {
         display: flex;
         flex-direction: column;
@@ -71,19 +56,48 @@
     .cw-cart-checkout-button {
         margin-top: 2em;
     }
-
-.cw-cart-container {
+}
+.cw-cart-container-mobile {
     display: flex;
     flex-direction: column;
     flex-wrap: nowrap;
     justify-content: flex-start;
-    align-items: stretch;
-    align-content: stretch;
+    align-items: center;
+    align-content: center;
 
-    height: 100%;
-    background-color: #f0ead6;
+    padding-bottom: 2rem;
+
+    overflow: auto;
+    height: 100vh;
+
+    color: white;
+
+    .cw-mobile-banner {
+        height: 6rem;
+        width: 100%;
+        position: sticky;
+        top: 0;
+
+        padding: 0.5rem 0rem;
+        background: linear-gradient(360deg, rgb(241, 242, 11) 0.00%, rgb(248, 161, 27) 100.00%);
+        box-shadow: 0 2px 2px 2px rgba(9, 9, 9, 0.23);
+
+        font-weight: bold;
+        font-size: 2em;
+        color: #8b0000;
+
+        // element contents orientation
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: center;
+        align-items: center;
+        align-content: center;
+    }
 
     .cw-cart-header {
+        padding-top: 2rem;
+
         display: flex;
         flex-direction: row;
         flex-wrap: nowrap;
@@ -91,7 +105,6 @@
         align-items: stretch;
         align-content: stretch;
 
-        border-bottom: 2px solid black;
         padding-bottom: 1em;
 
         .cw-cart-link {
@@ -141,5 +154,4 @@
     .cw-cart-checkout-button {
         margin-top: 2em;
     }
-  }
 }

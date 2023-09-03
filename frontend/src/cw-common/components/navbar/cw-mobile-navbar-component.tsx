@@ -11,11 +11,6 @@ import { useState, useEffect } from "react"
 import { useSelector } from 'react-redux'
 import { RootState } from '../../../redux/store'
 
-// Icon
-import { IconContext } from "react-icons";
-import { MdShoppingCartCheckout, MdShoppingCart } from "react-icons/md";
-import { FaBars } from "react-icons/fa";
-
 // Burger Menu
 import { slide as Menu } from 'react-burger-menu'
 
@@ -52,8 +47,12 @@ function CWMobileNavbarComponent() {
         console.log(url)
     }, [location])
 
-    // Left-Oriented Navbar links
+    // Navbar links
     let navbarComponentLinksLeft: CWCommonNavbarLink[] = [
+        {
+            url: '../' + AppConstants.CW_ROUTES[AppConstants.CW_ROUTE_ENUM['home']].path,
+            name: 'Home',
+        },
         {
             url: '../' + AppConstants.CW_ROUTES[AppConstants.CW_ROUTE_ENUM['videos']].path,
             name: 'Videos',
@@ -66,19 +65,6 @@ function CWMobileNavbarComponent() {
             url: '../' + AppConstants.CW_ROUTES[AppConstants.CW_ROUTE_ENUM['videos']].path,
             name: 'Car World Nation',
         },
-    ]
-    let navItemsLeft = navbarComponentLinksLeft.map((navbarLink: CWCommonNavbarLink)=>{
-        return (
-            <div className={ urlToPathMapping[selectedUrl] === navbarLink.name ? "cw-navbar-highlighted-item" : "cw-navbar-item" }
-                 onClick={() => navButtonClick(navbarLink.url)}
-                    >
-                        { navbarLink.name }
-            </div>
-        )
-    })
-
-    // Right-Oriented Navbar links
-    let navbarComponentLinksRight: CWCommonNavbarLink[] = [
         {
             url: '../' + AppConstants.CW_ROUTES[AppConstants.CW_ROUTE_ENUM['wiki']].path,
             name: 'Our Mission',
@@ -92,18 +78,17 @@ function CWMobileNavbarComponent() {
             name: 'My Profile',
         },
     ]
-    let navItemsRight = navbarComponentLinksRight.map((navbarLink: CWCommonNavbarLink)=>{
+
+    // Nav Items
+    let navItems = navbarComponentLinksLeft.map((navbarLink: CWCommonNavbarLink)=>{
         return (
-            <div className={ urlToPathMapping[selectedUrl] === navbarLink.name ? "cw-navbar-highlighted-item" : "cw-navbar-item" }
+            <div className={ urlToPathMapping[selectedUrl] === navbarLink.name ? "cw-mobile-navbar-highlighted-item" : "cw-mobile-navbar-item" }
                  onClick={() => navButtonClick(navbarLink.url)}
                     >
                         { navbarLink.name }
             </div>
         )
     })
-
-    // Central Navbar link
-    const homeLink = '../'
 
     // Navigation
     const navigate = useNavigate()
@@ -115,15 +100,9 @@ function CWMobileNavbarComponent() {
     return (
         <div>
             <Menu
-                customBurgerIcon={ <img src={process.env.PUBLIC_URL + IMAGE_SRC.cwLogoImg} /> }
+                customBurgerIcon={ <img alt="Car World logo" src={process.env.PUBLIC_URL + IMAGE_SRC.cwLogoImg} /> }
             >
-                <a id="Home" className="menu-item" href="/">Home</a>
-                <a id="Merch" className="menu-item" href="/store">Merch</a>
-                <a id="Videos" className="menu-item" href="/videos">Videos</a>
-                <a id="Our Mission" className="menu-item" href="/wiki">Our Mission</a>
-                <a id="Car World Nation" className="menu-item" href="/videos">Car World Nation</a>
-                <a id="My Profile" className="menu-item" href="/auth">My Profile</a>
-                <a id="Cart" className="menu-item" href="/cart">Cart</a>
+                { navItems }
             </Menu>
         </div>
     )

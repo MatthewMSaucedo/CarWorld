@@ -1,14 +1,12 @@
 .cw-loading-component {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: space-evenly;
-    align-items: stretch;
-    align-content: center;
+  width: 100vw;
+  height: 100vh;
 
-    overflow: auto;
-
-    height: 100vh;
-
-    // color: white;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+  overflow: auto;
 }
