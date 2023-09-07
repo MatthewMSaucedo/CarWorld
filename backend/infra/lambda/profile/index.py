@@ -201,7 +201,7 @@ def get_cw_ddp_tier_list_and_rank(user_id, dynamo_client):
         }
 
     try:
-        sorted_user_tuples = sort_users_desc_ddp(cw_users)
+        sorted_user_list = sort_users_desc_ddp(cw_users)
     except Exception as e:
         error = {
             "message": str(e),
@@ -217,7 +217,7 @@ def get_cw_ddp_tier_list_and_rank(user_id, dynamo_client):
     try:
         # Format commodities for FE
         ddp_top_x, caller_ddp_rank = ddp_top_x_list_from_users_and_caller_rank(
-            sorted_user_tuples=sorted_user_tuples,
+            sorted_user_list=sorted_user_list,
             caller_id=user_id,
             x=NUMBER_OF_USERS_RANKED,
         )
@@ -233,58 +233,70 @@ def get_cw_ddp_tier_list_and_rank(user_id, dynamo_client):
             "error": error,
         }
 
-    fe_formatted_users = format_sorted_user_tuples_for_fe(top_x_user_tuples=ddp_top_x)
-
     return {
         "code": 200,
         "message": "Successfully retreived ddp data",
-        "body": {"ddpTierList": fe_formatted_users, "userDdpRank": caller_ddp_rank},
+        "body": {"ddpTierList": ddp_top_x, "userDdpRank": caller_ddp_rank},
     }
 
 
+# interface CWDdpRank {
+#  0  ddp: number,
+#  1  userId: number,
+#  2  username: string,
+#  3  cwNationMember: boolean
+#  4  rank: number,
+# }
 def sort_users_desc_ddp(cw_users):
     user_tuple_list = []
+    sorted_users = []
+
     for user in cw_users:
+        # True if nation member, False otherwise
+        cw_nation = user.get("cwNation", {"BOOL": False})["BOOL"]
+
         user_as_tuple = tuple(
             [
                 user["ddp"]["N"],  # tuples are sorted by first element
                 user["id"]["S"],
                 user["username"]["S"],
+                cw_nation,
+                None,
             ]
         )
         user_tuple_list.append(user_as_tuple)
 
-    sorted_users = sorted(user_tuple_list, reverse=True)
+    sorted_users_tuple_list = sorted(user_tuple_list, reverse=True)
+    for user_tuple in sorted_users_tuple_list:
+        sorted_users.append(
+            {
+                "ddp": int(user_tuple[0]),
+                "userId": user_tuple[1],
+                "username": user_tuple[2],
+                "cwNationMember": user_tuple[3],
+                "rank": None,
+            }
+        )
+
     return sorted_users
 
 
-def ddp_top_x_list_from_users_and_caller_rank(sorted_user_tuples, caller_id, x):
-    top_x_user_tuples = []
+def ddp_top_x_list_from_users_and_caller_rank(sorted_user_list, caller_id, x):
+    top_x_user_list = []
     caller_ddp_and_rank = None
-    for index, user_tuple in enumerate(sorted_user_tuples):
-        if user_tuple[1] == caller_id:
-            caller_ddp_rank = {"rank": index + 1, "ddp": user_tuple[0]}
+    for index, user in enumerate(sorted_user_list):
+        user["rank"] = index + 1
+
+        if user["userId"] == caller_id:
+            caller_ddp_rank = user
 
         if index < x:
-            top_x_user_tuples.append(user_tuple)
+            top_x_user_list.append(user)
         else:
             if caller_ddp_rank != None:
                 break
 
-    return top_x_user_tuples, caller_ddp_rank
-
-
-def format_sorted_user_tuples_for_fe(top_x_user_tuples):
-    fe_formatted_users = []
-    for user_tuple in top_x_user_tuples:
-        fe_formatted_users.append(
-            {
-                "ddp": user_tuple[0],
-                "user_id": user_tuple[1],
-                "usernamme": user_tuple[2],
-            }
-        )
-    return fe_formatted_users
+    return top_x_user_list, caller_ddp_rank
 
 
 ########################################################

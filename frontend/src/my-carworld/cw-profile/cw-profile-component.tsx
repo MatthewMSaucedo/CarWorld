@@ -35,10 +35,13 @@ export interface UseSelectorUser {
     cwUser: CWUser
 }
 
-//
+// Backend response type for DDP Ranking
 export interface CWDdpRank {
+    ddp: number,
+    userId: number,
     username: string,
-    ddp: number
+    cwNationMember: boolean
+    rank: number,
 }
 
 function CWProfileComponent() {
@@ -50,34 +53,55 @@ function CWProfileComponent() {
     //   Change to loading-screen while we wait on API calls
     //   Determine which form to show, login or register
     const [apiIsLoading, setApiIsLoading] = useState(false);
+    //   Fetch User DDP on page load, as this can change
+    const [userDdp, setUserDdp] = useState(0);
 
-    /* useEffect(() => { */
-        // TODO
-        /* (async () => { */
-            // Call ddpRank to determind:
+    useEffect(() => {
+        (async () => {
+            setApiIsLoading(true)
+
+            // Call ddpRank to determine:
             //   - Rank of user in DDP Leaderboard
-            //   - Top 5 users by DDP, and respective DDP values
-            /* const ddpRankRes = await ddpRankApiCall() */
-            /* if (ddpRankRes.code !== 200) { */
-            /* console.log("Failed to fetch DDP Rank!") */
-            /* return */
-            /* } */
+            //   - Top 20 users by DDP, and respective DDP values
+            const ddpRankRes = await ddpRankApiCall()
+            if (ddpRankRes.code !== 200) {
+                console.log("Failed to fetch DDP Rank!")
+                return
+            }
             // Parse login response
-            /* const ddpRankTopFive: CWDdpRank[] = ddpRankRes.body.ddp_top_five */
-            /* const userDdpRank: number = ddpRankRes.body.user_ddp_rank */
-        /* })(); */
+            const ddpRankTopTwenty: CWDdpRank[] = ddpRankRes.body.ddpTierList
+            const userDdpRank: CWDdpRank = ddpRankRes.body.userDdpRank
 
-        /* return () => { } */
-    /* }) */
+            setUserDdp(userDdpRank.ddp)
+
+            let ddpDataRows: any[] = []
+            ddpRankTopTwenty.forEach((entry) => {
+                ddpDataRows = ddpDataRows.concat({
+                    username: entry.username,
+                    ddp: entry.ddp
+                })
+            })
+            setRowData(ddpDataRows)
+            console.log(ddpDataRows)
+
+            setApiIsLoading(false)
+        })();
+
+        return () => { }
+
+    // NOTE:
+    //   Empty dependency array to prevent re-rendering
+    }, [])
 
     // Api call to fetch ddpRank
     const ddpRankApiCall = async () => {
         const ddpRankRawApiRes = await fetch(AppConstants.CW_API_ENDPOINTS.profile.ddp_rank, {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*"
-        },
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*",
+                "Authorization": cwUser.authToken.token // Grab token state
+            },
         })
         const ddpRankRes = await ddpRankRawApiRes.json()
 
@@ -92,7 +116,11 @@ function CWProfileComponent() {
 
     const apiLoadingSpinner = () => {
         return (
-            <Spinner animation="border" role="status" style={{color: "green", width: "10rem", height: "10rem"}}>
+            <Spinner
+                animation="border"
+                role="status"
+                className="api-loading-spinner"
+            >
                 <span className="visually-hidden">Loading...</span>
             </Spinner>
         )
@@ -116,29 +144,8 @@ function CWProfileComponent() {
             /* autoSizeColumn: true */
         }
     ])
-    const [rowData, setRowData] = useState<any>([
-        { username: 'mitzi', ddp: 100},
-        { username: 'Tim', ddp: 85},
-        { username: 'themattsaucedo', ddp: 50},
-        { username: 'Matthew Saucedo', ddp: 150},
-        { username: 'Conan', ddp: 44},
-        { username: 'Eric', ddp: 20},
-        { username: 'mitzi', ddp: 100},
-        { username: 'Tim', ddp: 85},
-        { username: 'themattsaucedo', ddp: 50},
-        { username: 'Conan', ddp: 44},
-        { username: 'Eric', ddp: 20},
-        { username: 'mitzi', ddp: 100},
-        { username: 'Tim', ddp: 85},
-        { username: 'themattsaucedo', ddp: 50},
-        { username: 'Conan', ddp: 44},
-        { username: 'Eric', ddp: 20},
-        { username: 'mitzi', ddp: 100},
-        { username: 'Tim', ddp: 85},
-        { username: 'themattsaucedo', ddp: 50},
-        { username: 'Conan', ddp: 44},
-        { username: 'Eric', ddp: 20},
-    ])
+
+    const [rowData, setRowData] = useState<any>([])
 
     // DDP Leaderboard dynamically size
     const onGridReady = (params: any) => {
@@ -201,7 +208,7 @@ function CWProfileComponent() {
                         </p>
                         { apiIsLoading ? apiLoadingSpinner() : (
                             <p className="user-ddp-point-value">
-                                { cwUser.ddp }
+                                { userDdp }
                             </p>
                         )}
                     </div>
