@@ -6,6 +6,7 @@ import {
     faYoutube,
     faTiktok,
     faTwitter,
+    faGithub,
 } from '@fortawesome/free-brands-svg-icons'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 
@@ -29,10 +30,10 @@ function CWFooterComponent () {
         className="social-icon">
           <FontAwesomeIcon icon={faTwitter} />
       </a>
-      {/* <a href="https://github.com/matthewmsaucedo/carworld"
-          className="social-icon">
-          <FontAwesomeIcon icon={faGithub} />
-          </a> */}
+      <a href="https://github.com/matthewmsaucedo/carworld"
+         className="social-icon">
+        <FontAwesomeIcon icon={faGithub} />
+      </a>
     </footer>
   )
 }

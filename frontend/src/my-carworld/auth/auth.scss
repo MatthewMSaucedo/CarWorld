@@ -14,54 +14,61 @@
   // background-color: #8b0000 !important;
 }
 
+.cw-mobile-banner {
+    height: 6rem;
+    width: 100%;
+    position: sticky;
+    top: 0;
+
+    // margin-top: -3.5rem;
+
+    // padding: 0.5rem 0rem;
+    background: linear-gradient(360deg, rgb(241, 242, 11) 0.00%, rgb(248, 161, 27) 100.00%);
+    box-shadow: 0 2px 2px 2px rgba(9, 9, 9, 0.23);
+
+    font-weight: bold;
+    font-size: 2em;
+    color: #8b0000;
+
+    // element contents orientation
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+}
 
 .cw-auth-container {
     display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
+    flex-direction: column;
+    flex-wrap: nowrap;
     justify-content: center;
     align-items: center;
     align-content: center;
 
     overflow: auto;
-    height: 100vh;
+
+    min-height: calc(100vh); /* Fallback for browsers that do not support Custom Properties */
+    @media (max-width: 992px) {
+        min-height: calc(100vh - 6rem); /* Fallback for browsers that do not support Custom Properties */
+        min-height: calc(100svh - 6rem);
+    }
 
     color: white;
 
-    .cw-mobile-banner {
-        height: 6rem;
-        width: 100%;
-        position: sticky;
-        top: 0;
-
-        padding: 0.5rem 0rem;
-        background: linear-gradient(360deg, rgb(241, 242, 11) 0.00%, rgb(248, 161, 27) 100.00%);
-        box-shadow: 0 2px 2px 2px rgba(9, 9, 9, 0.23);
-
-        font-weight: bold;
-        font-size: 2em;
-        color: #8b0000;
-
-        // element contents orientation
-        display: flex;
-        flex-direction: row;
-        flex-wrap: nowrap;
-        justify-content: center;
-        align-items: center;
-        align-content: center;
-    }
-
     .auth-form-container {
       width: 100vw;
-      height: 100vh;
+
       display: flex;
       flex-direction: row;
       flex-wrap: nowrap;
       justify-content: center;
       align-items: baseline;
       align-content: stretch;
-      overflow: auto;
+      // overflow: auto;
 
+      margin-top: 4rem;
       color: white;
 
       .auth-form-register {
@@ -70,7 +77,6 @@
 
         border-radius: 8%;
 
-        margin-top: 8rem;
         padding-top: 2rem;
 
         box-shadow: 0 .3rem .3rem .3rem rgba(9, 9, 9, 0.23);
@@ -185,7 +191,6 @@
 
         border-radius: 8%;
 
-        margin-top: 8rem;
         padding-top: 1rem;
 
         box-shadow: 0 .3rem .3rem .3rem rgba(9, 9, 9, 0.23);
@@ -276,7 +281,6 @@
 
         border-radius: 8%;
 
-        margin-top: 8rem;
         padding-top: 2rem;
 
         box-shadow: 0 .3rem .3rem .3rem rgba(9, 9, 9, 0.23);
@@ -391,7 +395,6 @@
 
         border-radius: 8%;
 
-        margin-top: 10rem;
         padding-top: 3rem;
 
         background: linear-gradient(red, #8b0000);

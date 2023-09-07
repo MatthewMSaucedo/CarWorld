@@ -392,7 +392,8 @@ function CWAuthComponent() {
 
     // Auth page
     return (
-        <div className="cw-auth-container">
+
+        <div>
             {/* Navbar */}
             { isMediumDevice || isSmallDevice ? CWMobileNavbarComponent() : CWCommonNavbarComponent() }
 
@@ -400,19 +401,20 @@ function CWAuthComponent() {
             { isMediumDevice || isSmallDevice ? (
                 <div className="cw-mobile-banner"></div>
             ) : <></>}
+            <div className="cw-auth-container">
+                {/* Toast */}
+                <ToastContainer
+                    position="top-right"
+                    toastStyle={{}}/>
 
-            {/* Toast */}
-            <ToastContainer
-                position="top-right"
-                toastStyle={{}}/>
+                {/* Forms */}
+                { apiIsLoading ? (<CWCommonLoadingComponent />) : (
+                    showRegister ? registerForm() : loginForm()
+                )}
 
-            {/* Forms */}
-            { apiIsLoading ? (<CWCommonLoadingComponent />) : (
-                showRegister ? registerForm() : loginForm()
-            )}
-
-            {/* Footer */}
-            { CWFooterComponent() }
+                {/* Footer */}
+                { CWFooterComponent() }
+            </div>
         </div>
     )
 }

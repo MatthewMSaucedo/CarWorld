@@ -181,14 +181,13 @@ function CWProfileComponent() {
         <div>
             {/* Navbar */}
             { isMediumDevice || isSmallDevice ? CWMobileNavbarComponent() : CWCommonNavbarComponent() }
+            {/* Add a yellow banner to mimic navbar for mobile */}
+            {isMediumDevice || isSmallDevice ? (
+                <div className="cw-mobile-banner"></div>
+            ) : <></>}
 
             {/* Profile */}
             <div className="cw-profile-container">
-                {/* Add a yellow banner to mimic navbar for mobile */}
-                {isMediumDevice || isSmallDevice ? (
-                    <div className="cw-mobile-banner"></div>
-                ) : <></>}
-
                 {/* Content */}
                 <div className={`my-carworld-card${ isMediumDevice || isSmallDevice ? "-mobile" : ""}`}>
 
@@ -244,10 +243,10 @@ function CWProfileComponent() {
                         LOG OUT
                     </button>
                 </div>
-            </div>
 
-            {/* Footer */}
-            { CWFooterComponent() }
+                {/* Footer */}
+                { CWFooterComponent() }
+            </div>
         </div>
     )
 }

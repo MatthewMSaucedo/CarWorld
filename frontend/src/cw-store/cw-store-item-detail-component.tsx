@@ -22,6 +22,7 @@ import Form from 'react-bootstrap/Form';
 import { addToCart, updateCart } from '../redux/shoppingCartSlice';
 import CWCommonLoadingComponent from '../cw-common/components/loading/cw-common-loading-component';
 import CWCommonNavbarComponent from '../cw-common/components/navbar/cw-common-navbar-component';
+import useMediaQuery from '../cw-common/functions/cw-media-query';
 
 // TS type for page param
 export type CWStoreItemDetailParams = {
@@ -160,7 +161,24 @@ function CWStoreItemDetailComponent() {
   }
 
   // Display non-highlighted images in a column IF there are more images
-  const productImageMulti = (
+  const productImageMultiDesktop = (
+    cwStoreItem.images.length > 1 ? (
+      <div className="cw-product-multi-pic-col">
+      {
+        imageDisplayArray.map((itemImage, index)=>{
+          return (index + 1) === numImages ? (<div></div>) : (
+            <img
+              className="cw-product-multi-pic-img"
+              src={ process.env.PUBLIC_URL + itemImage }
+              alt="This is a very cool item you would love to own"
+              onClick={ () => onClickMultiPicImg(index, numImages)}
+            />)
+        })
+      }
+      </div>
+    ) : ( <></> )
+  )
+  const productImageMultiMobile = (
     cwStoreItem.images.length > 1 ? (
       <div className="cw-product-multi-pic-col">
       {
@@ -226,16 +244,22 @@ function CWStoreItemDetailComponent() {
     )
   })
 
+  // Media query
+  const isSmallDevice = useMediaQuery("only screen and (max-width : 768px)");
+  const isMediumDevice = useMediaQuery(
+      "only screen and (min-width : 769px) and (max-width : 992px)"
+  );
+
   // HTML
   return (
     // Ternary to show a spinner if the API data is still loading
     // for the commodity states
     <div>
 
-      <div className="cw-product-page-container">
+      <div className={`cw-product-page-container${ isMediumDevice || isSmallDevice ? "-mobile" : ""}`}>
 
           {/* Column of non-highlighted images */}
-          { productImageMulti }
+          { isMediumDevice || isSmallDevice ? <></> : productImageMultiDesktop }
 
           {/* Column of highlighted image and actions */}
           <div className="cw-product-actions-col">
@@ -256,6 +280,9 @@ function CWStoreItemDetailComponent() {
               alt="This is a very cool item you would love to own"
             />
 
+            {/* Column of non-highlighted images */}
+            { isMediumDevice || isSmallDevice ? productImageMultiMobile : <></> }
+
             { /* Description */ }
             { productDescription }
 
@@ -267,12 +294,10 @@ function CWStoreItemDetailComponent() {
             { buyNowButton }
 
             {/* Back button */}
-            <Button className="cw-product-action-button"
-                    as="a"
-                    variant="primary"
+            <button className="cw-product-action-button"
                     onClick={ () => navigate('/store', { replace: true }) }>
               Back to Store
-            </Button>
+            </button>
           </div>
       </div>
     </div>

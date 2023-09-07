@@ -1,37 +1,43 @@
+.cw-mobile-banner {
+    height: 6rem;
+    width: 100%;
+    position: sticky;
+    top: 0;
+
+    background: linear-gradient(360deg, rgb(241, 242, 11) 0.00%, rgb(248, 161, 27) 100.00%);
+    box-shadow: 0 2px 2px 2px rgba(9, 9, 9, 0.23);
+
+    font-weight: bold;
+    font-size: 2em;
+    color: #8b0000;
+
+    // element contents orientation
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+}
+
 .cw-profile-container {
     display: flex;
     flex-direction: column;
-    flex-wrap: nowrap;
-    justify-content: flex-start;
+    flex-wrap: wrap;
+    justify-content: center;
     align-items: center;
-    align-content: flex-start;
+    align-content: center;
 
-    min-height: 100vh;
+    overflow: auto;
+
+    min-height: calc(100vh); /* Fallback for browsers that do not support Custom Properties */
+    @media (max-width: 992px) {
+        min-height: calc(100vh - 6rem); /* Fallback for browsers that do not support Custom Properties */
+        min-height: calc(100svh - 6rem);
+    }
 
     color: white;
 
-    .cw-mobile-banner {
-        height: 6rem;
-        width: 100%;
-        position: sticky;
-        top: 0;
-
-        padding: 0.5rem 0rem;
-        background: linear-gradient(360deg, rgb(241, 242, 11) 0.00%, rgb(248, 161, 27) 100.00%);
-        box-shadow: 0 2px 2px 2px rgba(9, 9, 9, 0.23);
-
-        font-weight: bold;
-        font-size: 2em;
-        color: #8b0000;
-
-        // element contents orientation
-        display: flex;
-        flex-direction: row;
-        flex-wrap: nowrap;
-        justify-content: center;
-        align-items: center;
-        align-content: center;
-    }
 
     .my-carworld-card {
         box-shadow: 0 2px 2px 2px rgba(9, 9, 9, 0.23);
@@ -56,12 +62,8 @@
         border-color: #393433;
 
         .card-content {
-            // padding-right: .5em;
-            // padding-left: .5em;
-            // margin-top: 2rem;
             margin-left: 4rem;
             margin-right: 4rem;
-            // margin-bottom: .5rem;
             margin-bottom: 0rem;
 
             display: flex;
@@ -169,7 +171,7 @@
 
         width: 16.5rem;
 
-        margin-bottom: 3rem;
+        margin-bottom: 1rem;
         margin-top: 2rem;
         margin-right: 2rem;
         margin-left: 2rem;
@@ -187,29 +189,6 @@
 
         background: linear-gradient(red, #8b0000);
         border-color: #393433;
-
-        .cw-mobile-banner {
-            height: 6rem;
-            width: 100%;
-            position: sticky;
-            top: 0;
-
-            padding: 0.5rem 0rem;
-            background: linear-gradient(360deg, rgb(241, 242, 11) 0.00%, rgb(248, 161, 27) 100.00%);
-            box-shadow: 0 2px 2px 2px rgba(9, 9, 9, 0.23);
-
-            font-weight: bold;
-            font-size: 2em;
-            color: #8b0000;
-
-            // element contents orientation
-            display: flex;
-            flex-direction: row;
-            flex-wrap: nowrap;
-            justify-content: center;
-            align-items: center;
-            align-content: center;
-        }
 
         .card-content {
             margin-top: -1rem;
