@@ -4,6 +4,7 @@ import traceback
 
 # Environment Variables
 USER_TABLE_NAME = os.environ["user_table_name"]
+NUMBER_OF_USERS_RANKED = 20
 
 
 ########################################################
@@ -186,13 +187,13 @@ def get_cw_ddp_tier_list_and_rank(user_id, dynamo_client):
         #       now while I still remember. Tomorrow's bugs solved by yesterday's
         #       comments :)
         # Retrieve backend list of Users, ranked by DDP
-        cwUsers = dynamo_client.get_all(USER_TABLE_NAME)
+        cw_users = dynamo_client.get_all(USER_TABLE_NAME)
     except Exception as e:
         error = {
             "message": str(e),
             "stack": traceback.format_exc(),
         }
-        print(f"SERVER_ERROR: Failed to obtain Commodites from DB -- {error}")
+        print(f"SERVER_ERROR: Failed to obtain users from DB -- {error}")
         return {
             "code": 500,
             "message": "SERVER_ERROR: Failed to obtain Commodites from DB",
@@ -200,28 +201,90 @@ def get_cw_ddp_tier_list_and_rank(user_id, dynamo_client):
         }
 
     try:
-        # Format commodities for FE
-        ddp_top_five = ddp_top_five_list_from_users(cwUsers)
-        user_ddp_rank = determind_user_ddp_rank_from_users(cwUsers)
+        sorted_user_tuples = sort_users_desc_ddp(cw_users)
     except Exception as e:
         error = {
             "message": str(e),
             "stack": traceback.format_exc(),
         }
-        print(
-            f"SERVER_ERROR: Failed to convert Dynamo commodity list to FE Mapping -- {error}"
-        )
+        print(f"SERVER_ERROR: Failed to sort User records by DDP -- {error}")
         return {
             "code": 500,
-            "message": "SERVER_ERROR: Failed to convert Dynamo commodity list to FE Mapping",
+            "message": "SERVER_ERROR: Failed to sort User records by DDP",
             "error": error,
         }
 
+    try:
+        # Format commodities for FE
+        ddp_top_x, caller_ddp_rank = ddp_top_x_list_from_users_and_caller_rank(
+            sorted_user_tuples=sorted_user_tuples,
+            caller_id=user_id,
+            x=NUMBER_OF_USERS_RANKED,
+        )
+    except Exception as e:
+        error = {
+            "message": str(e),
+            "stack": traceback.format_exc(),
+        }
+        print(f"SERVER_ERROR: Failed to format sorted User Records for FE -- {error}")
+        return {
+            "code": 500,
+            "message": "SERVER_ERROR: Failed to format sorted User Records for FE",
+            "error": error,
+        }
+
+    fe_formatted_users = format_sorted_user_tuples_for_fe(top_x_user_tuples=ddp_top_x)
+
     return {
         "code": 200,
-        "message": "Successfully retreived commodity list",
-        "body": {"commodityList": fe_commodity_map},
+        "message": "Successfully retreived ddp data",
+        "body": {"ddpTierList": fe_formatted_users, "userDdpRank": caller_ddp_rank},
     }
+
+
+def sort_users_desc_ddp(cw_users):
+    user_tuple_list = []
+    for user in cw_users:
+        user_as_tuple = tuple(
+            [
+                user["ddp"]["N"],  # tuples are sorted by first element
+                user["id"]["S"],
+                user["username"]["S"],
+            ]
+        )
+        user_tuple_list.append(user_as_tuple)
+
+    sorted_users = sorted(user_tuple_list, reverse=True)
+    return sorted_users
+
+
+def ddp_top_x_list_from_users_and_caller_rank(sorted_user_tuples, caller_id, x):
+    top_x_user_tuples = []
+    caller_ddp_and_rank = None
+    for index, user_tuple in enumerate(sorted_user_tuples):
+        if user_tuple[1] == caller_id:
+            caller_ddp_rank = {"rank": index + 1, "ddp": user_tuple[0]}
+
+        if index < x:
+            top_x_user_tuples.append(user_tuple)
+        else:
+            if caller_ddp_rank != None:
+                break
+
+    return top_x_user_tuples, caller_ddp_rank
+
+
+def format_sorted_user_tuples_for_fe(top_x_user_tuples):
+    fe_formatted_users = []
+    for user_tuple in top_x_user_tuples:
+        fe_formatted_users.append(
+            {
+                "ddp": user_tuple[0],
+                "user_id": user_tuple[1],
+                "usernamme": user_tuple[2],
+            }
+        )
+    return fe_formatted_users
 
 
 ########################################################
@@ -253,7 +316,7 @@ def handler(event, context):
 
     # Direct to proper controller action
     try:
-        if request["action"] == "secret":
+        if request["action"] == "ddp_rank":
             # Given that this is a protected action, the JWT provided in the header
             # has already been parsed, with the UserID being provided in the reqContext
             try:

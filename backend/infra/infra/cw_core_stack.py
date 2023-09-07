@@ -137,7 +137,7 @@ class CWCoreStack(Stack):
         )
 
         # TODO: Lambda to handle db retries for sensitive writes
-        # Create the DB Retry Lambda for corrective actions
+        # Create the queue, dead_letter_q, and DB Retry Lambda for corrective actions
         # self.cw_db_retry_lambda = self.create_cw_db_retry_lambda()
 
     def obtain_ssm_client_secret(self, secret_name):
@@ -549,7 +549,7 @@ class CWCoreStack(Stack):
             role=profile_lambda_role,
             code=lambdaFx.Code.from_asset("./lambda/profile/"),
             description="CarWorld Profile Lambda, to handle Profile-related actions",
-            environment={"userTableName": user_table.table_name},
+            environment={"user_table_name": user_table.table_name},
             memory_size=512,
             timeout=Duration.seconds(15),
         )
@@ -572,7 +572,7 @@ class CWCoreStack(Stack):
         # Create ProfileAPI routes
         #
         # /ddp_rank
-        # Provide Top 5 DDP users w/ DDP count, and rank of client by DDP
+        # Provide Top x DDP users w/ DDP count, and rank of client by DDP
         cw_api_gw.add_routes(
             path="/profile/ddp_rank",
             methods=[apigw.HttpMethod.GET],
