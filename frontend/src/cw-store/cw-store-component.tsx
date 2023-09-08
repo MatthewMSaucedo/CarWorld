@@ -8,6 +8,9 @@ import * as AppConstants from '../AppConstants'
 import { CWStoreItem } from './cw-store-item'
 import CWStoreItemComponent from './cw-store-item-component'
 import CWCommonNavbarComponent from '../cw-common/components/navbar/cw-common-navbar-component'
+import CWFooterComponent from '../cw-common/components/footer/cw-footer-component'
+import CWMobileNavbarComponent from '../cw-common/components/navbar/cw-mobile-navbar-component'
+import CWMobileBannerComponent from '../cw-common/components/navbar/cw-mobile-banner-component'
 
 // React Hooks
 import { useNavigate, useLocation } from 'react-router-dom'
@@ -21,8 +24,6 @@ import { RootState } from '../redux/store'
 // 3rd Party Lib
 import Button from 'react-bootstrap/Button'
 import ReactPlayer from 'react-player'
-import CWFooterComponent from '../cw-common/components/footer/cw-footer-component'
-import CWMobileNavbarComponent from '../cw-common/components/navbar/cw-mobile-navbar-component'
 
 
 function CWStoreComponent() {
@@ -73,9 +74,7 @@ function CWStoreComponent() {
             {/* Store */}
             <div className="cw-store-container">
                 {/* Add a yellow banner to mimic navbar for mobile */}
-                {isMediumDevice || isSmallDevice ? (
-                    <div className="cw-mobile-banner"></div>
-                ) : <></>}
+                {isMediumDevice || isSmallDevice ? CWMobileBannerComponent() : <></>}
 
                 {/* VideoPlayer if home screen */}
                 { route === "/" ? (

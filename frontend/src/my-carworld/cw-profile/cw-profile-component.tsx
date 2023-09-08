@@ -5,6 +5,7 @@ import * as AppConstants from '../../AppConstants'
 import CWFooterComponent from "../../cw-common/components/footer/cw-footer-component"
 import { CWStoreItem } from "../../cw-store/cw-store-item"
 import CWMobileNavbarComponent from "../../cw-common/components/navbar/cw-mobile-navbar-component"
+import CWMobileBannerComponent from "../../cw-common/components/navbar/cw-mobile-banner-component"
 
 // Local styles
 import '../my-carworld.scss'
@@ -188,10 +189,9 @@ function CWProfileComponent() {
         <div>
             {/* Navbar */}
             { isMediumDevice || isSmallDevice ? CWMobileNavbarComponent() : CWCommonNavbarComponent() }
+
             {/* Add a yellow banner to mimic navbar for mobile */}
-            {isMediumDevice || isSmallDevice ? (
-                <div className="cw-mobile-banner"></div>
-            ) : <></>}
+            {isMediumDevice || isSmallDevice ? CWMobileBannerComponent() : <></>}
 
             {/* Profile */}
             <div className="cw-profile-container">

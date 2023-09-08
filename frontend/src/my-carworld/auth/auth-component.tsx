@@ -27,6 +27,7 @@ import CWCommonLoadingComponent from '../../cw-common/components/loading/cw-comm
 import CWCommonNavbarComponent from '../../cw-common/components/navbar/cw-common-navbar-component';
 import CWFooterComponent from '../../cw-common/components/footer/cw-footer-component';
 import CWMobileNavbarComponent from '../../cw-common/components/navbar/cw-mobile-navbar-component';
+import CWMobileBannerComponent from '../../cw-common/components/navbar/cw-mobile-banner-component';
 
 // Useful Typedefs
 type Inputs = {
@@ -398,9 +399,8 @@ function CWAuthComponent() {
             { isMediumDevice || isSmallDevice ? CWMobileNavbarComponent() : CWCommonNavbarComponent() }
 
             {/* Add a yellow banner to mimic navbar for mobile */}
-            { isMediumDevice || isSmallDevice ? (
-                <div className="cw-mobile-banner"></div>
-            ) : <></>}
+            {isMediumDevice || isSmallDevice ? CWMobileBannerComponent() : <></>}
+
             <div className="cw-auth-container">
                 {/* Toast */}
                 <ToastContainer

@@ -14,6 +14,7 @@ import ReactPlayer from 'react-player'
 import CWFooterComponent from '../cw-common/components/footer/cw-footer-component';
 import useMediaQuery from '../cw-common/functions/cw-media-query';
 import CWMobileNavbarComponent from '../cw-common/components/navbar/cw-mobile-navbar-component';
+import CWMobileBannerComponent from '../cw-common/components/navbar/cw-mobile-banner-component';
 
 function CWVideosComponent() {
     // Media query
@@ -30,9 +31,7 @@ function CWVideosComponent() {
             {/* Video Page  */}
             <div className="cw-video-container">
                 {/* Add a yellow banner to mimic navbar for mobile */}
-                {isMediumDevice || isSmallDevice ? (
-                    <div className="cw-mobile-banner"></div>
-                ) : <></>}
+                {isMediumDevice || isSmallDevice ? CWMobileBannerComponent() : <></>}
 
                 {/* Playlist title and videos  */}
                 <div className={`playlist-title-wrapper${ isMediumDevice || isSmallDevice ? "-mobile" : ""}`}>

@@ -6,6 +6,7 @@ import './cw-wiki.scss'
 import CWCommonNavbarComponent from '../cw-common/components/navbar/cw-common-navbar-component'
 import CWFooterComponent from '../cw-common/components/footer/cw-footer-component'
 import CWMobileNavbarComponent from '../cw-common/components/navbar/cw-mobile-navbar-component'
+import CWMobileBannerComponent from '../cw-common/components/navbar/cw-mobile-banner-component'
 
 // Custom Hook
 import useMediaQuery from '../cw-common/functions/cw-media-query' // custom hook
@@ -25,9 +26,7 @@ function CWWikiComponent() {
             {/* Wiki */}
             <div className="cw-wiki-container">
                 {/* Add a yellow banner to mimic navbar for mobile */}
-                {isMediumDevice || isSmallDevice ? (
-                    <div className="cw-mobile-banner"></div>
-                ) : <></>}
+                {isMediumDevice || isSmallDevice ? CWMobileBannerComponent() : <></>}
 
                 { /* Wiki content */ }
                 <div className="cw-wiki-text-block">
