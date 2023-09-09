@@ -90,6 +90,21 @@
     }
 
     .ag-theme-alpine {
+        // Header text color
+        --ag-header-foreground-color: #f8ed62;
+        // Header background
+        --ag-header-background-color: #453f3d;
+
+        // Data text color
+        --ag-foreground-color: red;
+        // Data background (even)
+        --ag-background-color: rgb(241, 225, 27);
+        // Data background (odd)
+        --ag-odd-row-background-color: rgb(241, 245, 11);
+
+        // Table font
+        --ag-font-size: 8px;
+        --ag-font-family: monospace;
     }
 
     .cw-cart-items-container {

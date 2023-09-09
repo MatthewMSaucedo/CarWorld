@@ -50,21 +50,56 @@ function CWCartComponent() {
     const navigate = useNavigate()
     const dispatch = useDispatch()
 
-    // Stateful variables
-    const [columnDefs] = useState<any>([
-        {field: 'Quantity'},
-        {field: 'Name'},
-        {field: 'Size'},
-        {field: 'Price'},
-        {field: 'Action', minWidth: 175, cellRenderer: CWCartDeletionRenderer }
-    ])
-    const [rowData, setRowData] = useState<any>()
-
-    // Media query
+    // Media query (custom hook)
     const isSmallDevice = useMediaQuery("only screen and (max-width : 768px)");
     const isMediumDevice = useMediaQuery(
         "only screen and (min-width : 769px) and (max-width : 992px)"
     );
+
+    // Stateful variables
+    const [columnDefs] = useState<any>([
+        {
+            field: 'Quantity',
+            headerName: '#',
+            autoHeight: true,
+            wrapText: true,
+            rowDrag: false,
+            suppressMovable: true,
+            width: isSmallDevice || isMediumDevice ? 50 : 50,
+        },
+        {
+            field: 'Name',
+            autoHeight: true,
+            rowDrag: false,
+            resizable: true,
+            suppressMovable: true,
+            width: isSmallDevice || isMediumDevice ? 80 : 800,
+            /* resizable: true */
+        },
+        {
+            field: 'Size',
+            autoHeight: true,
+            wrapText: true,
+            rowDrag: false,
+            suppressMovable: true,
+            width: isSmallDevice || isMediumDevice ? 60 : 800,
+
+        },
+        {
+            field: 'Price',
+            autoHeight: true,
+            wrapText: true,
+            rowDrag: false,
+            suppressMovable: true,
+            width: isSmallDevice || isMediumDevice ? 65 : 800,
+        },
+        {
+            field: 'Action',
+            width: isSmallDevice || isMediumDevice ? 100 : 800,
+            cellRenderer: CWCartDeletionRenderer,
+        }
+    ])
+    const [rowData, setRowData] = useState<any>()
 
     // Function called to remove an item from the cart
     const remove = (title: string, size?: string) => {
@@ -115,7 +150,7 @@ function CWCartComponent() {
             numRows -= entry.quantity > 1 ? (entry.quantity - 1) : 0
         })
 
-        return 50 + (42 * numRows)
+        return 35 + (42 * numRows)
     }
 
     return (
@@ -140,17 +175,20 @@ function CWCartComponent() {
                 {/* Shopping Cart Table */}
                 <div className="ag-theme-alpine"
                      style={{
-                         width: 800,
+                         width: isMediumDevice || isSmallDevice ? 350 : 800,
                          // Dynamic sizing based on cart size
                          height: determineCartTableHeight()
                      }}>
 
+                    { cwShoppingCart.size > 0 ? (
                     <AgGridReact
                         rowData={rowData}
                         columnDefs={columnDefs}
                         onGridReady={onGridReady}
                         onCellClicked={onCellClicked}
+                        headerHeight={30}
                         />
+                    ) : <></>}
                 </div>
 
                 {/* Checkout button */}

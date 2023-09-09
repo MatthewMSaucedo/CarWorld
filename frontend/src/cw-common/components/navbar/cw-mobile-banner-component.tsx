@@ -21,6 +21,8 @@ function CWMobileBannerComponent() {
 
     return (
         <div className="cw-mobile-banner">
+
+            {/* Only Show cart in the navbar if it is populated */}
             { cwShoppingCart.size > 0 ? (
                 <div
                     className="cw-mobile-banner-cart"

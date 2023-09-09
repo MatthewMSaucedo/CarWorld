@@ -52,7 +52,6 @@ function CWProfileComponent() {
 
     // Stateful hooks
     //   Change to loading-screen while we wait on API calls
-    //   Determine which form to show, login or register
     const [apiIsLoading, setApiIsLoading] = useState(false);
     //   Fetch User DDP on page load, as this can change
     const [userDdp, setUserDdp] = useState(0);
@@ -131,6 +130,7 @@ function CWProfileComponent() {
     const [columnDefs] = useState<any>([
         {
             field: 'username',
+            headerName: 'Name',
             autoHeight: true,
             wrapText: true,
             rowDrag: false,
@@ -139,6 +139,7 @@ function CWProfileComponent() {
         },
         {
             field: 'ddp',
+            headerName: 'DDP',
             sort: 'desc',
             rowDrag: false,
             suppressMovable: true,
