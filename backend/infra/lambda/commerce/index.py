@@ -746,7 +746,7 @@ def handle_webhook(stripe_event, dynamo_client):
 
     # Send an email to William and Russell about completed purchase
     try:
-        ses_response = send_email_order_details(
+        ses_response = send_email_order_details_to_admins(
             shipping=shipping,
             customer_name=name,
             products=commodity_list,
@@ -877,7 +877,13 @@ def remove_purchased_commodities_from_stock(commodity_list, dynamo_client):
             )
 
 
-def send_email_order_details(
+def send_email_order_details_to_customer(
+    shipping, customer_name, products, amt_in_cents, username, is_guest_purchase
+):
+    """"""
+
+
+def send_email_order_details_to_admins(
     shipping, customer_name, products, amt_in_cents, username, is_guest_purchase
 ):
     ses_client = boto3.client("ses")

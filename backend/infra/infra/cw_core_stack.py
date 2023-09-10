@@ -92,6 +92,13 @@ class CWCoreStack(Stack):
         )
 
         ###############################################
+        # COMMERCE EMAIL CACHE S3
+        ###############################################
+        # Create s3 to use as cache for storing email, once Stripe Payment
+        # process begins
+        self.cw_transaction_email_cache_s3 = self.create_cw_transaction_email_cache_s3()
+
+        ###############################################
         # COMMERCE CONTROLLER
         ###############################################
         # Create Commerce Controller Lambda and associate w/ API Gateway
@@ -100,6 +107,7 @@ class CWCoreStack(Stack):
             transaction_table=self.cw_transaction_table,
             commodity_table=self.cw_commodity_table,
             user_table=self.cw_user_table,
+            cw_transaction_email_cache_s3=self.cw_transaction_email_cache_s3,
         )
         # Tie Commerce Lambda to API Gateway
         self.add_commerce_routes_to_api_gw(
@@ -379,8 +387,16 @@ class CWCoreStack(Stack):
 
         return cw_api
 
+    def create_cw_transaction_email_cache_s3():
+        """"""
+
     def create_cw_commerce_lambda(
-        self, stripe_secret, transaction_table, commodity_table, user_table
+        self,
+        stripe_secret,
+        transaction_table,
+        commodity_table,
+        user_table,
+        cw_transaction_email_cache_s3,
     ):
         commerce_lambda_role = iam.Role(
             scope=self,
@@ -411,6 +427,7 @@ class CWCoreStack(Stack):
         transaction_table.grant_read_write_data(commerce_lambda_role)
         user_table.grant_read_write_data(commerce_lambda_role)
         commodity_table.grant_read_write_data(commerce_lambda_role)
+        # cw_transaction_email_cache_s3.grant_read_write_data(commerce_lambda_role) #TODO: format accurately
 
         commerce_lambda = lambdaFx.Function(
             scope=self,
@@ -583,6 +600,7 @@ class CWCoreStack(Stack):
 
         return
 
+    # TODO: Add logic to send emails from registered email, to any client
     def create_cw_ses_service(self, cw_commerce_lambda):
         ses_config_set = ses.ConfigurationSet(
             self,
