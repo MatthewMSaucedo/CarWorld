@@ -40,25 +40,53 @@ carworld.love->ValidatorLambda: request: { body, authToken }
 ValidatorLambda->CommerceLambda: request: { body, authToken }
 
 CommerceLambda->Stripe API: { amount, productDetails }
-Stripe API->CommerceLambda: { clientSecret, transactionID }
+Stripe API->CommerceLambda: { clientSecret, txID }
 
 CommerceLambda->carworld.love: clientSecret
 
 
 
 ###########################################################################
-title Handle Transaction
+# Handle Transaction (tx)
+###########################################################################
+title Handle Transaction (tx)
 
+# Participants
 participant carworld.love
+participant StripeAPI
+participant EmailS3Cache
 participant CommerceLambda
+participant TxDynamo
+participant SES
+participant Admin
+participant Customer
 
-participant Stripe API
+# cw.love sends Customer email (custEmail) and Transaction ID (txId) to Commerce Lambda
+carworld.love->CommerceLambda: custEmail, txId
 
-participant CarWorld SES
-participant Store Administrator
+# cw.love stores the Customer email in S3 cache by key of Transaction ID
+CommerceLambda->EmailS3Cache: key(txId), value(custEmail)
 
-carworld.love->Stripe API: Payment and Shipping information, ClientSecret
+# cw.love sends Transaction details (txDtls) to Stripe API
+carworld.love->StripeAPI: txDtls, clientSecret
 
-Stripe API->CommerceLambda: successEvent: { transactionID, shippingInfo, productDetails }
-CommerceLambda->CarWorld SES: { transactionID, shippingInfo, productDetails }
-CarWorld SES->Store Administrator: Email with Transaction details
+# Stripe API sends Transaction details (txDtls) to Commerce Lambda
+StripeAPI->CommerceLambda: txDtls
+
+# Commerce Lambda retrieves Customer email from S3 cache
+CommerceLambda->EmailS3Cache: key(txDtls[:txId]), value(custEmail)
+
+# Commerce Lambda stores Transaction details (txDtls) and Customer email in Dynamo
+CommerceLambda->TxDynamo: Record(txDtls+custEmail)
+
+# Commerce Lambda sends Transaction details (txDtls) and Customer email to SES
+CommerceLambda->SES: txDtls, custEmail
+
+# Commerce Lambda sends email with Transaction details (txDtls) and Customer email (custEmail) to Admin
+SES->Admin: email(txDtls, custEmail)
+
+# Commerce Lambda sends Transaction details (txDtls) to SES Customer
+CommerceLambda->SES: txDtls
+
+# Commerce Lambda sends email with Transaction details (txDtls) to Customer
+SES->Customer: email(txDtls)
