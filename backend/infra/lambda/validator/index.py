@@ -13,7 +13,7 @@ JWT_SECRET = os.environ["jwtSecret"]
 # NOTE: Ideally being taken is as a configurable env var as well,
 #       but hardcoded for now to save costs from Param Store
 # Constants
-GUEST_TOKEN_ACTION_LIST = ["secret"]
+GUEST_TOKEN_ACTION_LIST = ["secret", "cache_email"]
 ADMIN_TOKEN_ACTION_LIST = [""]
 
 

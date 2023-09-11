@@ -1,4 +1,7 @@
 # TODO: Implement (or make use of pre-existing) propper logger, replace #print statements
+# TODO: Move resource initialization out of child processes of Handler!
+#       Initializing object outside of handler allows their re-use in succesive
+#       lambda calls, and shortens the execution time (which is what is actually billed)
 
 import os
 import json
@@ -12,7 +15,11 @@ SES_CONFIG_ID = os.environ["ses_config_id"]
 USER_TABLE_NAME = os.environ["user_table_name"]
 COMMODITY_TABLE_NAME = os.environ["commodity_table_name"]
 TRANSACTION_TABLE_NAME = os.environ["transaction_table_name"]
+TRANSACTION_EMAIL_CACHE_NAME = os.environ["transaction_email_cache_s3_name"]
 stripe.api_key = os.environ["stripe_secret"]
+
+# Clients
+S3_CLIENT = boto3.resource("s3")
 
 # TODO: move these mapping to param store, shouldn't be hardcoded here
 # Constants
@@ -703,11 +710,31 @@ def handle_webhook(stripe_event, dynamo_client):
         # }
 
     try:
+        if is_guest_purchase:
+            email = obtain_email_from_cache(key=transaction_id)
+        else:
+            email = cw_user_record["email"]["S"]
+    except:
+        error = {
+            "message": str(e),
+            "stack": traceback.format_exc(),
+        }
+        print(
+            f"SERVER_ERROR: Failed to obtain email from User Record or s3 cache | {error}"
+        )
+        return {
+            "code": 500,
+            "message": "SERVER_ERROR: Failed to obtain email from User Record or s3 cache",
+            "error": error,
+        }
+
+    try:
         transaction_record = create_transaction_record(
             transaction_id=transaction_id,
             shipping=shipping,
             status=status,
             amount=amount,
+            email=email,
             name=name,
             commodity_list=commodity_list,
             user_id=user_id,  # 'guest', for guest purchases
@@ -731,7 +758,7 @@ def handle_webhook(stripe_event, dynamo_client):
     # NOTE:
     #   No external error handling here - as this is not a blocking error, it catches and logs any
     #   errors itself.
-    remove_purchased_commodities_from_stock(commodity_list, dynamo_client)
+    # remove_purchased_commodities_from_stock(commodity_list, dynamo_client)
 
     # Grant DDP to user purchases
     if not is_guest_purchase:
@@ -760,12 +787,50 @@ def handle_webhook(stripe_event, dynamo_client):
             "message": str(e),
             "stack": traceback.format_exc(),
         }
-        print(f"SERVER_ERROR: Failed to email about commodity purchase | {error}")
+        print(f"SERVER_ERROR: failed to email about commodity purchase | {error}")
         return {
             "code": 500,
-            "message": "SERVER_ERROR: Failed to email about commodity purchase",
+            "message": "SERVER_ERROR: failed to email about commodity purchase",
             "error": error,
         }
+
+
+def cache_email_action(cache_email_body):
+    try:
+        email = cache_email_body["email"]
+        if type(email) != str or len(email) < 6 or len(email) > 84 or " " in email:
+            raise Exception("Email failed to validate")
+
+        transaction_id = cache_email_body["transaction_id"]
+        if type(transaction_id) != str or " " in transaction_id:
+            raise Exception("Transaction ID failed to validate")
+
+        write_to_email_cache(key=transaction_id, email=email)
+    except Exception as e:
+        error = {
+            "message": str(e),
+            "stack": traceback.format_exc(),
+        }
+        print(f"SERVER_ERROR: failed to cache email | {error}")
+        return {
+            "code": 500,
+            "message": "SERVER_ERROR: failed to cache email",
+            "error": error,
+        }
+
+    return {"code": 200, "message": "success"}
+
+
+def obtain_email_from_cache(key):
+    email_item = S3_CLIENT.get_object(Bucket=TRANSACTION_EMAIL_CACHE_NAME, Key=key)
+    email = email_item["Body"].read().decode("utf-8")
+
+    return email
+
+
+def write_to_email_cache(key, email):
+    email_cache = S3_CLIENT.Bucket(TRANSACTION_EMAIL_CACHE_NAME)
+    email_cache.put_object(Key=key, Body=email.encode("utf-8"))
 
 
 def grantDdpToUser(cw_user_record, commodity_list, dynamo_client):
@@ -1047,6 +1112,11 @@ def handler(event, context):
                 user_id=user_id,
                 dynamo_client=cw_dynamo_client,
             )
+        elif request["action"] == "cache_email":
+            # /cache_email has a request body
+            request["body"] = json.loads(event["body"])
+
+            res = cache_email_action(cache_email_body=request["body"])
         elif request["action"] == "webhook":
             # /webhook has a request body
             request["body"] = json.loads(event["body"])

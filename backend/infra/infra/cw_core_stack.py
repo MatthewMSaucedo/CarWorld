@@ -387,8 +387,31 @@ class CWCoreStack(Stack):
 
         return cw_api
 
-    def create_cw_transaction_email_cache_s3():
-        """"""
+    def create_cw_transaction_email_cache_s3(self):
+        lifecycle_rule = s3.LifecycleRule(
+            id=f"{self.stack_env}-email_cache_expiry_rule",
+            expiration=Duration.hours(24),
+        )
+        email_cache_bucket = s3.Bucket(
+            scope=self,
+            id=f"{self.stack_env}-cw-transaction-email-cache-s3",
+            auto_delete_objects=True,
+            removal_policy=RemovalPolicy.DESTROY,
+            block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
+            encryption=s3.BucketEncryption.S3_MANAGED,
+            lifecycle_rules=[lifecycle_rule],
+        )
+
+        # email_cache_role =  iam.Role(
+        #     scope=self,
+        #     id=f"{self.stack_env}-cw-transaction-email-cache-s3",
+        #     assumed_by=iam.ServicePrincipal("s3.amazonaws.com"),
+        #     description="Transaction Email Cache S3 Role",
+        #     managed_policies=[
+        #     ],
+        # )
+
+        return {"bucket": email_cache_bucket}  # , "role": email_cache_role
 
     def create_cw_commerce_lambda(
         self,
@@ -427,7 +450,9 @@ class CWCoreStack(Stack):
         transaction_table.grant_read_write_data(commerce_lambda_role)
         user_table.grant_read_write_data(commerce_lambda_role)
         commodity_table.grant_read_write_data(commerce_lambda_role)
-        # cw_transaction_email_cache_s3.grant_read_write_data(commerce_lambda_role) #TODO: format accurately
+
+        # Grant s3 email cache read/write access
+        cw_transaction_email_cache_s3["bucket"].grant_read_write(commerce_lambda_role)
 
         commerce_lambda = lambdaFx.Function(
             scope=self,
@@ -442,6 +467,9 @@ class CWCoreStack(Stack):
                 "user_table_name": user_table.table_name,
                 "commodity_table_name": commodity_table.table_name,
                 "transaction_table_name": transaction_table.table_name,
+                "transaction_email_cache_s3_name": cw_transaction_email_cache_s3[
+                    "bucket"
+                ].bucket_name,
             },
             layers=[lambda_layer],
             memory_size=512,
@@ -513,6 +541,16 @@ class CWCoreStack(Stack):
         # Provide unique Stripe PaymentIntent secret to client
         cw_api_gw.add_routes(
             path="/commerce/secret",
+            methods=[apigw.HttpMethod.POST],
+            integration=commerce_controller,
+            # This is a protected route
+            authorizer=lambda_authorizer,
+        )
+        #
+        # /cache_email
+        # Cache email for Guest checkout flow
+        cw_api_gw.add_routes(
+            path="/commerce/cache_email",
             methods=[apigw.HttpMethod.POST],
             integration=commerce_controller,
             # This is a protected route
