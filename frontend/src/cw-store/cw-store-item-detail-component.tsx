@@ -45,6 +45,7 @@ function CWStoreItemDetailComponent() {
 
   // Redux hook
   const dispatch = useDispatch()
+  const navigate = useNavigate()
 
   // NOTE: After a Discussion with William and Russell, it was determined that there is no desire
   //       to gate a purchase by available stock -- supply will be made to meet demand.
@@ -95,7 +96,6 @@ function CWStoreItemDetailComponent() {
 
   // Constant
   const numImages = cwStoreItem.images.length
-  const navigate = useNavigate()
 
   // Display Size toggle if the item is Clothing
   const showSizeForm: boolean = cwStoreItem.type === CWShoppingItemType["Clothing"]
@@ -207,7 +207,6 @@ function CWStoreItemDetailComponent() {
     ) : ( <></> )
   )
   const onClickBuyNow = () => {
-    // Create entry
     const entry: CWShoppingCartEntry = {
       cwStoreItem: cwStoreItem,
       quantity: 1
@@ -217,13 +216,10 @@ function CWStoreItemDetailComponent() {
       entry.size = value
     }
 
-    // Set client cart to contain just this entry
-    const newCart = new CWShoppingCart()
-    newCart.add(entry)
-    dispatch(updateCart(newCart))
+    dispatch(addToCart(entry))
 
-    // Stripe checkout
-    navigate('/checkout', { replace: true })
+    // Go to cart immediately
+    navigate('/cart', { replace: true })
   }
 
   // Rotate highlighted image onClick

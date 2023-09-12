@@ -9,6 +9,7 @@ import CWCartComponent from './cw-store/cw-cart-component'
 import CWPaymentProcessedComponent from './cw-store/stripe-components/payment-processed-component'
 import CWAuthComponent from './my-carworld/auth/auth-component'
 import CWProfileComponent from './my-carworld/cw-profile/cw-profile-component'
+import CWNationComponent from './cw-nation/cw-nation-compnent'
 
 export const enum CW_ROUTE_ENUM {
   'home',
@@ -20,7 +21,8 @@ export const enum CW_ROUTE_ENUM {
   'product',
   'payment_processed',
   'my_carworld',
-  'auth'
+  'auth',
+  'car_world_nation'
 }
 export const CW_ROUTES = [
   {
@@ -63,6 +65,268 @@ export const CW_ROUTES = [
     path: 'auth',
     element: <CWAuthComponent />
   },
+  {
+    path: 'car_world_nation',
+    element: <CWNationComponent />
+  },
+]
+
+export enum CarWorldNationRegion {
+    "USA",
+    "CA",
+    "EU",
+    "OCEANIA",
+    "ASIA"
+}
+export interface CarWorldNationBranch {
+    location: string,
+    region: CarWorldNationRegion
+}
+export const CAR_WORLD_NATION_BRANCHES: CarWorldNationBranch[] = [
+    {
+        location: "New York, NY",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Los Angeles, CA",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Chicago, IL",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "St. Louis, MO",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Houston, TX",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Philadelphia, PA",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Portland, PA",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Portland, OR",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "San Francisco, CA",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Toronto, ON",
+        region: CarWorldNationRegion.CA
+    },
+    {
+        location: "Dallas, TX",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Minneapolis, MN",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Salt Lake City, UT",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Seattle, WA",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Washington D.C.",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Dublin, IRELAND",
+        region: CarWorldNationRegion.EU
+    },
+    {
+        location: "Seoul, SOUTH KOREA",
+        region: CarWorldNationRegion.ASIA
+    },
+    {
+        location: "Cincinnati, OH",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Denver, CO",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Fort Lauderdale, FL",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Long Island, NY",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Detroit, MI",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Enfield, MA",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "London, ENGLAND",
+        region: CarWorldNationRegion.EU
+    },
+    {
+        location: "Raleigh, NC",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Santa Cruz, CA",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Silver Spring, MD",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Waco, TX",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Albany, NY",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Kansas City, MO",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Fort Wayne, IN",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Richmond, VA",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "St. Petersburg, FL",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Atlanda, GA",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Austin, TX",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Belfast, ME",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Boston, MA",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Canberra, ACT",
+        region: CarWorldNationRegion.OCEANIA
+    },
+    {
+        location: "Durham, NH",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Effingham, IL",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Flagstaff, AZ",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Glasgow, SCOTLAND",
+        region: CarWorldNationRegion.EU
+    },
+    {
+        location: "Hendersonville, NC",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Indianapolis, IN",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Leeds, ENGLAND",
+        region: CarWorldNationRegion.EU
+    },
+    {
+        location: "Virginia Beach, VA",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Lousiville, KY",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Oberlin, OH",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Missoula, MT",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Montreal, QC",
+        region: CarWorldNationRegion.CA
+    },
+    {
+        location: "New Brunswick, NJ",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Newcastle, NSW",
+        region: CarWorldNationRegion.OCEANIA
+    },
+    {
+        location: "Newfoundland",
+        region: CarWorldNationRegion.OCEANIA
+    },
+    {
+        location: "Omaha, NE",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Ottawa, ON",
+        region: CarWorldNationRegion.CA
+    },
+    {
+        location: "Santa Fe, NM",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Tokyo, JAPAN",
+        region: CarWorldNationRegion.ASIA
+    },
+    {
+        location: "Wellington, NZ",
+        region: CarWorldNationRegion.OCEANIA
+    },
+    {
+        location: "Windsor, CT",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Winston-Salem, NC",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Carbondale, IL",
+        region: CarWorldNationRegion.USA
+    }
 ]
 
 export const STRIPE_PUB_KEY = "pk_test_51MVNG0Edd7yLru5yTI1lXrQ3y9cTs01dMpm1K5nFqzVAHkZ0PEhp8gnpqpJyuB2cbbkLI3FSDcxR9MmgNDUgikXM00MHFJnNAs"

@@ -10,6 +10,9 @@ import CWCommonNavbarComponent from '../cw-common/components/navbar/cw-common-na
 import CWCartDeletionRenderer from './cw-cart-deletion-renderer'
 import CWFooterComponent from '../cw-common/components/footer/cw-footer-component'
 import CWMobileNavbarComponent from '../cw-common/components/navbar/cw-mobile-navbar-component'
+import { CW_API_ENDPOINTS } from '../AppConstants'
+import CWMobileBannerComponent from '../cw-common/components/navbar/cw-mobile-banner-component'
+
 
 // React Hooks
 import { useNavigate, Link } from 'react-router-dom';
@@ -26,7 +29,6 @@ import Button from 'react-bootstrap/Button';
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
 import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
-import { CW_API_ENDPOINTS } from '../AppConstants'
 
 // Useful typedefs
 export interface UseSelectorCart {
@@ -179,12 +181,10 @@ function CWCartComponent() {
             {/* Navbar */}
             { isMediumDevice || isSmallDevice ? CWMobileNavbarComponent() : CWCommonNavbarComponent() }
 
-            <div className={`cw-cart-container${ isMediumDevice || isSmallDevice ? "-mobile" : ""}`}>
-                {/* Add a yellow banner to mimic navbar for mobile */}
-                {isMediumDevice || isSmallDevice ? (
-                    <div className="cw-mobile-banner"></div>
-                ) : <></>}
+            {/* Add a yellow banner to mimic navbar for mobile */}
+            {isMediumDevice || isSmallDevice ? CWMobileBannerComponent() : <></>}
 
+            <div className={`cw-cart-container${ isMediumDevice || isSmallDevice ? "-mobile" : ""}`}>
                 {/* Header */}
                 <div className="cw-cart-header">
                     <Link className="cw-cart-link" to={ '/store' }>

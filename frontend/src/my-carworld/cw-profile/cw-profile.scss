@@ -202,6 +202,13 @@
 
                 border-bottom: 3px solid #393433;
                 color: yellow;
+
+                text-align: center;
+
+                @media (max-width: 992px) {
+                    width: 15rem;
+                }
+
             }
 
             .card-content-my-ddp-text {

@@ -21,7 +21,7 @@ export interface CWCommonNavbarLink {
 export const urlToPathMapping: Record<string, string> = {
     '/videos': 'Videos',
     '/store': 'Merch',
-    '/carworld_nation': 'Car World Nation',
+    '/car_world_nation': 'Car World Nation',
     '/wiki': 'Our Mission',
     '/my_carworld': 'My Profile',
     '/auth': 'My Profile',
@@ -62,7 +62,7 @@ function CWMobileNavbarComponent() {
             name: 'Merch',
         },
         {
-            url: '../' + AppConstants.CW_ROUTES[AppConstants.CW_ROUTE_ENUM['videos']].path,
+            url: '../' + AppConstants.CW_ROUTES[AppConstants.CW_ROUTE_ENUM['car_world_nation']].path,
             name: 'Car World Nation',
         },
         {
