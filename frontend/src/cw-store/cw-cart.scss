@@ -53,6 +53,29 @@
             }
         }
     }
+    .cw-cart-form {
+        margin-top: 1em;
+
+        display: flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        justify-content: center;
+        align-items: center;
+        align-content: stretch;
+
+
+        .cw-cart-form-input-label {
+            color: black;
+
+            font-size: 16px;
+        }
+        .cw-cart-form-input-field {
+            font-size: 14px;
+
+            width: 18em;
+        }
+    }
+
     .cw-cart-checkout-button {
         margin-top: 2em;
     }
@@ -146,6 +169,29 @@
             }
         }
     }
+    .cw-cart-form {
+        margin-top: 1em;
+
+        display: flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        justify-content: center;
+        align-items: center;
+        align-content: stretch;
+
+
+        .cw-cart-form-input-label {
+            color: black;
+
+            font-size: 16px;
+        }
+        .cw-cart-form-input-field {
+            font-size: 14px;
+
+            width: 18em;
+        }
+    }
+
     .cw-cart-checkout-button {
         margin-top: 2em;
     }

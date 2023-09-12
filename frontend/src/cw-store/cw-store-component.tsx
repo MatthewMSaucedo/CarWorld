@@ -14,7 +14,7 @@ import CWMobileBannerComponent from '../cw-common/components/navbar/cw-mobile-ba
 
 // React Hooks
 import { useNavigate, useLocation } from 'react-router-dom'
-import { useState, useEffect } from "react"
+import { useEffect } from "react"
 import useMediaQuery from '../cw-common/functions/cw-media-query' // custom hook
 
 // React Redux

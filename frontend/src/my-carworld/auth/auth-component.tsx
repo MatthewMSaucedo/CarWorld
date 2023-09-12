@@ -1,6 +1,5 @@
 // Style
 import './auth.scss'
-import carWorldImg from '../../logo.svg'
 
 // React State
 import { useState } from "react"
@@ -20,6 +19,7 @@ import useMediaQuery from '../../cw-common/functions/cw-media-query';
 
 // Toast (yum!)
 import { ToastContainer, toast } from 'react-toastify';
+import carWorldImg from '../../logo.svg'
 
 // Local imports
 import { CW_API_ENDPOINTS } from '../../AppConstants';
@@ -147,6 +147,8 @@ function CWAuthComponent() {
     // FORM SUBMISSION
     // Send validated input to backend, handle response
     const onRegisterSubmit: SubmitHandler<Inputs> = async (data: any) => {
+        window.scrollTo(0, 0)
+
         // Show loading screen while API calls take place
         setApiIsLoading(true)
 
@@ -190,6 +192,8 @@ function CWAuthComponent() {
         navigate('/my_carworld')
     }
     const onLoginSubmit: SubmitHandler<Inputs> = async (data: any) => {
+        window.scrollTo(0, 0)
+
         // Show loading screen while API calls take place
         setApiIsLoading(true)
 

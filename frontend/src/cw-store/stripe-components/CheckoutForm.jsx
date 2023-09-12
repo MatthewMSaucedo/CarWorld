@@ -1,99 +1,84 @@
 import './stripe-payment.scss'
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react"
 import {
   PaymentElement,
   AddressElement,
-  LinkAuthenticationElement,
   useStripe,
   useElements
-} from "@stripe/react-stripe-js";
-import CWCommonNavbarComponent from '../../cw-common/components/navbar/cw-common-navbar-component';
+} from "@stripe/react-stripe-js"
+import CWCommonNavbarComponent from '../../cw-common/components/navbar/cw-common-navbar-component'
+import useMediaQuery from '../../cw-common/functions/cw-media-query'
+import CWMobileBannerComponent from '../../cw-common/components/navbar/cw-mobile-banner-component'
+import CWMobileNavbarComponent from '../../cw-common/components/navbar/cw-mobile-navbar-component'
+import CWFooterComponent from '../../cw-common/components/footer/cw-footer-component'
+import { ToastContainer, toast } from 'react-toastify'
+import carWorldImg from '../../logo.svg'
+import Spinner from 'react-bootstrap/Spinner'
+import { useNavigate } from 'react-router-dom'
 
-export default function CheckoutForm() {
+export default function CheckoutForm({clientSecret}) {
   // Stripe init
-  const stripe = useStripe();
-  const elements = useElements();
+  const stripe = useStripe()
+  const elements = useElements()
 
   // Stateful variables
-  const [email, setEmail] = useState('');
-  const [message, setMessage] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false)
 
-  useEffect(() => {
-    if (!stripe) {
-      return;
-    }
+  // Navigation
+  const navigate = useNavigate()
 
-    const clientSecret = new URLSearchParams(window.location.search).get(
-      "payment_intent_client_secret"
-    );
+  // Media query
+  const isSmallDevice = useMediaQuery("only screen and (max-width : 768px)")
+  const isMediumDevice = useMediaQuery(
+      "only screen and (min-width : 769px) and (max-width : 992px)"
+  )
 
-    if (!clientSecret) {
-      return;
-    }
+  // Toast
+  const notify = (input: string) => {
+      toast.error(input, {
+          theme: "dark",
+          position: "top-right",
+          icon: ({theme, type}) =>  <img alt="Car World Logo" src={carWorldImg}/>
+      })
+  }
 
-    stripe.retrievePaymentIntent(clientSecret).then(({ paymentIntent }) => {
-      switch (paymentIntent.status) {
-        case "succeeded":
-          setMessage("Payment succeeded!");
-          alert("Payment succeeded!");
-          break;
-        case "processing":
-          setMessage("Your payment is processing.");
-          alert("Payment succeeded!");
-          break;
-        case "requires_payment_method":
-          setMessage("Your payment was not successful, please try again.");
-          alert("Payment succeeded!");
-          break;
-        default:
-          setMessage("Something went wrong.");
-          alert("Payment succeeded!");
-          break;
-      }
-    });
-  }, [stripe]);
-
+  // Stripe Form Submission
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
 
     if (!stripe || !elements) {
       // Stripe.js has not yet loaded.
       // Make sure to disable form submission until Stripe.js has loaded.
-      return;
+      return
     }
 
-    setIsLoading(true);
+    setIsLoading(true)
 
-    const { error } = await stripe.confirmPayment({
+    const paymentIntent = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        // TODO: (PaymentProcessedComponent)
-        //   Just a message with details and a button that redirects
-        //   to the Home page.
-        // return_url: "https://carworldneedsme.netlify.app/payment_processed",
+        // return_url: "https:carworldneedsme.netlify.app/payment_processed",
         return_url: "http://localhost:3000/payment_processed",
-        // NOTE: This ensures customers receive a confirmation email
-        receipt_email: email,
       },
-    });
+      redirect: "if_required"
+    })
 
-    // This point will only be reached if there is an immediate error when
-    // confirming the payment. Otherwise, your customer will be redirected to
-    // your `return_url`. For some payment methods like iDEAL, your customer will
-    // be redirected to an intermediate site first to authorize the payment, then
-    // redirected to the `return_url`.
-    if (error.type === "card_error" || error.type === "validation_error") {
-      // TODO: replace this stuff with Toast logic
-      setMessage(error.message);
-    } else {
-      // TODO: replace this stuff with Toast logic
-      setMessage("An unexpected error occurred.");
+    console.log(paymentIntent)
+    if (!paymentIntent.error) {
+      navigate('/payment_processed', { replace: true, state: paymentIntent })
     }
 
-    setIsLoading(false);
-  };
+    window.scrollTo(0, 0)
+    const error = paymentIntent.error
+    if (error.type === "card_error" || error.type === "validation_error") {
+      notify(error.message)
+    } else {
+      notify("An unexpected error occurred.")
+    }
+
+    setIsLoading(false)
+  }
 
   const paymentElementOptions = {
     layout: "tabs",
@@ -102,30 +87,63 @@ export default function CheckoutForm() {
 
   return (
     <div>
-      { CWCommonNavbarComponent() }
+      {/* Toast */}
+      <ToastContainer
+          position="top-right"
+          toastStyle={{}}/>
+
+      {/* Navbar */}
+      { isMediumDevice || isSmallDevice ? CWMobileNavbarComponent() : CWCommonNavbarComponent() }
+
+      {/* Add a yellow banner to mimic navbar for mobile */}
+      {isMediumDevice || isSmallDevice ? CWMobileBannerComponent() : <></>}
+
+      {/* Stripe Checkout Form */}
       <form id="payment-form" onSubmit={handleSubmit} className="stripe-form-body">
-        <LinkAuthenticationElement
-          id="link-authentication-element"
-          onChange={(e) => setEmail(e.target.value)}
-        />
 
-        <br />
-
+        {/* shipping info */}
         <h3>Shipping</h3>
-        <AddressElement options={{mode: 'shipping'}} />
+        <AddressElement options={{
+          mode: 'shipping',
+            fields: {
+              phone: 'always',
+            },
+            validation: {
+              phone: {
+                required: 'never',
+              },
+            },
+        }} />
+
 
         <br />
 
+        {/* Stripe Checkout Form */}
+        {/*
+          * !NOTE: THIS ELEMENT MUST BE VISIBLE (not hidden by a spinner for example)
+          *        for the calls to stripe.confirmPayment to work.
+          *        See: (https://github.com/stripe/react-stripe-js/issues/296#issuecomment-1475409947)
+          * */}
         <PaymentElement id="payment-element" options={paymentElementOptions} />
+
+        {/* Submission Button */}
         <button disabled={isLoading || !stripe || !elements} id="submit">
           <span id="button-text">
-            {isLoading ? <div className="spinner" id="spinner"></div> : "Pay now"}
+            {isLoading ? (
+              <Spinner
+                animation="border"
+                role="status"
+                className="api-loading-spinner"
+              >
+                <span className="visually-hidden">Loading...</span>
+              </Spinner>
+            ) : "Pay now"}
           </span>
         </button>
-        {/* Show any error or success messages */}
-        { /* TODO: Toast */ }
-        {message && <div id="payment-message">{message}</div>}
       </form>
+
+      {/* Footer */}
+      { CWFooterComponent() }
     </div>
-  );
+  )
 }

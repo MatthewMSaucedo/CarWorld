@@ -26,6 +26,7 @@ import Button from 'react-bootstrap/Button';
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
 import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
+import { CW_API_ENDPOINTS } from '../AppConstants'
 
 // Useful typedefs
 export interface UseSelectorCart {
@@ -45,6 +46,7 @@ export interface CWAgGridCartRowData {
 function CWCartComponent() {
     // Redux State variable
     let { cwShoppingCart }: UseSelectorCart = useSelector((state: RootState) => state)
+    let { cwUser } = useSelector((state: RootState) => state)
 
     // Hooks
     const navigate = useNavigate()
@@ -56,7 +58,22 @@ function CWCartComponent() {
         "only screen and (min-width : 769px) and (max-width : 992px)"
     );
 
-    // Stateful variables
+    // Checkout Disable Logic
+    const [email, setEmail] = useState<string>("")
+    const determineCheckoutDisableStatus = (): boolean => {
+        if (cwUser.isLoggedIn) {
+            return cwShoppingCart.size === 0
+        } else {
+            return !email.includes("@")
+        }
+    }
+    const [checkoutIsDisabled, setCheckoutIsDisabled] = useState<boolean>(determineCheckoutDisableStatus())
+    useEffect(() => {
+        const isDisabled = determineCheckoutDisableStatus()
+        setCheckoutIsDisabled(isDisabled)
+    }, [email])
+
+    // Table column defs
     const [columnDefs] = useState<any>([
         {
             field: 'Quantity',
@@ -153,6 +170,10 @@ function CWCartComponent() {
         return 35 + (42 * numRows)
     }
 
+    const onClickCheckoutButton = async () => {
+        navigate('/checkout', { replace: true, state: { guestEmail: email } })
+    }
+
     return (
         <div>
             {/* Navbar */}
@@ -191,11 +212,29 @@ function CWCartComponent() {
                     ) : <></>}
                 </div>
 
+                { cwUser.isLoggedIn ? <></> : (
+                    <form>
+                        <div className="cw-cart-form">
+                            { /* Email Input */ }
+                            <label className="cw-cart-form-input-label">
+                                Email Address
+                            </label>
+                            <input
+                                value={email}
+                                type="email"
+                                className="cw-cart-form-input-field"
+                                placeholder="e.g. williambanks500@gmail.com"
+                                onChange={ e => setEmail(e.target.value) }
+                            />
+                        </div>
+                    </form>
+                )}
+
                 {/* Checkout button */}
                 <Button className="cw-cart-checkout-button"
-                    as="a"
                     variant="outline-success"
-                    onClick={ () => navigate('/checkout', { replace: true }) }>
+                    disabled={ checkoutIsDisabled }
+                    onClick={ () => onClickCheckoutButton() }>
                     Checkout
                 </Button>
 

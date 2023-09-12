@@ -72,6 +72,7 @@ export const API_RETRY = 3
 export const CW_API_ENDPOINTS = {
   "commerce": {
     "secret": "https://01dkxmbxgh.execute-api.us-east-1.amazonaws.com/commerce/secret",
+    "cache_email": "https://01dkxmbxgh.execute-api.us-east-1.amazonaws.com/commerce/cache_email",
     "commodities": "https://01dkxmbxgh.execute-api.us-east-1.amazonaws.com/commerce/commodities"
   },
   "auth": {

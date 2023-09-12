@@ -7,27 +7,26 @@
 // }
 
 #payment-form {
-  // background-color: #5d5c61 !IMPORTANT;
-  // background: linear-gradient( #57504d, #453f3d, #393433, #2a2727, #181716) !IMPORTANT;
-  background: linear-gradient(#2a2727, #181716);
+  background: white;
   display: flex;
   justify-content: flex-start;
   flex-direction: column;
   align-items: center;
-  // width: 100vw;
   height: 100vh;
 
   overflow: auto;
   padding-top: 3rem;
 
-  color: white;
+  color: black;
 
   /* Buttons and links */
   button {
     width: 8rem;
 
-    background: #5469d4;
-    color: #ffffff;
+    // background: #5469d4;
+    background: linear-gradient(rgb(0,217,0), rgb(0, 102, 0));
+    border-color: rgb(0,102,0);
+    color: white;
 
     font-family: Arial, sans-serif;
 
@@ -40,6 +39,15 @@
     display: block;
     transition: all 0.2s ease;
     box-shadow: 0px 4px 5.5px 0px rgba(0, 0, 0, 0.07);
+  }
+
+  .api-loading-spinner {
+      width: 1rem;
+      height: 1rem;
+
+      // margin-top: 20px;
+      // margin-bottom: 24px;
+      color: red;
   }
 
   button:hover {

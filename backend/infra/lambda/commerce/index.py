@@ -19,7 +19,7 @@ TRANSACTION_EMAIL_CACHE_NAME = os.environ["transaction_email_cache_s3_name"]
 stripe.api_key = os.environ["stripe_secret"]
 
 # Clients
-S3_CLIENT = boto3.resource("s3")
+S3_CLIENT = boto3.client("s3")
 
 # TODO: move these mapping to param store, shouldn't be hardcoded here
 # Constants
@@ -501,6 +501,7 @@ def create_transaction_record(
     status,
     amount,
     name,
+    email,
     commodity_list,
     user_id,
     dynamo_client,
@@ -526,6 +527,7 @@ def create_transaction_record(
             "tx_status": {"S": status},
             "amount": {"N": str(amount)},
             "customer": {"S": name},
+            "email": {"S": email},
             "commodity_list": {"SS": commodity_list},
             "user_id": {"S": user_id},
         },
@@ -714,7 +716,7 @@ def handle_webhook(stripe_event, dynamo_client):
             email = obtain_email_from_cache(key=transaction_id)
         else:
             email = cw_user_record["email"]["S"]
-    except:
+    except Exception as e:
         error = {
             "message": str(e),
             "stack": traceback.format_exc(),
@@ -771,16 +773,28 @@ def handle_webhook(stripe_event, dynamo_client):
             dynamo_client=dynamo_client,
         )
 
-    # Send an email to William and Russell about completed purchase
+    # Send an email to William, Russell, and Customer about completed purchase
     try:
         ses_response = send_email_order_details_to_admins(
             shipping=shipping,
+            customer_email=email,
             customer_name=name,
             products=commodity_list,
             amt_in_cents=amount,
             username=(None if is_guest_purchase else cw_user_record["username"]["S"]),
             is_guest_purchase=is_guest_purchase,
         )
+
+        ses_response = send_email_order_details_to_customer(
+            shipping=shipping,
+            customer_name=name,
+            customer_email=email,
+            products=commodity_list,
+            amt_in_cents=amount,
+            username=(None if is_guest_purchase else cw_user_record["username"]["S"]),
+            is_guest_purchase=is_guest_purchase,
+        )
+
         return {"code": 200, "message": ses_response}
     except Exception as e:
         error = {
@@ -829,8 +843,9 @@ def obtain_email_from_cache(key):
 
 
 def write_to_email_cache(key, email):
-    email_cache = S3_CLIENT.Bucket(TRANSACTION_EMAIL_CACHE_NAME)
-    email_cache.put_object(Key=key, Body=email.encode("utf-8"))
+    S3_CLIENT.put_object(
+        Bucket=TRANSACTION_EMAIL_CACHE_NAME, Key=key, Body=email.encode("utf-8")
+    )
 
 
 def grantDdpToUser(cw_user_record, commodity_list, dynamo_client):
@@ -943,13 +958,25 @@ def remove_purchased_commodities_from_stock(commodity_list, dynamo_client):
 
 
 def send_email_order_details_to_customer(
-    shipping, customer_name, products, amt_in_cents, username, is_guest_purchase
+    shipping,
+    customer_name,
+    customer_email,
+    products,
+    amt_in_cents,
+    username,
+    is_guest_purchase,
 ):
     """"""
 
 
 def send_email_order_details_to_admins(
-    shipping, customer_name, products, amt_in_cents, username, is_guest_purchase
+    shipping,
+    customer_name,
+    customer_email,
+    products,
+    amt_in_cents,
+    username,
+    is_guest_purchase,
 ):
     ses_client = boto3.client("ses")
 
@@ -961,7 +988,7 @@ def send_email_order_details_to_admins(
         )
 
     product_table = cw_email_product_table(products)
-    customer_shipping = cw_email_format_shipping(shipping)
+    customer_shipping = cw_email_format_shipping(shipping, customer_email)
     dollar_cost = "%0.2f" % (amt_in_cents / 100)
     body_html = f"""
     <html>
@@ -1044,9 +1071,11 @@ def cw_email_obtain_products_as_td(products):
     return cw_email_product_table_entries
 
 
-def cw_email_format_shipping(shipping):
+def cw_email_format_shipping(shipping, customer_email):
     shipping_html = f"""
       <p>
+        {customer_email}
+        <br/>
         {shipping["name"]}
         <br/>
         {shipping["address"]["line1"]}
