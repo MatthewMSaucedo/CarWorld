@@ -3,7 +3,6 @@ Cartopia
 
 ## Frontend - CarWorld SPA
 https://carworldneedsme.netlify.app/
-NOTE: Currently only desktop friendly
 
 Want to test out a purchase?
 All credit card info is just "42" repeated as needed.
