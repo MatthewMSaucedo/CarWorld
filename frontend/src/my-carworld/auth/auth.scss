@@ -25,6 +25,7 @@
     overflow: auto;
 
     min-height: calc(100vh); /* Fallback for browsers that do not support Custom Properties */
+    min-height: calc(100svh);
     @media (max-width: 992px) {
         min-height: calc(100vh - 6rem); /* Fallback for browsers that do not support Custom Properties */
         min-height: calc(100svh - 6rem);

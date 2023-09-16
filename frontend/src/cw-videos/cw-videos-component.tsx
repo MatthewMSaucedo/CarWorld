@@ -28,11 +28,11 @@ function CWVideosComponent() {
             {/* Navbar */}
             { isMediumDevice || isSmallDevice ? CWMobileNavbarComponent() : CWCommonNavbarComponent() }
 
+            {/* Add a yellow banner to mimic navbar for mobile */}
+            {isMediumDevice || isSmallDevice ? CWMobileBannerComponent() : <></>}
+
             {/* Video Page  */}
             <div className="cw-video-container">
-                {/* Add a yellow banner to mimic navbar for mobile */}
-                {isMediumDevice || isSmallDevice ? CWMobileBannerComponent() : <></>}
-
                 {/* Playlist title and videos  */}
                 <div className={`playlist-title-wrapper${ isMediumDevice || isSmallDevice ? "-mobile" : ""}`}>
                         The Gatherings of Car World (DOCUMENTARY)

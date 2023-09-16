@@ -415,10 +415,10 @@ function CWAuthComponent() {
                 { apiIsLoading ? (<CWCommonLoadingComponent />) : (
                     showRegister ? registerForm() : loginForm()
                 )}
-
-                {/* Footer */}
-                { CWFooterComponent() }
             </div>
+
+            {/* Footer */}
+            { CWFooterComponent() }
         </div>
     )
 }
