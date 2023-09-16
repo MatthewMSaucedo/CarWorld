@@ -18,7 +18,6 @@
     display: flex;
     flex-direction: column;
     flex-wrap: nowrap;
-    justify-content: center;
     align-items: center;
     align-content: center;
 
@@ -27,8 +26,8 @@
     min-height: calc(100vh); /* Fallback for browsers that do not support Custom Properties */
     min-height: calc(100svh);
     @media (max-width: 992px) {
-        min-height: calc(100vh - 6rem); /* Fallback for browsers that do not support Custom Properties */
-        min-height: calc(100svh - 6rem);
+        min-height: calc(100vh - 9rem); /* Fallback for browsers that do not support Custom Properties */
+        min-height: calc(100svh - 9rem);
     }
 
     color: white;
