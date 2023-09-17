@@ -175,6 +175,14 @@ class CWCoreStack(Stack):
             ),
         )
 
+        # Search user by referral
+        user_table.add_global_secondary_index(
+            index_name="referral-lookup-index",
+            partition_key=dynamodb.Attribute(
+                name="referral", type=dynamodb.AttributeType.STRING
+            ),
+        )
+
         return user_table
 
     def create_cw_invalid_token_table(self):

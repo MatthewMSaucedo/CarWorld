@@ -5,8 +5,7 @@ const bcrypt = require('bcrypt')
 const crypto = require('crypto')
 const jwt = require('jsonwebtoken')
 
-// Environment Variables
-const JWT_SECRET = process.env.jwtSecret
+// Environment Variables const JWT_SECRET = process.env.jwtSecret
 const JWT_EXPIRATION_TIME_IN_MINUTES = process.env.jwtExpMinutes
 const USER_TABLE_NAME = process.env.userTableName
 const INVALID_TOKEN_TABLE_NAME = process.env.invalidTokenTableName
@@ -20,7 +19,7 @@ async function isValidPassword(password, hash) {
   return result
 }
 
-async function storeNewUserInDatabase(dbClient, username, hashedPassword, email) {
+async function storeNewUserInDatabase(dbClient, username, hashedPassword, email, referralCode) {
   const putParams = {
     TableName: USER_TABLE_NAME,
     Item: {
@@ -30,7 +29,8 @@ async function storeNewUserInDatabase(dbClient, username, hashedPassword, email)
       email: { S: email },
       type: { S: "standard" },
       joined: { S: new Date().toDateString() },
-      ddp: { N: '0' }
+      ddp: { N: '0' },
+      referralCode: { S: referralCode }
     }
   }
   const command = new PutItemCommand(putParams)
@@ -109,6 +109,7 @@ async function registerRequest(request) {
   const password = request.body.password.toLowerCase()
   const username = request.body.username.toLowerCase()
   const email = request.body.email.toLowerCase()
+  const suppliedReferralCode = request.body.referralCode
 
   // Hash password
   let hashedPassword = ""
@@ -141,20 +142,50 @@ async function registerRequest(request) {
       }
     }
   }
+
   try {
     if (getUserByUsernameRes) {
       return {
         code: 400,
         message: `The username, ${username}, is unavailable`,
       }
-    }
-
-    // Store new user in DB
-    await storeNewUserInDatabase(dbClient, username, hashedPassword, email)
   } catch (error) {
     return {
       code: 500,
-      message: `Failed to store user creds in db: ${error.message}`,
+      message: `SERVER_ERROR: Failed to do lookup for pre-existing username in DB | ${error.message}`,
+      error: {
+        title: error.name,
+        message: error.message,
+        stack: error.stack
+      }
+    }
+  }
+
+  try {
+    // TODO: Verify referral code if given, and award referrer DDP
+    if (suppliedReferralCode) {
+      processReferralCode(suppliedReferralCode)
+    }
+  } catch (error) {
+      console.log(`SERVER_ERROR: Failed to process Referral Code | ${error}`),
+    }
+  }
+
+  let referralCode = null
+  try {
+    // TODO: Generate referral code for new user
+    referralCode = generateReferralCode()
+  } catch (error) {
+    console.log(`SERVER_ERROR: Failed to process Referral Code | ${error}`),
+  }
+
+  try {
+      // Store new user in DB
+    await storeNewUserInDatabase(dbClient, username, hashedPassword, email, referralCode)
+  } catch (error) {
+    return {
+      code: 500,
+      message: `SERVER_ERROR: Failed to store user creds in db | ${error.message}`,
       error: {
         title: error.name,
         message: error.message,
