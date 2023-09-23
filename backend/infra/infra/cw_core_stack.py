@@ -10,6 +10,8 @@ from aws_cdk import (
     aws_s3 as s3,
     aws_iam as iam,
     aws_ses as ses,
+    aws_sns as sns,
+    aws_sns_subscriptions as subscriptions,
     aws_apigatewayv2_alpha as apigw,
 )
 from aws_cdk.aws_apigatewayv2_integrations_alpha import (
@@ -29,18 +31,26 @@ from constructs import Construct
 #     * Auth Controller and associated Databases
 #     * Commerce Controller and associated Databases
 #     * Profile Controller and associated Databases
-#     * CarWorld SES (email service)
+#     * CarWorld SES & support infra to handle notifications
 class CWCoreStack(Stack):
     def __init__(
-        self, scope: Construct, construct_id: str, stack_env: str, **kwargs
+        self,
+        scope: Construct,
+        construct_id: str,
+        stack_env: str,
+        ses_sns_arn: str,
+        ses_sender_email: str,
+        ses_admin_list: str,
+        **kwargs,
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
+        # NOTE: Staging env is dev backend with FE deployed to Netlify
         # Development environment (dev/prod)
         self.stack_env = stack_env
 
-        ###############################################
+        ###################################################
         # SECRETS (stored in AWS SSM ParamStore)
-        ###############################################
+        ###################################################
         boto_session = boto3.Session(profile_name="personal")
         self.ssm = boto_session.client("ssm", region_name="us-east-1")
         self.jwt_secret = self.obtain_ssm_client_secret(
@@ -53,9 +63,9 @@ class CWCoreStack(Stack):
             secret_name="/cw/commerce/stripe/dev/key"
         )
 
-        ###############################################
+        ###################################################
         # DATABASES (Dynamo)
-        ###############################################
+        ###################################################
         # Create Users database
         self.cw_user_table = self.create_cw_user_table()
         # Create Transactions database
@@ -65,9 +75,9 @@ class CWCoreStack(Stack):
         # Create InvalidTokens database
         self.cw_invalid_token_table = self.create_cw_invalid_token_table()
 
-        ###############################################
+        ###################################################
         # CAR WORLD API GATEWAY
-        ###############################################
+        ###################################################
         # Create API Gateway
         self.cw_api_gw = self.create_cw_api_gw()
         # Create AuthValidator Lambda
@@ -75,9 +85,9 @@ class CWCoreStack(Stack):
             jwt_secret=self.jwt_secret, jwt_exp_minutes=self.jwt_exp_minutes
         )
 
-        ###############################################
+        ###################################################
         # AUTH CONTROLLER
-        ###############################################
+        ###################################################
         # Create Auth Controller Lambda and associate w/ API Gateway
         self.cw_auth_lambda = self.create_cw_auth_lambda(
             jwt_secret=self.jwt_secret,
@@ -91,16 +101,16 @@ class CWCoreStack(Stack):
             auth_lambda=self.cw_auth_lambda["function"],
         )
 
-        ###############################################
+        ###################################################
         # COMMERCE EMAIL CACHE S3
-        ###############################################
+        ###################################################
         # Create s3 to use as cache for storing email, once Stripe Payment
         # process begins
         self.cw_transaction_email_cache_s3 = self.create_cw_transaction_email_cache_s3()
 
-        ###############################################
+        ###################################################
         # COMMERCE CONTROLLER
-        ###############################################
+        ###################################################
         # Create Commerce Controller Lambda and associate w/ API Gateway
         self.cw_commerce_lambda = self.create_cw_commerce_lambda(
             stripe_secret=self.stripe_secret,
@@ -108,6 +118,8 @@ class CWCoreStack(Stack):
             commodity_table=self.cw_commodity_table,
             user_table=self.cw_user_table,
             cw_transaction_email_cache_s3=self.cw_transaction_email_cache_s3,
+            ses_sender_email=ses_sender_email,
+            ses_admin_list=ses_admin_list,
         )
         # Tie Commerce Lambda to API Gateway
         self.add_commerce_routes_to_api_gw(
@@ -116,9 +128,9 @@ class CWCoreStack(Stack):
             validator_lambda=self.cw_validator_lambda["function"],
         )
 
-        ###############################################
+        ###################################################
         # PROFILE CONTROLLER
-        ###############################################
+        ###################################################
         # Create Profile Controller Lambda and associate w/ API Gateway
         self.cw_profile_lambda = self.create_cw_profile_lambda(
             user_table=self.cw_user_table,
@@ -130,15 +142,19 @@ class CWCoreStack(Stack):
             validator_lambda=self.cw_validator_lambda["function"],
         )
 
-        ###############################################
-        # CAR WORLD SES (Email Service)
-        ###############################################
+        ###################################################
+        # CAR WORLD EMAIL HANDLING (SES, SNS, S3, Lambda)
+        ###################################################
+        # Create S3 to store bounce and complaints
+        self.cw_ses_s3 = self.create_cw_ses_s3()
+        # Create Lambda to store bounce + complaints in S3
+        self.cw_ses_lambda = self.create_cw_ses_lambda(self.cw_ses_s3, ses_sns_arn)
         # Initialize AmazonSES and grant Send permissions to the Commerce Lambda
-        self.cw_ses_service = self.create_cw_ses_service(self.cw_commerce_lambda)
+        self.cw_ses_config_set = self.create_cw_ses_config_set(self.cw_commerce_lambda)
 
-        ###############################################
+        ###################################################
         # CAR WORLD JOBS
-        ###############################################
+        ###################################################
         # Init StoreItem db
         self.create_cw_batch_write_store_items_lambda = (
             self.cw_batch_write_store_items_lambda(self.cw_commodity_table)
@@ -410,16 +426,7 @@ class CWCoreStack(Stack):
             lifecycle_rules=[lifecycle_rule],
         )
 
-        # email_cache_role =  iam.Role(
-        #     scope=self,
-        #     id=f"{self.stack_env}-cw-transaction-email-cache-s3",
-        #     assumed_by=iam.ServicePrincipal("s3.amazonaws.com"),
-        #     description="Transaction Email Cache S3 Role",
-        #     managed_policies=[
-        #     ],
-        # )
-
-        return {"bucket": email_cache_bucket}  # , "role": email_cache_role
+        return {"bucket": email_cache_bucket}
 
     def create_cw_commerce_lambda(
         self,
@@ -428,6 +435,8 @@ class CWCoreStack(Stack):
         commodity_table,
         user_table,
         cw_transaction_email_cache_s3,
+        ses_sender_email,
+        ses_admin_list,
     ):
         commerce_lambda_role = iam.Role(
             scope=self,
@@ -478,6 +487,10 @@ class CWCoreStack(Stack):
                 "transaction_email_cache_s3_name": cw_transaction_email_cache_s3[
                     "bucket"
                 ].bucket_name,
+                "ses_sender_email": ses_sender_email,
+                "ses_admin_list": ses_admin_list
+                if self.stack_env == "prod"
+                else "themattsaucedo@gmail.com",
             },
             layers=[lambda_layer],
             memory_size=512,
@@ -646,8 +659,71 @@ class CWCoreStack(Stack):
 
         return
 
-    # TODO: Add logic to send emails from registered email, to any client
-    def create_cw_ses_service(self, cw_commerce_lambda):
+    def create_cw_ses_s3(self):
+        lifecycle_rule = s3.LifecycleRule(
+            id=f"{self.stack_env}-ses-notif-rule",
+            expiration=Duration.days(30),
+        )
+        email_cache_bucket = s3.Bucket(
+            scope=self,
+            id=f"{self.stack_env}-cw-ses-notif-s3",
+            auto_delete_objects=True,
+            removal_policy=RemovalPolicy.DESTROY,
+            block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
+            encryption=s3.BucketEncryption.S3_MANAGED,
+            lifecycle_rules=[lifecycle_rule],
+        )
+
+        return {"bucket": email_cache_bucket}
+
+    # TODO:
+    def create_cw_ses_lambda(self, cw_ses_s3, ses_sns_arn):
+        # Create lambda Role
+        ses_lambda_role = iam.Role(
+            scope=self,
+            id=f"{self.stack_env}-cw-ses-notif-lambda-role",
+            assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
+            description="SES Notification Lambda Role",
+            managed_policies=[
+                iam.ManagedPolicy.from_aws_managed_policy_name(
+                    "service-role/AWSLambdaBasicExecutionRole"
+                ),
+                iam.ManagedPolicy.from_aws_managed_policy_name(
+                    "service-role/AWSLambdaVPCAccessExecutionRole"
+                ),
+            ],
+        )
+
+        # Grant s3 write access
+        cw_ses_s3["bucket"].grant_read_write(ses_lambda_role)
+
+        # Create lambda
+        ses_lambda = lambdaFx.Function(
+            scope=self,
+            id=f"{self.stack_env}-cw-ses-notif-lambda",
+            runtime=lambdaFx.Runtime.PYTHON_3_7,
+            handler="index.handler",
+            role=ses_lambda_role,
+            code=lambdaFx.Code.from_asset("./lambda/profile/"),
+            description="CarWorld SES Notification Lambda, to handle: Bounce, Received, and Compliant notifications",
+            environment={
+                "ses_s3_bucket_name": cw_ses_s3["bucket"].bucket_name,
+            },
+            memory_size=512,
+            timeout=Duration.seconds(15),
+        )
+
+        # Subscribe lambda to SES Topic that notifies of email Received/Bounce/Complaint
+        topic = sns.Topic.from_topic_arn(
+            self,
+            id="carworld-ses-notif-sns",
+            topic_arn=ses_sns_arn,
+        )
+        topic.add_subscription(subscriptions.LambdaSubscription(ses_lambda))
+
+        return {"function": ses_lambda, "role": ses_lambda_role}
+
+    def create_cw_ses_config_set(self, cw_commerce_lambda):
         ses_config_set = ses.ConfigurationSet(
             self,
             f"{self.stack_env}-cw-commerce-ses-configuration-set",
@@ -657,7 +733,7 @@ class CWCoreStack(Stack):
         cw_commerce_lambda["role"].attach_inline_policy(
             iam.Policy(
                 self,
-                "ses-policy",
+                f"{self.stack_env}-ses-policy",
                 statements=[
                     iam.PolicyStatement(
                         actions=[

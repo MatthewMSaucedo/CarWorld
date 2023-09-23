@@ -5,6 +5,9 @@ __pycache__
 .venv
 *.egg-info
 
+# Config
+cdk.json
+
 # Lambda Layers
 lambda/validator/jwt-dependency-layer
 lambda/validator/jwt-layer

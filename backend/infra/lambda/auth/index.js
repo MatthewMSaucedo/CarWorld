@@ -1,9 +1,10 @@
 // Declarations
-const { DynamoDBClient, PutItemCommand, QueryCommand } = require("@aws-sdk/client-dynamodb")
-const { GetCommand } = require("@aws-sdk/lib-dynamodb")
-const bcrypt = require('bcrypt')
-const crypto = require('crypto')
-const jwt = require('jsonwebtoken')
+import { DynamoDBClient, PutItemCommand, QueryCommand } from "@aws-sdk/client-dynamodb"
+import { GetCommand } from "@aws-sdk/lib-dynamodb"
+import { bcrypt } from 'bcrypt'
+import { crypto } from 'crypto'
+import { jwt } from 'jsonwebtoken'
+import { nanoid } from 'nanoid'
 
 // Environment Variables const JWT_SECRET = process.env.jwtSecret
 const JWT_EXPIRATION_TIME_IN_MINUTES = process.env.jwtExpMinutes
@@ -86,9 +87,7 @@ function validateRegisterRequestInput(requestBody) {
   return true
 }
 
-async function registerRequest(request) {
-  const dbClient = new DynamoDBClient({ region: "us-east-1" })
-
+async function registerRequest(request, dbClient) {
   // Validate input
   try {
     validateLoginRequestInput(request.body)
@@ -131,6 +130,13 @@ async function registerRequest(request) {
   let getUserByUsernameRes = null
   try {
     getUserByUsernameRes = await getUserByUsername(dbClient, username)
+
+    if (getUserByUsernameRes) {
+      return {
+        code: 400,
+        message: `The username, ${username}, is unavailable`,
+      }
+    }
   } catch (error) {
     return {
       code: 500,
@@ -144,25 +150,7 @@ async function registerRequest(request) {
   }
 
   try {
-    if (getUserByUsernameRes) {
-      return {
-        code: 400,
-        message: `The username, ${username}, is unavailable`,
-      }
-  } catch (error) {
-    return {
-      code: 500,
-      message: `SERVER_ERROR: Failed to do lookup for pre-existing username in DB | ${error.message}`,
-      error: {
-        title: error.name,
-        message: error.message,
-        stack: error.stack
-      }
-    }
-  }
-
-  try {
-    // TODO: Verify referral code if given, and award referrer DDP
+    // Verify referral code if given, and award referrer DDP
     if (suppliedReferralCode) {
       processReferralCode(suppliedReferralCode)
     }
@@ -173,14 +161,14 @@ async function registerRequest(request) {
 
   let referralCode = null
   try {
-    // TODO: Generate referral code for new user
+    // Generate referral code for new user
     referralCode = generateReferralCode()
   } catch (error) {
     console.log(`SERVER_ERROR: Failed to process Referral Code | ${error}`),
   }
 
   try {
-      // Store new user in DB
+    // Store new user in DB
     await storeNewUserInDatabase(dbClient, username, hashedPassword, email, referralCode)
   } catch (error) {
     return {
@@ -204,8 +192,17 @@ async function registerRequest(request) {
   }
 }
 
-async function loginRequest(request) {
-  const dbClient = new DynamoDBClient({ region: "us-east-1" })
+// TODO: also probs not async?
+async function processReferralCode(suppliedReferralCode) {
+
+}
+
+// TODO: also probs not async?
+async function generateReferralCode() {
+
+}
+
+async function loginRequest(request, dbClient) {
   console.log("DEBUG -- Entered Login Request")
 
   // Validate input
@@ -359,9 +356,8 @@ function generateJwtToken(claims, exp_time) {
   return jwtToken
 }
 
-async function refreshRequest(request) {
+async function refreshRequest(request, dbClient) {
   console.log("DEBUG -- Entered Refresh Request")
-  const dbClient = new DynamoDBClient({ region: "us-east-1" })
 
   // Validate input
   let refreshToken
@@ -535,6 +531,8 @@ exports.handler = async(event) => {
       }
   }
 
+  const dbClient = new DynamoDBClient({ region: "us-east-1" })
+
   // Route request to relevant action
   let res = ""
   console.log(request.action)
@@ -542,18 +540,18 @@ exports.handler = async(event) => {
     // Register new user
     case "register":
       console.log("register")
-      res = await registerRequest(request)
+      res = await registerRequest(request, dbClient)
       break
     // Login existing user
     case "login":
       console.log("login")
-      res = await loginRequest(request)
+      res = await loginRequest(request, dbClient)
       console.log("Login Request completed")
       break
     // Refresh authtoken
     case "refresh":
       console.log("refresh")
-      res = await refreshRequest(request)
+      res = await refreshRequest(request, dbClient)
       break
     // Generate guest authtoken
     case "guest":

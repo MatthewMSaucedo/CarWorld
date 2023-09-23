@@ -18,7 +18,10 @@
     "config": {
       "account_id": "832303862315",
       "region": "us-east-1",
-      "stack_env": "dev"
+      "stack_env": "dev",
+      "ses_sns_arn": "arn:aws:sns:us-east-1:832303862315:carworld-ses-notif-sns",
+      "ses_sender_email": "merch@carworld.love",
+      "ses_admin_list": "themattsaucedo@gmail.com,rkats0524@gmail.com,williambanks500@gmail.com"
     },
     "@aws-cdk/aws-lambda:recognizeLayerVersion": true,
     "@aws-cdk/core:checkSecretUsage": true,

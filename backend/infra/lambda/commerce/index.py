@@ -11,25 +11,20 @@ import boto3
 import hashlib
 
 # Environment Variables
-SES_CONFIG_ID = os.environ["ses_config_id"]
 USER_TABLE_NAME = os.environ["user_table_name"]
 COMMODITY_TABLE_NAME = os.environ["commodity_table_name"]
 TRANSACTION_TABLE_NAME = os.environ["transaction_table_name"]
 TRANSACTION_EMAIL_CACHE_NAME = os.environ["transaction_email_cache_s3_name"]
+SES_CONFIG_ID = os.environ["ses_config_id"]
+SES_SENDER_EMAIL = os.environ["ses_sender_email"]
+SES_ADMIN_LIST = os.environ["ses_admin_list"].split(",")
 stripe.api_key = os.environ["stripe_secret"]
 
 # Clients
 S3_CLIENT = boto3.client("s3")
+SES_CLIENT = boto3.client("ses")
+CW_DYNAMO_CLIENT = CWDynamoClient()
 
-# TODO: move these mapping to param store, shouldn't be hardcoded here
-# Constants
-EMAIL_RECIPIENTS = [
-    "themattsaucedo@gmail.com",
-    # TODO: uncomment for site-launch
-    # "williambanks500@gmail.com",
-    # "rkats0524@gmail.com",
-]
-SES_SENDER_EMAIL = "themattsaucedo@gmail.com"
 # NOTE: Must echo changes here to Stripe_Abrev_Name_Map
 COMMODITY_VALUE_MAP = {
     "save the attendants shirt": 2500,
@@ -494,7 +489,7 @@ def calculate_transaction_amount(cart):
     return amount
 
 
-# TODO: Replace raw dynamo client call with cw_dynamo_client
+# TODO: Replace raw dynamo client call with CW_DYNAMO_CLIENT
 def create_transaction_record(
     transaction_id,
     shipping,
@@ -670,7 +665,6 @@ def handle_webhook(stripe_event, dynamo_client):
         name = event_data["shipping"]["name"]
 
         # Get dynamo-friendly commodity list
-        # NOTE: use of #eval, as the cart dict is stored as a str on Stripe's end
         cart = cw_cart_from_short_string(event_data["metadata"]["cart"])
         commodity_list = format_commodity_list_from_cart(cart)
 
@@ -762,6 +756,8 @@ def handle_webhook(stripe_event, dynamo_client):
     #   errors itself.
     # remove_purchased_commodities_from_stock(commodity_list, dynamo_client)
 
+    item_count = determine_item_count_from_cart(commodity_list)
+
     # Grant DDP to user purchases
     if not is_guest_purchase:
         # NOTE:
@@ -770,6 +766,7 @@ def handle_webhook(stripe_event, dynamo_client):
         grantDdpToUser(
             cw_user_record=cw_user_record,
             commodity_list=commodity_list,
+            item_count=item_count,
             dynamo_client=dynamo_client,
         )
 
@@ -791,7 +788,7 @@ def handle_webhook(stripe_event, dynamo_client):
             customer_email=email,
             products=commodity_list,
             amt_in_cents=amount,
-            username=(None if is_guest_purchase else cw_user_record["username"]["S"]),
+            item_count=item_count,
             is_guest_purchase=is_guest_purchase,
         )
 
@@ -848,15 +845,18 @@ def write_to_email_cache(key, email):
     )
 
 
-def grantDdpToUser(cw_user_record, commodity_list, dynamo_client):
+# NOTE:
+#   See cw_cart_from_short_string() for explanation of formatting
+def determine_item_count_from_cart(commodity_list):
     # Count items in transaction
     item_count = 0
     for commodity in commodity_list:
-        # NOTE:
-        #   See cw_cart_from_short_string() for explanation of formatting
         commodity_count = int(commodity.split("_")[0])
         item_count += commodity_count
+    return item_count
 
+
+def grantDdpToUser(cw_user_record, commodity_list, item_count, dynamo_client):
     current_ddp = int(cw_user_record["ddp"]["N"])
     new_ddp = current_ddp + item_count
 
@@ -931,30 +931,24 @@ def remove_purchased_commodities_from_stock(commodity_list, dynamo_client):
                 f"SERVER_ERROR: Failed to update quantity of {product_name} record | {error}"
             )
 
-            # NOTE: Queue DynamoDB-Error Retries
-            #   This is a very important action. Ecommerce sites, surprisingly, like to know if
-            #   they have what it is they are agreeing to sell (this one does, at least).
-            #   Consequently, if updating the commodity stock fails, we need to go out of our way
-            #   to correct this immediately. Here, we are queueing this up for a retry lambda to
-            #   take care of. Suppose dynamo errors persist still, we will at least see a
-            #   high-priority lambda begin to alarm immediately.
-            queue_cw_db_retry_lambda(
-                controller="commerce",
-                action="remove_commodity",
-                db_actions=[
-                    {
-                        "operation": "get",
-                        "table_name": "commodities",
-                        "key_expression": {"product_name": {"S": product_name}},
-                    },
-                    {
-                        "operation": "update",
-                        "table_name": "commodities",
-                        "key_expression": {"product_name": {"S": product_name}},
-                        "field_value_map": {"quantity": new_quantity},
-                    },
-                ],
-            )
+            # TODO: Queue DynamoDB-Error Retries
+            # queue_cw_db_retry_lambda(
+            #     controller="commerce",
+            #     action="remove_commodity",
+            #     db_actions=[
+            #         {
+            #             "operation": "get",
+            #             "table_name": "commodities",
+            #             "key_expression": {"product_name": {"S": product_name}},
+            #         },
+            #         {
+            #             "operation": "update",
+            #             "table_name": "commodities",
+            #             "key_expression": {"product_name": {"S": product_name}},
+            #             "field_value_map": {"quantity": new_quantity},
+            #         },
+            #     ],
+            # )
 
 
 def send_email_order_details_to_customer(
@@ -963,10 +957,77 @@ def send_email_order_details_to_customer(
     customer_email,
     products,
     amt_in_cents,
-    username,
+    item_count,
     is_guest_purchase,
 ):
-    """"""
+    if is_guest_purchase:
+        cw_user_string = f"""
+        <p>
+            Thanks again for your support! Have you considered
+            <a href="https://carworld.love/auth">
+                becoming a member of Car World
+            </a>?
+        </p>
+        """
+    else:
+        cw_user_string = f"""
+        <p>
+            As a thanks for this purchase, we have gone aheaded and added {item_count} DDP to your account!
+        </p>
+        """
+
+    product_table = cw_email_product_table(products)
+    customer_shipping = cw_email_format_shipping(shipping, customer_email)
+    dollar_cost = "%0.2f" % (amt_in_cents / 100)
+    body_html = f"""
+    <html>
+        <head></head>
+        <body>
+        <h1>carworld.love: Order Confirmation</h1>
+        <hr/>
+        <p>
+            Congratulations, { customer_name }, on a successful order from carworld.love!
+        </p>
+        <p>
+            { product_table }
+        </p>
+        <p>
+            Your purchase in the amount of ${ dollar_cost } has been processed.
+            William Banks himself will soon be hard at work preparing your item(s)
+            to be sent to the following location:
+        </p>
+        { customer_shipping }
+        { cw_user_string }
+        <p>
+            For any questions or concerns in relation to your order, please contact William
+            Banks directly at: williambanks500@gmail.com. Responses sent to this email
+            (merch@carworld.love) are not being recorded and will not be seen.
+        </p>
+        </body>
+    </html>
+                    """
+
+    email_message = {
+        "Body": {
+            "Html": {
+                "Charset": "utf-8",
+                "Data": body_html,
+            },
+        },
+        "Subject": {
+            "Charset": "utf-8",
+            "Data": "New Order placed on carworld.love!",
+        },
+    }
+
+    ses_response = SES_CLIENT.send_email(
+        Destination={"ToAddresses": [customer_email]},
+        Message=email_message,
+        Source=SES_SENDER_EMAIL,
+        ConfigurationSetName=SES_CONFIG_ID,
+    )
+
+    return f"ses response id: {ses_response['MessageId']} | ses success code: {ses_response['ResponseMetadata']['HTTPStatusCode']}."
 
 
 def send_email_order_details_to_admins(
@@ -978,8 +1039,6 @@ def send_email_order_details_to_admins(
     username,
     is_guest_purchase,
 ):
-    ses_client = boto3.client("ses")
-
     if is_guest_purchase:
         cw_user_string = f"{customer_name} is a guest user."
     else:
@@ -994,7 +1053,7 @@ def send_email_order_details_to_admins(
     <html>
         <head></head>
         <body>
-        <h1>Car World Store: Order Detail</h1>
+        <h1>carworld.love: New Order Placed</h1>
         <hr/>
         <p>
             An order in the amount of ${dollar_cost} has been placed by {customer_name}!
@@ -1021,10 +1080,8 @@ def send_email_order_details_to_admins(
         },
     }
 
-    ses_response = ses_client.send_email(
-        Destination={
-            "ToAddresses": EMAIL_RECIPIENTS,
-        },
+    ses_response = SES_CLIENT.send_email(
+        Destination={"ToAddresses": SES_ADMIN_LIST},
         Message=email_message,
         Source=SES_SENDER_EMAIL,
         ConfigurationSetName=SES_CONFIG_ID,
@@ -1102,7 +1159,7 @@ def queue_cw_db_retry_lambda(controller, action, db_actions):
 # Controller Action Handler
 ########################################################
 def handler(event, context):
-    # parse request
+    # Parse request
     try:
         request = {
             "type": event["requestContext"]["http"]["method"],
@@ -1122,10 +1179,7 @@ def handler(event, context):
             "error": error,
         }
 
-    # initialize dynamo client
-    cw_dynamo_client = CWDynamoClient()
-
-    # direct to proper controller action
+    # Direct to proper controller action
     try:
         if request["action"] == "secret":
             # Given that this is a protected action, the JWT provided in the header
@@ -1139,7 +1193,7 @@ def handler(event, context):
             res = create_payment_intent(
                 create_payment_intent_body=request["body"],
                 user_id=user_id,
-                dynamo_client=cw_dynamo_client,
+                dynamo_client=CW_DYNAMO_CLIENT,
             )
         elif request["action"] == "cache_email":
             # /cache_email has a request body
@@ -1151,10 +1205,10 @@ def handler(event, context):
             request["body"] = json.loads(event["body"])
 
             res = handle_webhook(
-                stripe_event=request["body"], dynamo_client=cw_dynamo_client
+                stripe_event=request["body"], dynamo_client=CW_DYNAMO_CLIENT
             )
         elif request["action"] == "commodities":
-            res = get_commodity_list(dynamo_client=cw_dynamo_client)
+            res = get_commodity_list(dynamo_client=CW_DYNAMO_CLIENT)
         else:
             raise Exception(f'Invalid route: {request["action"]}')
     except Exception as e:
@@ -1169,7 +1223,7 @@ def handler(event, context):
             "error": error,
         }
 
-    # add headers for CORS
+    # Add headers for CORS
     res["headers"] = {
         "Access-Control-Allow-Headers": "*",
         "Access-Control-Allow-Origin": "*",
