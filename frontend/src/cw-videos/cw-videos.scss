@@ -8,7 +8,7 @@
 
     color: black;
 
-    overflow: auto;
+    overflow: scroll;
 
     min-height: calc(100vh); /* Fallback for browsers that do not support Custom Properties */
     min-height: calc(100svh);

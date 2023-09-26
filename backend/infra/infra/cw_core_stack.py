@@ -704,12 +704,11 @@ class CWCoreStack(Stack):
             runtime=lambdaFx.Runtime.PYTHON_3_7,
             handler="index.handler",
             role=ses_lambda_role,
-            code=lambdaFx.Code.from_asset("./lambda/profile/"),
+            code=lambdaFx.Code.from_asset("./lambda/ses/"),  # TODO:
             description="CarWorld SES Notification Lambda, to handle: Bounce, Received, and Compliant notifications",
             environment={
                 "ses_s3_bucket_name": cw_ses_s3["bucket"].bucket_name,
             },
-            memory_size=512,
             timeout=Duration.seconds(15),
         )
 

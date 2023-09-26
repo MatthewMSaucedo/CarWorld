@@ -1,22 +1,147 @@
-# CARWORLD.LOVE
-Cartopia
+<h1 align="center">CARWORLD.LOVE
+    <p><img width="120px" height="120px" alt="CW Logo" src="https://github.com/MatthewMSaucedo/CarWorld/blob/main/frontend/src/logo.svg"></p>
+    <p align="center">
+        <img alt="Static Badge - Made by" src="https://img.shields.io/badge/made%20by-matthewmsaucedo-blue?style=plastic&logo=github">
+        <img alt="Static Badge - Stripe" src="https://img.shields.io/badge/payments-stripe-green?logo=stripe&style=plastic">
+        <img alt="Static Badge - CDK" src="https://img.shields.io/badge/cdk-2.65.0-orange?style=plastic&logo=amazon">
+        <img alt="Static Badge - Python" src="https://img.shields.io/badge/python-3.7-lightblue?style=plastic&logo=python">
+        <img alt="Static Badge - React" src="https://img.shields.io/badge/react-18.2.0-red?style=plastic&logo=react">
+        <img alt="Static Badge - Node" src="https://img.shields.io/badge/node-18.x-pink?style=plastic&logo=npm">
+    </p>
+</h1>
 
-## Frontend - CarWorld SPA
-https://carworldneedsme.netlify.app/
+## Table of Contents:
+
+<ul>
+  <li>
+    <a href="https://github.com/matthewmsaucedo/carworld#frontend-react-spa">Frontend - React SPA</a>
+  </li>
+  <ul>
+    <li>Demo (staging environment)</li>
+    <li>Responsive (Mobile + Desktop Friendly)</li>
+    <li>Navigation</li>
+    <li>Helpful Errors</li>
+    <li>User Profile</li>
+  </ul>
+  <li>
+    <a href="https://github.com/matthewmsaucedo/carworld#backend-aws-serverless">Backend - AWS Serverless</a>
+  </li>
+  <ul>
+    <li>System overview</li>
+    <li>Transaction Handling</li>
+    <li>Authentication</li>
+    <li>CDK: Structure and Deployment</li>
+  </ul>
+  <li>
+    <a href="https://github.com/matthewmsaucedo/carworld#license">License</a>
+  </li>
+</ul>
+
+## Frontend: React SPA
+<div>
+<p align="center">
+  <kbd>
+    <img src="https://cw-readme-images.s3.amazonaws.com/desktop_home.png" alt="Car World Desktop Home">
+  </kbd>
+  <br />
+  <span>Desktop</span>
+</p>
+<p align="center">
+  <kbd>
+    <img src="https://cw-readme-images.s3.amazonaws.com/mobile_home.png" alt="Car World Mobile Home">
+  </kbd>
+  <br />
+  <span>Mobile</span>
+</p>
+</p>
+</div>
+
+### Demo
+<a href="https://carworldneedsme.netlify.app/">Demo (staging environment)</a>
 
 Want to test out a purchase?
 All credit card info is just "42" repeated as needed.
 
-## Backend - CarWorld Serverless
-![CarWorld System Diagram](https://github.com/matthewmsaucedo/CarWorld/blob/main/backend/diagrams/CarWorldSystemDesign.jpg?raw=true)
+### Responsive (Mobile + Desktop Friendly)
 
-![CarWorld Initiate PaymentIntent Flow](https://github.com/matthewmsaucedo/CarWorld/blob/main/backend/diagrams/init_payment_intent.svg?raw=true)
-![CarWorld Handle Completed Transaction Flow](https://github.com/matthewmsaucedo/CarWorld/blob/main/backend/diagrams/CarWorldTransactionHandling.svg?raw=true)
+## Backend: AWS Serverless
+<div>
+<p align="center">
+  <img src="https://cw-readme-images.s3.amazonaws.com/carworld+system+design.png" alt="Car World System Diagram">
+  <br />
+</p>
+  <span>
+    Car World is a <em>Serverless</em> application. This means that there is no server actively 
+    running our Car World application code that we administer to on the backend; instead, Car 
+    World application code is defined with AWS Lambdas. Each time the client needs to access 
+    a piece of backend functionality, the request comes into our API GateWay. The gateway will 
+    then route that request to the appropriate lambda controller to process the request. In certain 
+    cases we will first authenticate the request with our Validator lambda before passing it on to 
+    the appropriate controller.
+  </span>
 
-![CarWorld Login Flow](https://github.com/matthewmsaucedo/CarWorld/blob/main/backend/diagrams/login.svg?raw=true)
-![CarWorld Refresh Flow](https://github.com/matthewmsaucedo/CarWorld/blob/main/backend/diagrams/refresh.svg?raw=true)
-![CarWorld Guest Flow](https://github.com/matthewmsaucedo/CarWorld/blob/main/backend/diagrams/guest.svg?raw=true)
-``` sh
+### Transaction Handling
+<div>
+  <p>
+    One of the core features of Car World is the Merch marketplace. This marketplace is handled 
+    by the <em>Commerce Controller</em>. There are two main flows that run through this controller:
+  </p>
+  <p>
+    <ul>
+      <li>Initate PaymentIntent</li>
+      <li>Handle Transaction</li>
+    </ul>
+  </p>
+  <p>
+    The nature of our integration with the Stripe API dictates these flows. In the first flow, 
+    <em>Initate PaymentIntent</em>, a call is made from the client to begin a transaction. 
+    The Commerce Controller initializes Stripe's transaction concept, the PaymentIntent, 
+    and returns to the client both the PaymentIntent ID as well as Stripe's <em>Client Secret</em>.
+  </p>
+  <p align="center">
+    <img src="https://cw-readme-images.s3.amazonaws.com/init_payment_intent.svg" alt="Car World Initate PaymentIntent Diagram">
+  </p>
+  <p>
+    The above flow leads directly into the next flow; <em>Handle Transaction</em>. Here, the client 
+    first sends the email associated with the transaction to the Commerce Controller, which then 
+    caches it. After this the client communicates all transaction details (card, billing) directly 
+    to Stripe via the previously obtained secret. Stripe processes the payment on their end, and 
+    passes the result of the transaction to the Commerce Controller. The Commerce Controller 
+    fetches the email using the PaymentIntent ID, and records the transaction. After, the Commerce 
+    Controller sends transaction details to SES (simple email service), which emits an order 
+    confirmation email to both the user and the admins (physical store administrators). 
+  </p>
+  <p align="center">
+    <img src="https://cw-readme-images.s3.amazonaws.com/CarWorldTransactionHandling.svg" alt="Car World Initate PaymentIntent Diagram">
+  </p>
+</div>
+
+### Authentication
+<div>
+  <p>
+    carworld.love is not just a marketplace; it is also a <em>community</em>. Car World caters 
+    to it's audience by providing them the ability to make accounts, track their Digital Devotion 
+    Points (DDP), and more. The security and api operations created to support these features are 
+    handled by the <em>Auth Controller</em>. Key controller actions are highlighted below:
+  </p>
+  <p align="center">
+    <img src="https://cw-readme-images.s3.amazonaws.com/login.svg" alt="Car World Initate PaymentIntent Diagram">
+  </p>
+  <p align="center">
+    <img src="https://cw-readme-images.s3.amazonaws.com/refresh.svg" alt="Car World Initate PaymentIntent Diagram">
+  </p>
+  <p align="center">
+    <img src="https://cw-readme-images.s3.amazonaws.com/guest.svg" alt="Car World Initate PaymentIntent Diagram">
+  </p>
+</div>
+
+### CDK: Structure and Deployment
+<p>
+  All of Car World's infrastructure is automatically generated through AWS CDK (<em>infrastructure as Code</em>). 
+  The following diagram shows the file hierarchy, as it pertains to the CDK and infra.
+</p>
+
+```sh
 |--infra
 |---+ infrastructure as code
   |
@@ -36,7 +161,6 @@ All credit card info is just "42" repeated as needed.
     |---+ idk it works on my machine
 ```
 
-All payments backed by Stripe!
 
 The `cdk.json` file tells the CDK Toolkit how to execute your app.
 

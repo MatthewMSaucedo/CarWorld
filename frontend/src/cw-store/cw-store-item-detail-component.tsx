@@ -1,28 +1,26 @@
-// TODO:
-// for mobile, just do a block of like
-// <div>{three display image group (class make up-down) IFF not mobile}</div>
-// <div>{main image}</div>
-// <div>{three display image group (class make left right) IFF mobile}</div>
-
 // Local Imports
 import '../App.scss';
 import './cw-commodity-display.scss';
 import { CWShoppingItemType } from './cw-store-item';
 import { CWShoppingCart, CWShoppingCartEntry } from './cw-shopping-cart';
 import { STORE_ITEMS, CW_API_ENDPOINTS } from '../AppConstants'
+import CWCommonLoadingComponent from '../cw-common/components/loading/cw-common-loading-component';
+import CWCommonNavbarComponent from '../cw-common/components/navbar/cw-common-navbar-component';
 
 // React Hooks
 import { useState, useEffect } from "react"
 import { useNavigate, useParams } from 'react-router-dom';
+
+// Redux
+import { addToCart, updateCart } from '../redux/shoppingCartSlice';
 import { useDispatch } from 'react-redux';
+
+// Custom Hook
+import useMediaQuery from '../cw-common/functions/cw-media-query';
 
 // 3rd Party imports
 import { Button } from 'react-bootstrap';
 import Form from 'react-bootstrap/Form';
-import { addToCart, updateCart } from '../redux/shoppingCartSlice';
-import CWCommonLoadingComponent from '../cw-common/components/loading/cw-common-loading-component';
-import CWCommonNavbarComponent from '../cw-common/components/navbar/cw-common-navbar-component';
-import useMediaQuery from '../cw-common/functions/cw-media-query';
 
 // TS type for page param
 export type CWStoreItemDetailParams = {

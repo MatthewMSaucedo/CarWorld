@@ -129,11 +129,11 @@
 
         .cw-navbar-highlighted-item {
           // Style
-          // background: linear-gradient(red, #8b0000);
-          background-image: linear-gradient(to top, #ff0844 0%, #ffb199 100%);
+          background-image: linear-gradient(to top, #ff0844 100%, #ffb199 100%);
           border-color: #393433;
           color: white;
           box-shadow: 0 2px 2px 2px black;
+          // box-shadow: 0 2px 2px 2px rgba(9, 9, 9, 0.23);
           cursor: pointer;
           font-weight: bold;
 
@@ -204,7 +204,7 @@
         }
         .cw-navbar-highlighted-item {
           // Style
-          background-image: linear-gradient(to top, #ff0844 0%, #ffb199 100%);
+          background-image: linear-gradient(to top, #ff0844 100%, #ffb199 100%);
           border-color: #393433;
           color: white;
           box-shadow: 0 2px 2px 2px black;
