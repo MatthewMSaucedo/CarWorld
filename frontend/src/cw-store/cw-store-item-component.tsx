@@ -20,7 +20,7 @@ function CWStoreItemComponent(cwStoreItem: CWStoreItem, index: number) {
     >
         <img
             className="item-image"
-            src={ process.env.PUBLIC_URL + cwStoreItem.images[0] }
+            src={ cwStoreItem.images[0] }
             alt="This is a very cool item you would love to own"
         />
         <div className="content">

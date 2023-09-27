@@ -30,7 +30,7 @@ export class CWShoppingCart {
         } else {
             cart.contents.push(entry)
         }
-        cart.size += 1
+        cart.size += entry.quantity
 
         return cart
     }

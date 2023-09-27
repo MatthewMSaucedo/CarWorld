@@ -63,6 +63,11 @@ function CWPaymentProcessedComponent() {
                         { " " + paymentIntent.shipping.address.country }
                     </span>
                 </p>
+                <p className="cw-payment-processed-text">
+                    Don't see the email? Be sure to check your spam just in case! <br/>For any
+                    questions or concerns in relation to your order, please contact William
+                    Banks directly at:<br/>williambanks500@gmail.com.
+                </p>
             </div>
 
             {/* Footer */}

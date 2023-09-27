@@ -676,7 +676,6 @@ class CWCoreStack(Stack):
 
         return {"bucket": email_cache_bucket}
 
-    # TODO:
     def create_cw_ses_lambda(self, cw_ses_s3, ses_sns_arn):
         # Create lambda Role
         ses_lambda_role = iam.Role(

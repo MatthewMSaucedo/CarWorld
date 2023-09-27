@@ -23,7 +23,6 @@ stripe.api_key = os.environ["stripe_secret"]
 # Clients
 S3_CLIENT = boto3.client("s3")
 SES_CLIENT = boto3.client("ses")
-CW_DYNAMO_CLIENT = CWDynamoClient()
 
 # NOTE: Must echo changes here to Stripe_Abrev_Name_Map
 COMMODITY_VALUE_MAP = {
@@ -972,7 +971,7 @@ def send_email_order_details_to_customer(
     else:
         cw_user_string = f"""
         <p>
-            As a thanks for this purchase, we have gone aheaded and added {item_count} DDP to your account!
+            As a thanks for this purchase, we have gone ahead and added {item_count} DDP to your account!
         </p>
         """
 
@@ -1153,6 +1152,9 @@ def cw_email_format_shipping(shipping, customer_email):
 # TODO: Queues a retry of a particular db write for the CWRetryDatabaseActionLambda
 def queue_cw_db_retry_lambda(controller, action, db_actions):
     """"""
+
+
+CW_DYNAMO_CLIENT = CWDynamoClient()
 
 
 ########################################################

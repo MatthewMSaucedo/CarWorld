@@ -48,6 +48,7 @@ export interface CWAgGridCartRowData {
 function CWCartComponent() {
     // Redux State variable
     let { cwShoppingCart }: UseSelectorCart = useSelector((state: RootState) => state)
+    console.log(cwShoppingCart)
     let { cwUser } = useSelector((state: RootState) => state)
 
     // Hooks
@@ -75,6 +76,8 @@ function CWCartComponent() {
         setCheckoutIsDisabled(isDisabled)
     }, [email])
 
+    console.log(cwShoppingCart)
+
     // Table column defs
     const [columnDefs] = useState<any>([
         {
@@ -84,7 +87,7 @@ function CWCartComponent() {
             wrapText: true,
             rowDrag: false,
             suppressMovable: true,
-            width: isSmallDevice || isMediumDevice ? 50 : 50,
+            width: isSmallDevice || isMediumDevice ? 50 : 500,
         },
         {
             field: 'Name',
@@ -161,7 +164,6 @@ function CWCartComponent() {
     // Dynamically size the shopping cart table
     const onGridReady = (params: any) => {
         params.api.sizeColumnsToFit();
-        params.api.resetRowHeights();
     };
     const determineCartTableHeight = () => {
         let numRows = cwShoppingCart.size

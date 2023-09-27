@@ -52,8 +52,8 @@ function CWWikiComponent() {
                         gather <strong>12 Apostles</strong> complete with <strong>Tat Pass</strong> to return to Car World.
                         William must comply if he wishes to lead the <strong>Attendants Revolution</strong> against
                         Quuarux and restore a third <strong>Cartopia</strong>. Including <strong>Director Russell Katz </strong>
-                        (Head Propagator & Dramatician of the movement), William has gathered 5 Apostles thus far, with
-                        his <strong>Fiancé-Apostle</strong> pledged to receive Tat Pass at <strong>Car World Retreat</strong>.
+                        (Head Propagator & Dramatician of the movement), William has gathered 6 Apostles thus far, with
+                        his most recent apostle having received Tat Pass at <strong>Car World Retreat</strong>.
                     </p>
                 </div>
 
@@ -77,12 +77,8 @@ function CWWikiComponent() {
                         John Connor Hammond – The Treasure
                     </p>
                     <p className="cw-wiki-apostle-name">
-                        Allie Viti – The Healer<strong>*</strong>
+                        Allie Viti – The Healer
                     </p>
-                    <p className="cw-wiki-apostle-note">
-                        <strong>*</strong> = Fiancé-Apostle
-                    </p>
-
                 </div>
                 <div className="cw-wiki-text-block">
                     <p>

@@ -39,6 +39,8 @@ function CWStoreItemDetailComponent() {
   //   Worth revisiting.
   // Stateful variables
   const [value, setValue] = useState(undefined);
+  const [ddpInput, setDdpInput] = useState(0);
+  const [shouldShowAddDdpToCart, setShouldShowAddDdpToCart] = useState(false);
   const [imageDisplayArray, setImageDisplayArray] = useState([...cwStoreItem.images].reverse())
 
   // Redux hook
@@ -121,8 +123,6 @@ function CWStoreItemDetailComponent() {
     }
   }
 
-
-
   // Add item to Cart
   const addToCartButton = (
     shouldShowAddToCartButton() ? (
@@ -157,6 +157,39 @@ function CWStoreItemDetailComponent() {
 
     navigate('/store', { replace: true })
   }
+  // Add x amount of DDP to Cart
+  const addXDdp = (
+    <input className="cw-ddp-num-input"
+      value={ddpInput}
+      onChange={ () => setDdpInput( ddpInput + 1 ) }
+      type="number"
+      id="num_ddp"
+      name="num_ddp"
+      min="1" />
+  )
+  useEffect(() => {
+    if (ddpInput > 0) {
+      setShouldShowAddDdpToCart(true)
+    }
+  },[ddpInput])
+  const onClickAddDdpToCart = () => {
+    let entry: CWShoppingCartEntry = {
+      cwStoreItem: cwStoreItem,
+      quantity: ddpInput as number
+    }
+
+    dispatch(addToCart(entry))
+
+    navigate('/store', { replace: true })
+  }
+  const addDdpToCartButton = (
+    <Button className="cw-product-action-button"
+      as="a"
+      variant="primary"
+      onClick={ () => onClickAddDdpToCart() }>
+      Add DDP to Cart
+    </Button>
+  )
 
   // Display non-highlighted images in a column IF there are more images
   const productImageMultiDesktop = (
@@ -246,12 +279,8 @@ function CWStoreItemDetailComponent() {
 
   // HTML
   return (
-    // Ternary to show a spinner if the API data is still loading
-    // for the commodity states
     <div>
-
       <div className={`cw-product-page-container${ isMediumDevice || isSmallDevice ? "-mobile" : ""}`}>
-
           {/* Column of non-highlighted images */}
           { isMediumDevice || isSmallDevice ? <></> : productImageMultiDesktop }
 
@@ -275,7 +304,7 @@ function CWStoreItemDetailComponent() {
             />
 
             {/* Column of non-highlighted images */}
-            { isMediumDevice || isSmallDevice ? productImageMultiMobile : <></> }
+            { isMediumDevice || isSmallDevice ? productImageMultiMobile : (<></>) }
 
             { /* Description */ }
             { productDescription }
@@ -283,9 +312,10 @@ function CWStoreItemDetailComponent() {
             {/* Size selector, if applicable */}
             { sizeForm }
 
-            {/* Actions (button group?) */}
-            { addToCartButton }
-            { buyNowButton }
+            {/* Actions (button group) */}
+            { cwStoreItem.title === "Devotion Point" ? addXDdp : addToCartButton }
+            { shouldShowAddDdpToCart ? addDdpToCartButton : (<></>) }
+            { cwStoreItem.title === "Devotion Point" ? (<></>) : buyNowButton }
 
             {/* Back button */}
             <button className="cw-product-action-button"

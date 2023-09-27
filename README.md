@@ -18,10 +18,8 @@
   </li>
   <ul>
     <li>Demo (staging environment)</li>
-    <li>Responsive (Mobile + Desktop Friendly)</li>
     <li>Navigation</li>
     <li>Helpful Errors</li>
-    <li>User Profile</li>
   </ul>
   <li>
     <a href="https://github.com/matthewmsaucedo/carworld#backend-aws-serverless">Backend - AWS Serverless</a>
@@ -50,8 +48,11 @@
   <kbd>
     <img src="https://cw-readme-images.s3.amazonaws.com/mobile_home.png" alt="Car World Mobile Home">
   </kbd>
+  <kbd>
+    <img width="372px" height="615px" src="https://cw-readme-images.s3.amazonaws.com/mobile_view_open_nav.jpg" alt="Car World Mobile Home (Open Nav)">
+  </kbd>
   <br />
-  <span>Mobile</span>
+  <span>Mobile (collapsed and expanded nav menu)</span>
 </p>
 </p>
 </div>
@@ -62,7 +63,22 @@
 Want to test out a purchase?
 All credit card info is just "42" repeated as needed.
 
-### Responsive (Mobile + Desktop Friendly)
+I encourage you to test this out so you can see the emails we send for order confirmation!
+
+### Navigation
+Navigation in Car World functions similarly on Mobile and Desktop! Merely click on any option to route there, and 
+see your current location highlighted in the UI. For mobile, first tap the Car World Logo to open the menu.
+<p align="center">
+  <img src="https://cw-readme-images.s3.amazonaws.com/mobile_navigation.gif" alt="Car World Error Message Demo">
+  <br />
+</p>
+
+### Helpful Errors
+Run into any issues in the app? No worries! carworld.love has some handy stylized Toasts to deliver error messages.
+<p align="center">
+  <img width="200px" src="https://cw-readme-images.s3.amazonaws.com/error_messages.gif" alt="Car World Error Message Demo">
+  <br />
+</p>
 
 ## Backend: AWS Serverless
 <div>
@@ -137,7 +153,7 @@ All credit card info is just "42" repeated as needed.
 
 ### CDK: Structure and Deployment
 <p>
-  All of Car World's infrastructure is automatically generated through AWS CDK (<em>infrastructure as Code</em>). 
+  All of Car World's infrastructure is automatically generated through AWS CDK (<em>Infrastructure as Code</em>). 
   The following diagram shows the file hierarchy, as it pertains to the CDK and infra.
 </p>
 
@@ -152,10 +168,7 @@ All credit card info is just "42" repeated as needed.
   |---+ cloudformation to build and deploy the infrastructure stored here
     |
     |--CWCore Stack
-    |---+ CWAPIGW, AuthController, AuthDB
-    |--CWCommerce Stack
-    |---+ CommerceController, CommerceDB
-    |}--(CWForum Stack)?
+    |---+ CWAPIGW, Controllers (Profile, Commerce, Auth), Databases, Secret fetching
   |
   |--tests
     |---+ idk it works on my machine
@@ -223,3 +236,5 @@ command.
 
 Enjoy!
 
+## License
+All code contained in this repository is licensed under the <a href="https://github.com/MatthewMSaucedo/CarWorld/blob/main/license.txt">GNU General Public License v3.0</a>.
