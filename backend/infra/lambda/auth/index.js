@@ -1,12 +1,12 @@
 // Declarations
-import { DynamoDBClient, PutItemCommand, QueryCommand } from "@aws-sdk/client-dynamodb"
-import { GetCommand } from "@aws-sdk/lib-dynamodb"
-import { bcrypt } from 'bcrypt'
-import { crypto } from 'crypto'
-import { jwt } from 'jsonwebtoken'
-import { nanoid } from 'nanoid'
+const { DynamoDBClient, PutItemCommand, QueryCommand } = require("@aws-sdk/client-dynamodb")
+const { GetCommand } = require("@aws-sdk/lib-dynamodb")
+const bcrypt = require('bcrypt')
+const crypto = require('crypto')
+const jwt = require('jsonwebtoken')
 
-// Environment Variables const JWT_SECRET = process.env.jwtSecret
+// Environment Variables
+const JWT_SECRET = process.env.jwtSecret
 const JWT_EXPIRATION_TIME_IN_MINUTES = process.env.jwtExpMinutes
 const USER_TABLE_NAME = process.env.userTableName
 const INVALID_TOKEN_TABLE_NAME = process.env.invalidTokenTableName
@@ -20,7 +20,7 @@ async function isValidPassword(password, hash) {
   return result
 }
 
-async function storeNewUserInDatabase(dbClient, username, hashedPassword, email, referralCode) {
+async function storeNewUserInDatabase(dbClient, username, hashedPassword, email) {
   const putParams = {
     TableName: USER_TABLE_NAME,
     Item: {
@@ -30,8 +30,7 @@ async function storeNewUserInDatabase(dbClient, username, hashedPassword, email,
       email: { S: email },
       type: { S: "standard" },
       joined: { S: new Date().toDateString() },
-      ddp: { N: '0' },
-      referralCode: { S: referralCode }
+      ddp: { N: '0' }
     }
   }
   const command = new PutItemCommand(putParams)
@@ -87,7 +86,9 @@ function validateRegisterRequestInput(requestBody) {
   return true
 }
 
-async function registerRequest(request, dbClient) {
+async function registerRequest(request) {
+  const dbClient = new DynamoDBClient({ region: "us-east-1" })
+
   // Validate input
   try {
     validateLoginRequestInput(request.body)
@@ -108,7 +109,6 @@ async function registerRequest(request, dbClient) {
   const password = request.body.password.toLowerCase()
   const username = request.body.username.toLowerCase()
   const email = request.body.email.toLowerCase()
-  const suppliedReferralCode = request.body.referralCode
 
   // Hash password
   let hashedPassword = ""
@@ -130,13 +130,6 @@ async function registerRequest(request, dbClient) {
   let getUserByUsernameRes = null
   try {
     getUserByUsernameRes = await getUserByUsername(dbClient, username)
-
-    if (getUserByUsernameRes) {
-      return {
-        code: 400,
-        message: `The username, ${username}, is unavailable`,
-      }
-    }
   } catch (error) {
     return {
       code: 500,
@@ -148,32 +141,20 @@ async function registerRequest(request, dbClient) {
       }
     }
   }
-
   try {
-    // Verify referral code if given, and award referrer DDP
-    if (suppliedReferralCode) {
-      processReferralCode(suppliedReferralCode)
+    if (getUserByUsernameRes) {
+      return {
+        code: 400,
+        message: `The username, ${username}, is unavailable`,
+      }
     }
-  } catch (error) {
-      console.log(`SERVER_ERROR: Failed to process Referral Code | ${error}`),
-    }
-  }
 
-  let referralCode = null
-  try {
-    // Generate referral code for new user
-    referralCode = generateReferralCode()
-  } catch (error) {
-    console.log(`SERVER_ERROR: Failed to process Referral Code | ${error}`),
-  }
-
-  try {
     // Store new user in DB
-    await storeNewUserInDatabase(dbClient, username, hashedPassword, email, referralCode)
+    await storeNewUserInDatabase(dbClient, username, hashedPassword, email)
   } catch (error) {
     return {
       code: 500,
-      message: `SERVER_ERROR: Failed to store user creds in db | ${error.message}`,
+      message: `Failed to store user creds in db: ${error.message}`,
       error: {
         title: error.name,
         message: error.message,
@@ -192,17 +173,8 @@ async function registerRequest(request, dbClient) {
   }
 }
 
-// TODO: also probs not async?
-async function processReferralCode(suppliedReferralCode) {
-
-}
-
-// TODO: also probs not async?
-async function generateReferralCode() {
-
-}
-
-async function loginRequest(request, dbClient) {
+async function loginRequest(request) {
+  const dbClient = new DynamoDBClient({ region: "us-east-1" })
   console.log("DEBUG -- Entered Login Request")
 
   // Validate input
@@ -356,8 +328,9 @@ function generateJwtToken(claims, exp_time) {
   return jwtToken
 }
 
-async function refreshRequest(request, dbClient) {
+async function refreshRequest(request) {
   console.log("DEBUG -- Entered Refresh Request")
+  const dbClient = new DynamoDBClient({ region: "us-east-1" })
 
   // Validate input
   let refreshToken
@@ -531,8 +504,6 @@ exports.handler = async(event) => {
       }
   }
 
-  const dbClient = new DynamoDBClient({ region: "us-east-1" })
-
   // Route request to relevant action
   let res = ""
   console.log(request.action)
@@ -540,18 +511,18 @@ exports.handler = async(event) => {
     // Register new user
     case "register":
       console.log("register")
-      res = await registerRequest(request, dbClient)
+      res = await registerRequest(request)
       break
     // Login existing user
     case "login":
       console.log("login")
-      res = await loginRequest(request, dbClient)
+      res = await loginRequest(request)
       console.log("Login Request completed")
       break
     // Refresh authtoken
     case "refresh":
       console.log("refresh")
-      res = await refreshRequest(request, dbClient)
+      res = await refreshRequest(request)
       break
     // Generate guest authtoken
     case "guest":
