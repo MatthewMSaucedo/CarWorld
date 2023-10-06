@@ -355,7 +355,7 @@ export const STORE_ITEMS: CWStoreItem[] = [
     price: 25,
     serverName: 'car world needs me shirt',
     images: [
-      "",
+      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/CAR+WORLD+NEEDS+ME+shirt/car_world_needs_me_main.jpg",
     ],
     description_paragraphs: [
       "Wear this shirt as a true expression of your value and the important role you play among our global community. This shirt is especially recommended to be worn by Members of Car World Nation, although anyone is permitted to wear it.",
@@ -368,7 +368,7 @@ export const STORE_ITEMS: CWStoreItem[] = [
     price: 25,
     serverName: 'i want to go to car world shirt',
     images: [
-      "",
+      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/I+WANT+TO+GO+TO+CAR+WORLD+shirt/I_want_to_go_to_car_world.jpg",
     ],
     description_paragraphs: [
       "Do you want to go to Car World? Then this shirt is for you! Together, we are brought into the collective hope & belief that one day we may become an Apostle of William Banks and journey with him to cross the Bridge to Car World and be forever at peace.",
@@ -377,22 +377,21 @@ export const STORE_ITEMS: CWStoreItem[] = [
     type: CWShoppingItemType["Clothing"]
   },
   {
-    title: 'Save The Attendants',
+    title: 'Quuarux Did the Gas Wars',
     price: 25,
-    serverName: 'save the attendants shirt',
+    serverName: 'quuarux gas wars shirt',
     images: [
-      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/SAVE+THE+ATTENDANTS+shirt/savetheattendants+main.png",
-      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/SAVE+THE+ATTENDANTS+shirt/savetheattendants+model_1.png",
-      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/SAVE+THE+ATTENDANTS+shirt/savetheattendants+model_2.png",
-      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/SAVE+THE+ATTENDANTS+shirt/savetheattendants+model_3.png",
+      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/QUUARUX+shirt/quuarux+main.png",
+      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/QUUARUX+shirt/quuarux+model_1.png",
+      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/QUUARUX+shirt/quuarux+model_2.png",
+      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/QUUARUX+shirt/quuarux+model_3.png"
     ],
     description_paragraphs: [
-      "Attendants are the native species of Car World. They have suffered long enough under Quuarux’ rule. William Banks will bring about The Attendants Revolution when he returns to Car World with his 12 Apostles.",
+      "William Banks is not responsible for Gas Wars I or II. Quuarux is. Wearing this shirt will help remind your friends that this is true.",
       "Artwork by A.T. Pratt"
     ],
     type: CWShoppingItemType["Clothing"]
   },
-  // TODO: Tara's Trinkets Hyperlink
   {
     title: "Magwadi",
     price: 25,
@@ -414,60 +413,40 @@ export const STORE_ITEMS: CWStoreItem[] = [
     type: CWShoppingItemType["Clothing"]
   },
   {
-    title: 'Quuarux Did the Gas Wars',
+    title: "Enter Car World",
     price: 25,
-    serverName: 'quuarux gas wars shirt',
+    serverName: 'enter car world shirt',
     images: [
-      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/QUUARUX+shirt/quuarux+main.png",
-      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/QUUARUX+shirt/quuarux+model_1.png",
-      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/QUUARUX+shirt/quuarux+model_2.png",
-      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/QUUARUX+shirt/quuarux+model_3.png"
+      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/ECW+shirt/ecwshirt+main.png",
+      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/ECW+shirt/ecwshirt+model_1.png",
+      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/ECW+shirt/ecwshirt+model_2.png",
+      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/ECW+shirt/ecwshirt+model_3.png"
     ],
     description_paragraphs: [
-      "William Banks is not responsible for Gas Wars I or II. Quuarux is. Wearing this shirt will help remind your friends that this is true.",
-      "Artwork by A.T. Pratt"
+      "ENTER CAR WORLD (dir. DRK, 2022) premiered at Car World Gala and stars William Banks, Caroline Yost, Chloe Troast, and Tej Khanna.",
+      "Artwork & Hand by Director Russell Katz"
     ],
+    /* hyperLink: { */
+    /* text: "", */
+    /* link: "" */
+    /* } */
     type: CWShoppingItemType["Clothing"]
   },
   {
-    title: 'Quuarux Earrings',
-    price: 30,
-    serverName: 'quuarux earrings',
+    title: 'Save The Attendants',
+    price: 25,
+    serverName: 'save the attendants shirt',
     images: [
-      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/QUUARUX+EARRINGS/q+earrings+main.png",
-      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/QUUARUX+EARRINGS/q+earrings_1.png",
-      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/QUUARUX+EARRINGS/q+earrings_2.png"
+      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/SAVE+THE+ATTENDANTS+shirt/savetheattendants+main.png",
+      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/SAVE+THE+ATTENDANTS+shirt/savetheattendants+model_1.png",
+      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/SAVE+THE+ATTENDANTS+shirt/savetheattendants+model_2.png",
+      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/SAVE+THE+ATTENDANTS+shirt/savetheattendants+model_3.png",
     ],
     description_paragraphs: [
-      "Show queen with these impressionistic danglers every day wherever you want to go. If Quuarux did the Gas Wars then so can you, bitch ;)"
+      "Attendants are the native species of Car World. They have suffered long enough under Quuarux’ rule. William Banks will bring about The Attendants Revolution when he returns to Car World with his 12 Apostles.",
+      "Artwork by A.T. Pratt"
     ],
-    type: CWShoppingItemType["Art"]
-  },
-  {
-    title: 'Car World Emblem Earrings',
-    price: 20,
-    serverName: 'car world emblem earrings',
-    images: [
-      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/QUUARUX+EARRINGS/q+earrings+main.png",
-      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/QUUARUX+EARRINGS/q+earrings_1.png",
-      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/QUUARUX+EARRINGS/q+earrings_2.png"
-    ],
-    description_paragraphs: [
-      "These simple logo studs represent both the planet and the movement. Wear them when you want."
-    ],
-    type: CWShoppingItemType["Art"]
-  },
-  {
-    title: 'Attendant Pendant',
-    price: 10,
-    serverName: 'attendant pendant',
-    images: [
-      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/ATTENDANT+PENDANT/attendant+pendant+only.png",
-    ],
-    description_paragraphs: [
-      "Wear an Attendant around your neck to claim your role in The Attendants Revolution. Together, we can end their genocide."
-    ],
-    type: CWShoppingItemType["Art"]
+    type: CWShoppingItemType["Clothing"]
   },
   {
     title: 'VIP Pass (4-pack)',
@@ -485,19 +464,14 @@ export const STORE_ITEMS: CWStoreItem[] = [
     type: CWShoppingItemType["Art"]
   },
   {
-    title: 'Car World Supper Book',
-    price: 10,
-    serverName: 'car world supper book',
+    title: 'The Artifact',
+    price: 8000,
+    serverName: 'the artifact',
     images: [
-      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/SUPPER+BOOK/supper+book+extra.png",
-      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/SUPPER+BOOK/supper+book+main.png",
-      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/SUPPER+BOOK/supper+book_1.png",
-      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/SUPPER+BOOK/supper+book_2.png",
-      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/SUPPER+BOOK/supper+book_3.png"
+      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/THE+ARTIFACT/theartifact+only.png"
     ],
     description_paragraphs: [
-      "This Book is required to celebrate your own Car World Supper. It contains a guide to our traditions and the words to our songs, written by William Banks and DRK. 19 branches of Car World Nation hosted Suppers this year.",
-      "Artwork by A.T. Pratt"
+      "Proof that William Banks has healing powers. He plunged his head into a vat of molten metal spoons at Car World Supper NYC 2023, and then healed his face. These are the hardened remains, preserved and restored by Furnacier Gus Laughlin."
     ],
     type: CWShoppingItemType["Art"]
   },
@@ -518,18 +492,6 @@ export const STORE_ITEMS: CWStoreItem[] = [
     type: CWShoppingItemType["Art"]
   },
   {
-    title: 'Car World Water',
-    price: 5,
-    serverName: 'car world water',
-    images: [
-      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/CAR+WORLD+WATER/car+world+water+only.png"
-    ],
-    description_paragraphs: [
-      "Water from Car World has the unique ability to detect Mechanics. Spray or toss the contents of this vial onto the skin of a Mechanic to revert their body back to a worm as it appears in Car World."
-    ],
-    type: CWShoppingItemType["Art"]
-  },
-  {
     title: 'Devotion Point',
     price: 1,
     serverName: 'devotion point',
@@ -544,15 +506,110 @@ export const STORE_ITEMS: CWStoreItem[] = [
     type: CWShoppingItemType["Art"]
   },
   {
-    title: 'The Artifact',
-    price: 8000,
-    serverName: 'the artifact',
+    title: 'Car World Supper Book',
+    price: 10,
+    serverName: 'car world supper book',
     images: [
-      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/THE+ARTIFACT/theartifact+only.png"
+      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/SUPPER+BOOK/supper+book+main.png",
+      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/SUPPER+BOOK/supper+book+extra.png",
+      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/SUPPER+BOOK/supper+book_1.png",
+      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/SUPPER+BOOK/supper+book_2.png",
+      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/SUPPER+BOOK/supper+book_3.png"
     ],
     description_paragraphs: [
-      "Proof that William Banks has healing powers. He plunged his head into a vat of molten metal spoons at Car World Supper NYC 2023, and then healed his face. These are the hardened remains, preserved and restored by Furnacier Gus Laughlin."
+      "This Book is required to celebrate your own Car World Supper. It contains a guide to our traditions and the words to our songs, written by William Banks and DRK. 19 branches of Car World Nation hosted Suppers this year.",
+      "Artwork by A.T. Pratt"
     ],
     type: CWShoppingItemType["Art"]
-  } ,
+  },
+  {
+    title: 'Tat Pass Charm Bracelet',
+    price: 55,
+    serverName: 'tat pass charm',
+    images: [
+      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/CHARM+BRACELET/charm+bracelet+main.png",
+      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/CHARM+BRACELET/charm+bracelet+model_2.png"
+    ],
+    description_paragraphs: [
+      "Spice up any outfit with this cute devotional piece! Each charm depicts the Tat Passes brandished on the right arms of William Banks and his Apostles, as per the Bridgekeeper’s demand.",
+      "Artwork by A.T. Pratt"
+    ],
+    type: CWShoppingItemType["Art"]
+  },
+  {
+    title: 'Quuarux Earrings',
+    price: 14,
+    serverName: 'quuarux earrings',
+    images: [
+      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/QUUARUX+EARRINGS/q+earrings+main.png",
+      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/QUUARUX+EARRINGS/q+earrings_1.png",
+      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/QUUARUX+EARRINGS/q+earrings_2.png"
+    ],
+    description_paragraphs: [
+      "Show queen with these impressionistic danglers every day wherever you want to go. If Quuarux did the Gas Wars then so can you, bitch ;)"
+    ],
+    type: CWShoppingItemType["Art"]
+  },
+  {
+    title: 'Car World Emblem Earrings',
+    price: 18,
+    serverName: 'car world emblem earrings',
+    images: [
+      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/LOGO+EARRINGS/logo+earrings+only.png",
+    ],
+    description_paragraphs: [
+      "These simple logo studs represent both the planet and the movement. Wear them when you want."
+    ],
+    type: CWShoppingItemType["Art"]
+  },
+  {
+    title: 'Attendant Pendant',
+    price: 23,
+    serverName: 'attendant pendant',
+    images: [
+      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/ATTENDANT+PENDANT/attendant+pendant+only.png",
+    ],
+    description_paragraphs: [
+      "Wear an Attendant around your neck to claim your role in The Attendants Revolution. Together, we can end their genocide."
+    ],
+    type: CWShoppingItemType["Art"]
+  },
+  {
+    title: 'Attendant Sponsorship Cert.',
+    price: 9,
+    serverName: 'attendant sponsorship',
+    images: [
+      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/ATTENDANT+SPONSORSHIP+CERTIFICATES/attendant+sponshorship+card+only.png"
+    ],
+    description_paragraphs: [
+      "One of these certificates guarantees your explicit responsibility and continuous financial support to insure the survival of the pictured Attendant. Includes real body hair collected from the Attendant in Car World.",
+      "Artwork by A.T. Pratt"
+    ],
+    type: CWShoppingItemType["Art"]
+  },
+  {
+    title: 'William Banks Devotion Candle',
+    price: 12,
+    serverName: 'candle',
+    images: [
+      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/CANDLE/william+candle+only.png"
+    ],
+    description_paragraphs: [
+      "Light up a Devotion Candle to fill a room with the scent of love for William Banks.",
+    ],
+    credits: [{text: "", url: ""}],
+    type: CWShoppingItemType["Art"]
+  },
+  {
+    title: 'Car World Water',
+    price: 5,
+    serverName: 'car world water',
+    images: [
+      "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/CAR+WORLD+WATER/car+world+water+only.png"
+    ],
+    description_paragraphs: [
+      "Water from Car World has the unique ability to detect Mechanics. Spray or toss the contents of this vial onto the skin of a Mechanic to revert their body back to a worm as it appears in Car World."
+    ],
+    type: CWShoppingItemType["Art"]
+  },
 ]

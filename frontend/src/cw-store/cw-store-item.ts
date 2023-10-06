@@ -5,6 +5,10 @@ export interface CWStoreItem {
     images: any[]
     description_paragraphs: string[]
     type: CWShoppingItemType
+    credits?: {
+        text: string,
+        url: string
+    }[]
 }
 
 export enum CWShoppingItemType {
