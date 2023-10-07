@@ -1,9 +1,10 @@
 // Declarations
-const { DynamoDBClient, PutItemCommand, QueryCommand } = require("@aws-sdk/client-dynamodb")
-const { GetCommand } = require("@aws-sdk/lib-dynamodb")
-const bcrypt = require('bcrypt')
-const crypto = require('crypto')
-const jwt = require('jsonwebtoken')
+import { DynamoDBClient, PutItemCommand, QueryCommand } from "@aws-sdk/client-dynamodb"
+import { GetCommand } from "@aws-sdk/lib-dynamodb"
+import { bcrypt } from 'bcrypt'
+import { crypto } from 'crypto'
+import { jwt } from 'jsonwebtoken'
+import { nanoid } from 'nanoid'
 
 // Environment Variables
 const JWT_SECRET = process.env.jwtSecret
@@ -11,6 +12,8 @@ const JWT_EXPIRATION_TIME_IN_MINUTES = process.env.jwtExpMinutes
 const USER_TABLE_NAME = process.env.userTableName
 const INVALID_TOKEN_TABLE_NAME = process.env.invalidTokenTableName
 const MONTH_IN_MINUTES = "43200"
+
+const dbClient = new DynamoDBClient({ region: "us-east-1" })
 
 /************************************************************************#
 |                    Car World Auth Helpers
@@ -20,18 +23,23 @@ async function isValidPassword(password, hash) {
   return result
 }
 
-async function storeNewUserInDatabase(dbClient, username, hashedPassword, email) {
+async function storeNewUserInDatabase(dbClient, username, hashedPassword, email, referralCode) {
+  let userItem = {
+    id: { S: crypto.randomUUID() },
+    username: { S: username },
+    password: { S: hashedPassword },
+    email: { S: email },
+    type: { S: "standard" },
+    joined: { S: new Date().toDateString() },
+    ddp: { N: '0' }
+  }
+  if (referralCode) {
+    userItem.referralCode = { S: referralCode }
+  }
+
   const putParams = {
     TableName: USER_TABLE_NAME,
-    Item: {
-      id: { S: crypto.randomUUID() },
-      username: { S: username },
-      password: { S: hashedPassword },
-      email: { S: email },
-      type: { S: "standard" },
-      joined: { S: new Date().toDateString() },
-      ddp: { N: '0' }
-    }
+    Item: userItem
   }
   const command = new PutItemCommand(putParams)
   await dbClient.send(command)
@@ -86,9 +94,7 @@ function validateRegisterRequestInput(requestBody) {
   return true
 }
 
-async function registerRequest(request) {
-  const dbClient = new DynamoDBClient({ region: "us-east-1" })
-
+async function registerRequest(request, dbClient) {
   // Validate input
   try {
     validateLoginRequestInput(request.body)
@@ -109,6 +115,7 @@ async function registerRequest(request) {
   const password = request.body.password.toLowerCase()
   const username = request.body.username.toLowerCase()
   const email = request.body.email.toLowerCase()
+  const referralCode = request.body?.referralCode
 
   // Hash password
   let hashedPassword = ""
@@ -117,23 +124,39 @@ async function registerRequest(request) {
   } catch (error) {
     return {
       code: 500,
-      message: `Failed to hash password: ${error.message}`,
+      message: `SERVER_ERROR: Failed to hash password: ${error.message}`,
       error: {
         title: error.name,
         message: error.message,
         stack: error.stack
       }
     }
+  }
+
+   // Verify referral code if given, and award referrer DDP
+  try {
+   if (referralCode) {
+     processReferralCode(suppliedReferralCode)
+   }
+  } catch (error) {
+    console.log(`SERVER_ERROR: Failed to process Referral Code | ${error}`),
   }
 
   // Check if requested username is available
   let getUserByUsernameRes = null
   try {
     getUserByUsernameRes = await getUserByUsername(dbClient, username)
+
+    if (getUserByUsernameRes) {
+      return {
+        code: 400,
+        message: `The username, ${username}, is unavailable`,
+      }
+    }
   } catch (error) {
     return {
       code: 500,
-      message: `Failed to lookup supplied username, ${username}, in db: ${error.message}`,
+      message: `SERVER_ERROR: Failed to lookup supplied username, ${username}, in db: ${error.message}`,
       error: {
         title: error.name,
         message: error.message,
@@ -141,20 +164,14 @@ async function registerRequest(request) {
       }
     }
   }
-  try {
-    if (getUserByUsernameRes) {
-      return {
-        code: 400,
-        message: `The username, ${username}, is unavailable`,
-      }
-    }
 
-    // Store new user in DB
-    await storeNewUserInDatabase(dbClient, username, hashedPassword, email)
+  // Store new user in DB
+  try {
+    await storeNewUserInDatabase(dbClient, username, hashedPassword, email, referralCode)
   } catch (error) {
     return {
       code: 500,
-      message: `Failed to store user creds in db: ${error.message}`,
+      message: `SERVER_ERROR: Failed to store user creds in db: ${error.message}`,
       error: {
         title: error.name,
         message: error.message,
@@ -173,8 +190,17 @@ async function registerRequest(request) {
   }
 }
 
-async function loginRequest(request) {
-  const dbClient = new DynamoDBClient({ region: "us-east-1" })
+// TODO: also probs not async?
+async function processReferralCode(suppliedReferralCode) {
+  // nanoid lookup, award DDP
+}
+
+// TODO: also probs not async?
+async function generateReferralCode() {
+  // create nanoID
+}
+
+async function loginRequest(request, dbClient) {
   console.log("DEBUG -- Entered Login Request")
 
   // Validate input
@@ -328,9 +354,8 @@ function generateJwtToken(claims, exp_time) {
   return jwtToken
 }
 
-async function refreshRequest(request) {
+async function refreshRequest(request, dbClient) {
   console.log("DEBUG -- Entered Refresh Request")
-  const dbClient = new DynamoDBClient({ region: "us-east-1" })
 
   // Validate input
   let refreshToken
@@ -511,18 +536,18 @@ exports.handler = async(event) => {
     // Register new user
     case "register":
       console.log("register")
-      res = await registerRequest(request)
+      res = await registerRequest(request, dbClient)
       break
     // Login existing user
     case "login":
       console.log("login")
-      res = await loginRequest(request)
+      res = await loginRequest(request, dbClient)
       console.log("Login Request completed")
       break
     // Refresh authtoken
     case "refresh":
       console.log("refresh")
-      res = await refreshRequest(request)
+      res = await refreshRequest(request, dbClient)
       break
     // Generate guest authtoken
     case "guest":

@@ -35,6 +35,7 @@ type Inputs = {
   email: string
   username: string
   password: string
+  referralCode: string
 }
 
 function CWAuthComponent() {
@@ -87,6 +88,10 @@ function CWAuthComponent() {
         minLength: { value: 6, message: "Password must be at least 6 characters long" },
         maxLength: { value: 64, message: "Password cannot exceed 64 characters long" },
     }
+    const referralCodeRequirements = {
+        required: { value: false, message: "ReferralCode not required"},
+        length: { value: 21, message: "Referral Code is improperly formed" },
+    }
 
     // ERROR HANDLING
     // This section ensure failed form submissions spit out specific errors,
@@ -112,6 +117,9 @@ function CWAuthComponent() {
         if(errors?.devotion) {
             notify(errors?.devotion?.message || "")
         }
+        if(errors?.referralCode) {
+            notify(errors?.devotion?.message || "")
+        }
     }
 
     // API CALLS
@@ -129,14 +137,23 @@ function CWAuthComponent() {
 
         return loginRes
     }
-    const registerApiCall = async (username: string, password: string, email: string) => {
+    const registerApiCall = async (username: string, password: string, email: string, referralCode?: string) => {
+        let registerBody: {username: string, password: string, email: string, referralCode?: string} = {
+            username: username,
+            password: password,
+            email: email
+        }
+        if (referralCode) {
+            registerBody.referralCode = referralCode
+        }
+
         const registerRawApiRes = await fetch(CW_API_ENDPOINTS.auth.register, {
             method: "POST",
             headers: {
             "Content-Type": "application/json",
             "Access-Control-Allow-Origin": "*"
             },
-            body: JSON.stringify({ username: username, password: password, email: email }),
+            body: JSON.stringify(registerBody),
         })
         const registerRes = await registerRawApiRes.json()
 
@@ -292,6 +309,19 @@ function CWAuthComponent() {
                             className="auth-form-input-field"
                             placeholder="e.g. kingmoon4"
                             {...register("password", passwordRequirements)}
+                        />
+                    </div>
+
+                    { /* Referral Code */ }
+                    <div className="auth-form-input">
+                        <label className="auth-form-input-label">
+                            Referral Code (optional)
+                        </label>
+                        <input
+                            type="username"
+                            className="auth-form-input-field"
+                            placeholder="e.g. 4f90d13a42"
+                            {...register("referralCode", referralCodeRequirements)}
                         />
                     </div>
 
