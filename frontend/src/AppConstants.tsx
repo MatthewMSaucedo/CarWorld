@@ -450,7 +450,7 @@ export const STORE_ITEMS: CWStoreItem[] = [
   },
   {
     title: 'VIP Pass (4-pack)',
-    price: 10,
+    price: 12,
     serverName: 'vip pass',
     images: [
       "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/VIP+PASSES/vip+pass+model_2.png",
@@ -477,7 +477,7 @@ export const STORE_ITEMS: CWStoreItem[] = [
   },
   {
     title: 'Pamphlet Bundle',
-    price: 10,
+    price: 9,
     serverName: 'pamphlet bundle',
     images: [
       "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/PAMPHLET+PACK/pamphlets+main.png",
@@ -525,7 +525,7 @@ export const STORE_ITEMS: CWStoreItem[] = [
   {
     title: 'Tat Pass Charm Bracelet',
     price: 55,
-    serverName: 'tat pass charm',
+    serverName: 'tat pass bracelet',
     images: [
       "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/CHARM+BRACELET/charm+bracelet+main.png",
       "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/CHARM+BRACELET/charm+bracelet+model_2.png"
@@ -588,9 +588,9 @@ export const STORE_ITEMS: CWStoreItem[] = [
     type: CWShoppingItemType["Art"]
   },
   {
-    title: 'William Banks Devotion Candle',
+    title: 'Devotion Candle',
     price: 12,
-    serverName: 'candle',
+    serverName: 'william banks devotional candle',
     images: [
       "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/CANDLE/william+candle+only.png"
     ],
@@ -602,7 +602,7 @@ export const STORE_ITEMS: CWStoreItem[] = [
   },
   {
     title: 'Car World Water',
-    price: 5,
+    price: 4.50,
     serverName: 'car world water',
     images: [
       "https://cw-merch-images.s3.amazonaws.com/CAR+WORLD+WEBSITE+STILLS/CAR+WORLD+WATER/car+world+water+only.png"

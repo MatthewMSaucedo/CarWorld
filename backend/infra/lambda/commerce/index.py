@@ -26,6 +26,8 @@ SES_CLIENT = boto3.client("ses")
 
 # NOTE: Must echo changes here to Stripe_Abrev_Name_Map
 COMMODITY_VALUE_MAP = {
+    "car world needs me shirt": 2500,
+    "i want to go to car world shirt": 2500,
     "save the attendants shirt": 2500,
     "magwadi shirt": 2500,
     "quuarux gas wars shirt": 2500,
@@ -47,6 +49,8 @@ COMMODITY_VALUE_MAP = {
 # NOTE: Changes to price map must reflect here
 STRIPE_ABREVIATED_NAME_MAP = {
     # Forward
+    "cnm": "car world needs me shirt",
+    "icw": "i want to go to car world shirt",
     "sa": "save the attendants shirt",
     "ms": "magwadi shirt",
     "qg": "quuarux gas wars shirt",
@@ -56,6 +60,7 @@ STRIPE_ABREVIATED_NAME_MAP = {
     "ce": "car world emblem earrings",
     "dc": "william banks devotional candle",
     "ap": "attendant pendant",
+    "as": "attendant sponsorship",
     "vp": "vip pass",
     "sb": "car world supper book",
     "bk": "car world supper book 10 pack",
@@ -65,6 +70,8 @@ STRIPE_ABREVIATED_NAME_MAP = {
     "a": "the artifact",
     "dp": "devotion point",
     # Backward
+    "car world needs me shirt": "cnm",
+    "i want to go to car world shirt": "icw",
     "save the attendants shirt": "sa",
     "magwadi shirt": "ms",
     "quuarux gas wars shirt": "qg",
@@ -74,6 +81,7 @@ STRIPE_ABREVIATED_NAME_MAP = {
     "car world emblem earrings": "ce",
     "william banks devotional candle": "dc",
     "attendant pendant": "ap",
+    "attendant sponsorship": "as",
     "vip pass": "vp",
     "car world supper book": "sb",
     "car world supper book 10 pack": "bk",
