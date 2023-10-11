@@ -1,6 +1,7 @@
 // Styles
 import '../../App.scss'
 import './stripe-payment.scss'
+import carWorldImg from '../../logo.svg'
 
 // Local Imports
 import { CWShoppingCart, CWShoppingCartEntry } from '../cw-shopping-cart'
@@ -12,13 +13,14 @@ import { CWUser } from '../../my-carworld/auth/models/cw-user'
 // React Hooks
 import { useState, useEffect } from "react"
 import { useSelector } from 'react-redux'
-import {useLocation} from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { RootState } from '../../redux/store'
 
 // 3rd Party Lib
 import { loadStripe, StripeElementsOptions } from '@stripe/stripe-js'
 import { Elements } from "@stripe/react-stripe-js"
 import CWCommonLoadingComponent from '../../cw-common/components/loading/cw-common-loading-component'
+import { ToastContainer, toast } from 'react-toastify'
 
 // Initialize Stripe
 // TODO: Resolve issue wherein this AppConstant reference fails due to
@@ -49,6 +51,18 @@ function StripePaymentComponent() {
     // Redux State variable
     let { cwShoppingCart } = useSelector((state: RootState) => state)
     let { cwUser }: UseSelectorUser = useSelector((state: RootState) => state)
+    const navigate = useNavigate()
+
+    // TODO: Refactor as custom hook
+    // Toast
+    const notify = (input: string) => {
+        toast.error(input, {
+            theme: "dark",
+            position: "top-right",
+            // TODO: Bring up with William - use img of his head, not Logo?
+            icon: ({theme, type}) =>  <img src={carWorldImg}/>
+        })
+    }
 
     // Formatting helper for server
     const convertFrontendCartToBackendCart = (cwShoppingCart: CWShoppingCart) => {
@@ -115,11 +129,15 @@ function StripePaymentComponent() {
             // Create PaymentIntent
             const paymentIntentPayload = { cart: formattedShoppingCart }
             const initPaymentIntentRes = await initiatePaymentIntentApiCall(paymentIntentPayload)
-
-            console.log(initPaymentIntentRes)
-            if (initPaymentIntentRes.message === "Forbidden") {
-                // TODO: Toast? Then nav to cart again?
-                console.log("401 Error")
+            if (initPaymentIntentRes.code !== 200) {
+                // NOTE: Just in case
+                if (initPaymentIntentRes.message === "Forbidden") {
+                    notify("Auth token invalid. Please logout/login")
+                }
+                else {
+                    notify(initPaymentIntentRes.message)
+                }
+                navigate('/', { replace: true })
             }
 
             // cache email if user is a guest
@@ -130,8 +148,8 @@ function StripePaymentComponent() {
                 }
                 const cacheEmailRes = await cacheEmailApiCall(cacheEmailPayload)
                 if (cacheEmailRes.code !== 200) {
-                    // TODO: Toast? Then nav to cart again?
-                    console.log("401 Error")
+                    notify(cacheEmailRes.message)
+                    navigate('/', { replace: true })
                 }
             }
 
@@ -154,13 +172,17 @@ function StripePaymentComponent() {
     // HTML
     return (
         <div className="">
-        { clientSecret ? <></> : <CWCommonLoadingComponent /> }
-        {clientSecret && (
-            <Elements options={options} stripe={stripePromise}>
-                <CheckoutForm clientSecret={clientSecret} />
-                {/* <AddressForm /> */}
-            </Elements>
-        )}
+            {/* Toast */}
+            <ToastContainer
+                position="top-right"
+                toastStyle={{}}/>
+            { clientSecret ? <></> : <CWCommonLoadingComponent /> }
+            {clientSecret && (
+                <Elements options={options} stripe={stripePromise}>
+                    <CheckoutForm clientSecret={clientSecret} />
+                    {/* <AddressForm /> */}
+                </Elements>
+            )}
         </div>
     )
 }

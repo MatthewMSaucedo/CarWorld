@@ -51,6 +51,7 @@ function CWAuthComponent() {
     // Redux
     const dispatch = useDispatch()
 
+    // TODO: Refactor as custom hook
     // Toast
     const notify = (input: string) => {
         toast.error(input, {

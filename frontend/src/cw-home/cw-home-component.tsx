@@ -8,9 +8,6 @@ import CWStoreComponent from '../cw-store/cw-store-component'
 // Yt player
 import ReactPlayer from 'react-player'
 
-// React
-import React from 'react'
-
 
 function CWHomeComponent() {
 
