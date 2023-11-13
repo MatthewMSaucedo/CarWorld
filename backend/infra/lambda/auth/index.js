@@ -1,10 +1,10 @@
 // Declarations
-import { DynamoDBClient, PutItemCommand, QueryCommand } from "@aws-sdk/client-dynamodb"
-import { GetCommand } from "@aws-sdk/lib-dynamodb"
-import { bcrypt } from 'bcrypt'
-import { crypto } from 'crypto'
-import { jwt } from 'jsonwebtoken'
-import { nanoid } from 'nanoid'
+const { DynamoDBClient, PutItemCommand, QueryCommand } = require("@aws-sdk/client-dynamodb")
+const { GetCommand, UpdateCommand } = require("@aws-sdk/lib-dynamodb")
+const bcrypt = require('bcrypt')
+const crypto = require('crypto')
+const jwt = require('jsonwebtoken')
+const { nanoid } = require('nanoid')
 
 // Environment Variables
 const JWT_SECRET = process.env.jwtSecret
@@ -23,18 +23,17 @@ async function isValidPassword(password, hash) {
   return result
 }
 
-async function storeNewUserInDatabase(dbClient, username, hashedPassword, email, referralCode) {
+async function storeNewUserInDatabase(dbClient, username, hashedPassword, email, referralCode, ddp) {
   let userItem = {
     id: { S: crypto.randomUUID() },
     username: { S: username },
     password: { S: hashedPassword },
     email: { S: email },
     type: { S: "standard" },
+    referral: { S: referralCode },
     joined: { S: new Date().toDateString() },
-    ddp: { N: '0' }
-  }
-  if (referralCode) {
-    userItem.referralCode = { S: referralCode }
+    ddp: { N: ddp.toString() },
+    cwNation: { BOOL: false }
   }
 
   const putParams = {
@@ -62,6 +61,38 @@ async function getUserByUsername(dbClient, username) {
   // TODO: Refactor to check Size prop > 0 first
   //       Luckily this doesn't crash when no items present...
   return getRes.Items[0]
+}
+
+async function getUserByReferralCode(dbClient, referral) {
+  const getParams = {
+    ExpressionAttributeValues: {
+      ":r": { S: referral }
+    },
+    KeyConditionExpression: "referral = :r",
+    TableName: USER_TABLE_NAME,
+    IndexName: "referral-lookup-index"
+  }
+  const command = new QueryCommand(getParams)
+  const getRes = await dbClient.send(command)
+
+  // TODO: Refactor to check Size prop > 0 first
+  //       Luckily this doesn't crash when no items present...
+  console.log(getRes.Items[0])
+  return getRes.Items[0]
+}
+
+async function awardUserDDP(dbClient, userId, ddp) {
+  const updateParams = {
+    TableName: USER_TABLE_NAME,
+    Key: { "id": userId },
+    UpdateExpression: "set ddp = :d",
+    ExpressionAttributeValues: {
+      ":d": ddp
+    }
+  }
+  const command = new UpdateCommand(updateParams)
+  const updateRes = await dbClient.send(command)
+  console.log(updateRes)
 }
 
 function validateLoginRequestInput(requestBody) {
@@ -115,7 +146,7 @@ async function registerRequest(request, dbClient) {
   const password = request.body.password.toLowerCase()
   const username = request.body.username.toLowerCase()
   const email = request.body.email.toLowerCase()
-  const referralCode = request.body?.referralCode
+  const suppliedReferralCode = request.body?.referralCode
 
   // Hash password
   let hashedPassword = ""
@@ -134,12 +165,16 @@ async function registerRequest(request, dbClient) {
   }
 
    // Verify referral code if given, and award referrer DDP
+  let ddpAward = 0
   try {
-   if (referralCode) {
-     processReferralCode(suppliedReferralCode)
-   }
+    if (suppliedReferralCode) {
+      referralSuccess = await processReferralCode(dbClient, suppliedReferralCode)
+      if (referralSuccess) {
+        ddpAward = 3
+      }
+    }
   } catch (error) {
-    console.log(`SERVER_ERROR: Failed to process Referral Code | ${error}`),
+    console.log(`SERVER_ERROR: Failed to process Referral Code | ${error}`)
   }
 
   // Check if requested username is available
@@ -150,7 +185,7 @@ async function registerRequest(request, dbClient) {
     if (getUserByUsernameRes) {
       return {
         code: 400,
-        message: `The username, ${username}, is unavailable`,
+        message: `The username, ${username}, is unavailable`
       }
     }
   } catch (error) {
@@ -165,9 +200,12 @@ async function registerRequest(request, dbClient) {
     }
   }
 
+  // Generate referral code for user (maybe not async?)
+  referralCode = generateReferralCode()
+
   // Store new user in DB
   try {
-    await storeNewUserInDatabase(dbClient, username, hashedPassword, email, referralCode)
+    await storeNewUserInDatabase(dbClient, username, hashedPassword, email, referralCode, ddpAward)
   } catch (error) {
     return {
       code: 500,
@@ -190,14 +228,31 @@ async function registerRequest(request, dbClient) {
   }
 }
 
-// TODO: also probs not async?
-async function processReferralCode(suppliedReferralCode) {
-  // nanoid lookup, award DDP
+async function processReferralCode(dbClient, suppliedReferralCode) {
+  // Obtain user by referral code
+  let referrer = null
+  try {
+    referrer = await getUserByReferralCode(dbClient, suppliedReferralCode)
+  } catch (error) {
+    console.log(`SERVER_WARN: Failed to grab user by supplied referralCode: ${error}`)
+    return false
+  }
+
+  // Award DDP to referrer
+  const newDDP = 5 + Number(referrer.ddp.N)
+  console.log(`Awarding 5 DDP to user${referrer.id.S} | new DDP total: ${newDDP}`)
+  try {
+    await awardUserDDP(dbClient, referrer.id.S, newDDP)
+  } catch (error) {
+    console.log(`SERVER_ERROR: Failed to award referrer:${referrer.id.S} with DDP: ${error}`)
+    return false
+  }
+
+  return true
 }
 
-// TODO: also probs not async?
-async function generateReferralCode() {
-  // create nanoID
+function generateReferralCode() {
+    return nanoid(10)
 }
 
 async function loginRequest(request, dbClient) {
@@ -317,7 +372,8 @@ async function loginRequest(request, dbClient) {
           userType: getUserByUsernameRes.type.S,
           ddp: getUserByUsernameRes.ddp.N,
           joined: getUserByUsernameRes.joined.S,
-          tokens: jwtTokens
+          tokens: jwtTokens,
+          referral: getUserByUsernameRes.referral.S
         }
       }
     } catch (error) {
@@ -524,7 +580,7 @@ exports.handler = async(event) => {
           error: {
             title: error.name,
             message: error.message,
-            stack: error.stack,
+            stack: error.stack
           }
       }
   }

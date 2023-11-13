@@ -200,8 +200,9 @@ def get_cw_ddp_tier_list_and_rank(user_id, dynamo_client):
             "error": error,
         }
 
+    # Sort users by DDP & also obtain formatted User record of the caller
     try:
-        sorted_user_list = sort_users_desc_ddp(cw_users)
+        sorted_user_list, caller_user = sort_users_descending_ddp(cw_users, user_id)
     except Exception as e:
         error = {
             "message": str(e),
@@ -214,11 +215,10 @@ def get_cw_ddp_tier_list_and_rank(user_id, dynamo_client):
             "error": error,
         }
 
+    # Determine top x users for tierlist
     try:
-        # Format commodities for FE
-        ddp_top_x, caller_ddp_rank = ddp_top_x_list_from_users_and_caller_rank(
+        ddp_top_x = ddp_top_x_list_from_users(
             sorted_user_list=sorted_user_list,
-            caller_id=user_id,
             x=NUMBER_OF_USERS_RANKED,
         )
     except Exception as e:
@@ -236,7 +236,7 @@ def get_cw_ddp_tier_list_and_rank(user_id, dynamo_client):
     return {
         "code": 200,
         "message": "Successfully retreived ddp data",
-        "body": {"ddpTierList": ddp_top_x, "userDdpRank": caller_ddp_rank},
+        "body": {"ddpTierList": ddp_top_x, "callerUser": caller_user},
     }
 
 
@@ -247,9 +247,10 @@ def get_cw_ddp_tier_list_and_rank(user_id, dynamo_client):
 #  3  cwNationMember: boolean
 #  4  rank: number,
 # }
-def sort_users_desc_ddp(cw_users):
+def sort_users_descending_ddp(cw_users, caller_id):
     user_tuple_list = []
     sorted_users = []
+    caller_user = None
 
     for user in cw_users:
         # True if nation member, False otherwise
@@ -260,43 +261,42 @@ def sort_users_desc_ddp(cw_users):
                 user["ddp"]["N"],  # tuples are sorted by first element
                 user["id"]["S"],
                 user["username"]["S"],
+                user["referral"]["S"],
                 cw_nation,
-                None,
             ]
         )
         user_tuple_list.append(user_as_tuple)
 
+    # TODO: Refactor this logic to just use a heap of size k,
+    #       where k = top k users we are calling for.
+    #       Would bring space complexity down to logk.
     sorted_users_tuple_list = sorted(user_tuple_list, reverse=True)
-    for user_tuple in sorted_users_tuple_list:
+    for rank_zero_idx, user_tuple in enumerate(sorted_users_tuple_list):
         sorted_users.append(
             {
                 "ddp": int(user_tuple[0]),
                 "userId": user_tuple[1],
                 "username": user_tuple[2],
-                "cwNationMember": user_tuple[3],
-                "rank": None,
+                "referral": user_tuple[3],
+                "cwNationMember": user_tuple[4],
+                "rank": rank_zero_idx + 1,
             }
         )
+        if user_tuple[1] == caller_id:
+            caller_user = sorted_users[-1]
 
-    return sorted_users
+    return sorted_users, caller_user
 
 
-def ddp_top_x_list_from_users_and_caller_rank(sorted_user_list, caller_id, x):
+def ddp_top_x_list_from_users(sorted_user_list, x):
     top_x_user_list = []
-    caller_ddp_and_rank = None
     for index, user in enumerate(sorted_user_list):
-        user["rank"] = index + 1
+        top_x_user_list.append(user)
 
-        if user["userId"] == caller_id:
-            caller_ddp_rank = user
+        if index == x:
+            break
 
-        if index < x:
-            top_x_user_list.append(user)
-        else:
-            if caller_ddp_rank != None:
-                break
-
-    return top_x_user_list, caller_ddp_rank
+    return top_x_user_list
 
 
 ########################################################
