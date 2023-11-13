@@ -1,3 +1,7 @@
+// TODO:
+//    Add Rank to UI
+//    Add Referral to UI
+
 // Local code
 import CWCommonNavbarComponent from "../../cw-common/components/navbar/cw-common-navbar-component"
 import { CWUser } from "../auth/models/cw-user"
@@ -41,6 +45,7 @@ export interface CWDdpRank {
     ddp: number,
     userId: number,
     username: string,
+    referral: string,
     cwNationMember: boolean
     rank: number,
 }
@@ -53,8 +58,9 @@ function CWProfileComponent() {
     // Stateful hooks
     //   Change to loading-screen while we wait on API calls
     const [apiIsLoading, setApiIsLoading] = useState(false);
-    //   Fetch User DDP on page load, as this can change
+    //   Fetch User DDP and Rank on page load, as this can change
     const [userDdp, setUserDdp] = useState(0);
+    const [userRank, setUserRank] = useState(0);
 
     useEffect(() => {
         (async () => {
@@ -70,9 +76,10 @@ function CWProfileComponent() {
             }
             // Parse login response
             const ddpRankTopTwenty: CWDdpRank[] = ddpRankRes.body.ddpTierList
-            const userDdpRank: CWDdpRank = ddpRankRes.body.userDdpRank
+            const userRecord: CWDdpRank = ddpRankRes.body.callerUser
 
-            setUserDdp(userDdpRank.ddp)
+            setUserDdp(userRecord.ddp)
+            setUserRank(userRecord.rank)
 
             let ddpDataRows: any[] = []
             ddpRankTopTwenty.forEach((entry) => {
@@ -252,6 +259,13 @@ function CWProfileComponent() {
                     </button>
                 </div>
 
+                {/* Referral Code */}
+                {/* <div className="my-carworld-card">
+                    <div className="card-content">
+                    <p>Referral Code: {cwUser.referral}</p>
+                    </div>
+                    </div>
+                  */}
                 {/* Footer */}
                 { CWFooterComponent() }
             </div>

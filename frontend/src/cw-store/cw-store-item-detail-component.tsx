@@ -271,6 +271,17 @@ function CWStoreItemDetailComponent() {
     )
   })
 
+  let credits = null
+  if (cwStoreItem.credits) {
+    credits = cwStoreItem.credits.map((credit) => {
+      return (
+        <p className="cw-product-description-paragraph">
+          <a href={credit.url}>{credit.text}</a>
+        </p>
+      )
+    })
+  }
+
   // Media query
   const isSmallDevice = useMediaQuery("only screen and (max-width : 768px)");
   const isMediumDevice = useMediaQuery(
@@ -308,6 +319,9 @@ function CWStoreItemDetailComponent() {
 
             { /* Description */ }
             { productDescription }
+
+            { /* Hyperlink credits, if applicable */ }
+            { credits }
 
             {/* Size selector, if applicable */}
             { sizeForm }

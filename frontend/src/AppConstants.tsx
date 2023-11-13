@@ -388,9 +388,12 @@ export const STORE_ITEMS: CWStoreItem[] = [
     ],
     description_paragraphs: [
       "William Banks is not responsible for Gas Wars I or II. Quuarux is. Wearing this shirt will help remind your friends that this is true.",
-      "Artwork by A.T. Pratt"
     ],
-    type: CWShoppingItemType["Clothing"]
+    type: CWShoppingItemType["Clothing"],
+    credits: [{
+        text: "Artwork by A.T. Pratt",
+        url: "https://atpratt.net/"
+    }]
   },
   {
     title: "Magwadi",
@@ -444,9 +447,12 @@ export const STORE_ITEMS: CWStoreItem[] = [
     ],
     description_paragraphs: [
       "Attendants are the native species of Car World. They have suffered long enough under Quuarux’ rule. William Banks will bring about The Attendants Revolution when he returns to Car World with his 12 Apostles.",
-      "Artwork by A.T. Pratt"
     ],
-    type: CWShoppingItemType["Clothing"]
+    type: CWShoppingItemType["Clothing"],
+    credits: [{
+        text: "Artwork by A.T. Pratt",
+        url: "https://atpratt.net/"
+    }]
   },
   {
     title: 'VIP Pass (4-pack)',
@@ -518,9 +524,12 @@ export const STORE_ITEMS: CWStoreItem[] = [
     ],
     description_paragraphs: [
       "This Book is required to celebrate your own Car World Supper. It contains a guide to our traditions and the words to our songs, written by William Banks and DRK. 19 branches of Car World Nation hosted Suppers this year.",
-      "Artwork by A.T. Pratt"
     ],
-    type: CWShoppingItemType["Art"]
+    type: CWShoppingItemType["Art"],
+    credits: [{
+        text: "Artwork by A.T. Pratt",
+        url: "https://atpratt.net/"
+    }]
   },
   {
     title: 'Tat Pass Charm Bracelet',
@@ -532,9 +541,12 @@ export const STORE_ITEMS: CWStoreItem[] = [
     ],
     description_paragraphs: [
       "Spice up any outfit with this cute devotional piece! Each charm depicts the Tat Passes brandished on the right arms of William Banks and his Apostles, as per the Bridgekeeper’s demand.",
-      "Artwork by A.T. Pratt"
     ],
-    type: CWShoppingItemType["Art"]
+    type: CWShoppingItemType["Art"],
+    credits: [{
+        text: "Made by Tara's Tiny Trinkets",
+        url: "https://www.tarastinytrinkets.com/"
+    }]
   },
   {
     title: 'Quuarux Earrings',
@@ -548,7 +560,11 @@ export const STORE_ITEMS: CWStoreItem[] = [
     description_paragraphs: [
       "Show queen with these impressionistic danglers every day wherever you want to go. If Quuarux did the Gas Wars then so can you, bitch ;)"
     ],
-    type: CWShoppingItemType["Art"]
+    type: CWShoppingItemType["Art"],
+    credits: [{
+        text: "Made by Tara's Tiny Trinkets",
+        url: "https://www.tarastinytrinkets.com/"
+    }]
   },
   {
     title: 'Car World Emblem Earrings',
@@ -572,7 +588,11 @@ export const STORE_ITEMS: CWStoreItem[] = [
     description_paragraphs: [
       "Wear an Attendant around your neck to claim your role in The Attendants Revolution. Together, we can end their genocide."
     ],
-    type: CWShoppingItemType["Art"]
+    type: CWShoppingItemType["Art"],
+    credits: [{
+        text: "Made by Tara's Tiny Trinkets",
+        url: "https://www.tarastinytrinkets.com/"
+    }]
   },
   {
     title: 'Attendant Sponsorship Cert.',
@@ -583,9 +603,12 @@ export const STORE_ITEMS: CWStoreItem[] = [
     ],
     description_paragraphs: [
       "One of these certificates guarantees your explicit responsibility and continuous financial support to insure the survival of the pictured Attendant. Includes real body hair collected from the Attendant in Car World.",
-      "Artwork by A.T. Pratt"
     ],
-    type: CWShoppingItemType["Art"]
+    type: CWShoppingItemType["Art"],
+    credits: [{
+        text: "Artwork by A.T. Pratt",
+        url: "https://atpratt.net/"
+    }]
   },
   {
     title: 'Devotion Candle',

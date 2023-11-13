@@ -11,6 +11,7 @@ export type CWReduxLoginUserReqBody = {
     authToken: string,
     refreshToken: string,
     isLoggedIn: boolean,
+    referral: string,
     joined: string,
     ddp: number
 }
@@ -35,6 +36,7 @@ export class CWUser {
 
     // Digital Devotion Points
     ddp: number
+    referral: string
 
     // Metadata, stringified Date() obj
     joined?: string
@@ -46,12 +48,14 @@ export class CWUser {
         isLoggedIn: boolean,
         authToken: string,
         refreshToken: string,
+        referral: string,
         joined?: string
     ) {
         this.username = username
         this.userType = userType
 
         this.ddp = ddp
+        this.referral = referral
 
         this.isLoggedIn = isLoggedIn
 
@@ -72,18 +76,20 @@ export class CWUser {
             loginReq.isLoggedIn,
             loginReq.authToken,
             loginReq.refreshToken,
+            loginReq.referral,
             loginReq.joined,
         )
     }
 
     static staticUserFromGuestToken(guestToken: string): CWUser {
         return new CWUser(
-            "guest",
-            CWUserType.Guest,
-            0,
-            false,
-            guestToken,
-            "",
+            "guest",            // username
+            CWUserType.Guest,   // userType
+            0,                  // ddp
+            false,              // isLoggedIn
+            guestToken,         // authToken
+            "",                 // refreshToken
+            "",                 // referral
         )
     }
 

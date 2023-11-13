@@ -91,7 +91,7 @@ function CWAuthComponent() {
     }
     const referralCodeRequirements = {
         required: { value: false, message: "ReferralCode not required"},
-        length: { value: 21, message: "Referral Code is improperly formed" },
+        length: { value: 10, message: "Referral Code is improperly formed" },
     }
 
     // ERROR HANDLING
@@ -190,6 +190,7 @@ function CWAuthComponent() {
         const refreshToken: string = loginRes.body.tokens.refresh
         const userType: string = loginRes.body.userType
         const ddp: number = loginRes.body.ddp
+        const referral: string = loginRes.body.referral
         const joined: string = loginRes.body.joined
 
         // Update Redux store with new user info
@@ -200,6 +201,7 @@ function CWAuthComponent() {
             refreshToken: refreshToken,
             isLoggedIn: true,
             ddp: ddp,
+            referral: referral,
             joined: joined
         }))
 
@@ -227,6 +229,7 @@ function CWAuthComponent() {
         const refreshToken: string = loginRes.body.tokens.refresh
         const userType: string = loginRes.body.userType
         const ddp: number = loginRes.body.ddp
+        const referral: string = loginRes.body.referral
         const joined: string = loginRes.body.joined
 
 
@@ -238,6 +241,7 @@ function CWAuthComponent() {
             refreshToken: refreshToken,
             isLoggedIn: true,
             ddp: ddp,
+            referral: referral,
             joined: joined
         }))
 
