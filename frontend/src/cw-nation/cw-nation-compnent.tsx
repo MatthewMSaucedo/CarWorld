@@ -25,9 +25,9 @@ function CWNationComponent() {
     ]
 
     AppConstants.CAR_WORLD_NATION_BRANCHES.forEach((carWorldNationBranch: AppConstants.CarWorldNationBranch, index: number) => {
-        if (index < 21) {
+        if (index < 22) {
             cwNationColumnOne = cwNationColumnOne.concat(carWorldNationBranch)
-        } else if (index < 41) {
+        } else if (index < 44) {
             cwNationColumnTwo = cwNationColumnTwo.concat(carWorldNationBranch)
         } else {
             cwNationColumnThree = cwNationColumnThree.concat(carWorldNationBranch)

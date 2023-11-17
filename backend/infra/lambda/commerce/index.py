@@ -971,15 +971,15 @@ def send_email_order_details_to_customer(
         cw_user_string = f"""
         <p>
             Thanks again for your support! Have you considered
-            <a href="https://carworld.love/auth">
-                becoming a member of Car World
+            <a href="https://carworld.love/car_world_nation">
+                becoming a Member of Car World Nation
             </a>?
         </p>
         """
     else:
         cw_user_string = f"""
         <p>
-            As a thanks for this purchase, we have gone ahead and added {item_count} DDP to your account!
+            As a reward for your purchase, we have gone ahead and added {item_count} DDP to your account!
         </p>
         """
 
@@ -1103,9 +1103,9 @@ def cw_email_product_table(products):
     table_html = f"""
         <table>
             <tr>
-                <th>Product</th>
                 <th>Quantity</th>
                 <th>Size</th>
+                <th>Product</th>
             </tr>
             {cw_email_product_table_entries}
         </table>
@@ -1122,13 +1122,13 @@ def cw_email_obtain_products_as_td(products):
         quantity = product_details[0]
         product_name = product_details[1]
         # size, if applicable
-        size = product_details[2] if len(product_details) == 3 else ""
+        size = product_details[2].upper() if len(product_details) == 3 else ""
 
         cw_email_product_table_entries += f"""
           <tr>
-            <td>{product_name}</td>
             <td>{quantity}</td>
             <td>{size}</td>
+            <td>{product_name}</td>
           </tr>
         """
 

@@ -33,13 +33,13 @@ function CWWikiComponent() {
                     <p>
                         Car World is a sci-non-fi community building project created to raise global concern for the
                         genocide of the <strong>Attendants</strong>, the native species of <strong>Car World</strong> — a planet in an alternate universe
-                        ruled by human-headed Worms sexually obsessed with <strong>William Banks</strong>.
+                        ruled by human-headed Worms obsessed with <strong>William Banks</strong>.
                     </p>
                     <p>
                         William Banks is the self-proclaimed savior of Car World. On October 14th, 2018,
-                        he had sex with <strong>Quuarux</strong>, a Worm phased into his car, who was traveling from an
+                        he encountered <strong>Quuarux</strong>, a Worm phased into his car, who was traveling from an
                         alien planet in our universe and passing through <strong>Earth World</strong> to cross the
-                        <strong> Bridge to Car World</strong>. He came inside of them.
+                        <strong> Bridge to Car World</strong>.
                     </p>
                     <p>
                         The next day, William started dating the <strong>First Mechanic</strong>, his halfling daughter born of Quuarux

@@ -204,51 +204,53 @@ function CWProfileComponent() {
             {/* Profile */}
             <div className="cw-profile-container">
                 {/* Content */}
-                <div className={`my-carworld-card${ isMediumDevice || isSmallDevice ? "-mobile" : ""}`}>
+                <div className={`cw-profile-main-block${ isMediumDevice || isSmallDevice ? "-mobile" : ""}`}>
+                    <div className={`my-carworld-card${ isMediumDevice || isSmallDevice ? "-mobile" : ""}`}>
 
-                    <div className="card-content">
-                        {/* Username */}
-                        <p className="username"> {cwUser.username} </p>
+                        <div className="card-content">
+                            {/* Username */}
+                            <p className="username"> {cwUser.username} </p>
 
-                        {/* User's DDP */}
-                        <p className="card-content-my-ddp-text">
-                            My Digital Devotion Points:
-                        </p>
-                        { apiIsLoading ? apiLoadingSpinner() : (
-                            <p className="user-ddp-point-value">
-                                { userDdp }
+                            {/* User's DDP */}
+                            <p className="card-content-my-ddp-text">
+                                My Digital Devotion Points:
                             </p>
-                        )}
-                    </div>
-
-                    {/* DDP Hierarchy */}
-                    <div className="card-content">
-                        <div className="devotion-point-header">
-                            <p className="devotion-point-title">Hierarchy</p>
+                            { apiIsLoading ? apiLoadingSpinner() : (
+                                <p className="user-ddp-point-value">
+                                    { userDdp }
+                                </p>
+                            )}
                         </div>
-                        { apiIsLoading ? apiLoadingSpinner() : (
-                            <div className="ag-theme-alpine"
-                                style={{
-                                    width: isMediumDevice || isSmallDevice ? 200 : 400,
-                                    // Dynamic sizing based on cart size
-                                    height: determineCartTableHeight(),
-                                }}>
-                                    <AgGridReact
-                                        rowData={rowData}
-                                        columnDefs={columnDefs}
-                                        onGridReady={onGridReady}
-                                        rowHeight={ isMediumDevice || isSmallDevice ? 22 : 50 }
-                                        headerHeight={22}
-                                    />
-                            </div>
-                        )}
-                    </div>
 
-                    {/* Buy DDP Button (redirect to store page) */}
-                    <div className="card-content">
-                        <button className="buy-ddp" onClick={() => onClickBuyDDP()}>
-                            BUY DDP
-                        </button>
+                        {/* DDP Hierarchy */}
+                        <div className="card-content">
+                            <div className="devotion-point-header">
+                                <p className="devotion-point-title">Hierarchy</p>
+                            </div>
+                            { apiIsLoading ? apiLoadingSpinner() : (
+                                <div className="ag-theme-alpine"
+                                    style={{
+                                        width: isMediumDevice || isSmallDevice ? 200 : 400,
+                                        // Dynamic sizing based on cart size
+                                        height: determineCartTableHeight(),
+                                    }}>
+                                        <AgGridReact
+                                            rowData={rowData}
+                                            columnDefs={columnDefs}
+                                            onGridReady={onGridReady}
+                                            rowHeight={ isMediumDevice || isSmallDevice ? 22 : 50 }
+                                            headerHeight={22}
+                                        />
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Buy DDP Button (redirect to store page) */}
+                        <div className="card-content">
+                            <button className="buy-ddp" onClick={() => onClickBuyDDP()}>
+                                BUY DDP
+                            </button>
+                        </div>
                     </div>
                 </div>
 

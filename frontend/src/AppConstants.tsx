@@ -175,8 +175,8 @@ export const CAR_WORLD_NATION_BRANCHES: CarWorldNationBranch[] = [
         region: CarWorldNationRegion.USA
     },
     {
-        location: "London, ENGLAND",
-        region: CarWorldNationRegion.EU
+        location: "Pittsburgh, PA",
+        region: CarWorldNationRegion.USA
     },
     {
         location: "Raleigh, NC",
@@ -203,6 +203,14 @@ export const CAR_WORLD_NATION_BRANCHES: CarWorldNationBranch[] = [
         region: CarWorldNationRegion.USA
     },
     {
+        location: "London, ENGLAND",
+        region: CarWorldNationRegion.EU
+    },
+    {
+        location: "Pullman, WA",
+        region: CarWorldNationRegion.USA
+    },
+    {
         location: "Fort Wayne, IN",
         region: CarWorldNationRegion.USA
     },
@@ -215,11 +223,15 @@ export const CAR_WORLD_NATION_BRANCHES: CarWorldNationBranch[] = [
         region: CarWorldNationRegion.USA
     },
     {
-        location: "Atlanda, GA",
+        location: "Atlanta, GA",
         region: CarWorldNationRegion.USA
     },
     {
         location: "Austin, TX",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Bloomington, IN",
         region: CarWorldNationRegion.USA
     },
     {
@@ -244,6 +256,10 @@ export const CAR_WORLD_NATION_BRANCHES: CarWorldNationBranch[] = [
     },
     {
         location: "Flagstaff, AZ",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Oklahoma City, OK",
         region: CarWorldNationRegion.USA
     },
     {
@@ -276,6 +292,10 @@ export const CAR_WORLD_NATION_BRANCHES: CarWorldNationBranch[] = [
     },
     {
         location: "Missoula, MT",
+        region: CarWorldNationRegion.USA
+    },
+    {
+        location: "Charleston, WV",
         region: CarWorldNationRegion.USA
     },
     {

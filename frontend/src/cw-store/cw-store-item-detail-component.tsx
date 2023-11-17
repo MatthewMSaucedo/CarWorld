@@ -2,17 +2,15 @@
 import '../App.scss';
 import './cw-commodity-display.scss';
 import { CWShoppingItemType } from './cw-store-item';
-import { CWShoppingCart, CWShoppingCartEntry } from './cw-shopping-cart';
-import { STORE_ITEMS, CW_API_ENDPOINTS } from '../AppConstants'
-import CWCommonLoadingComponent from '../cw-common/components/loading/cw-common-loading-component';
-import CWCommonNavbarComponent from '../cw-common/components/navbar/cw-common-navbar-component';
+import { CWShoppingCartEntry } from './cw-shopping-cart';
+import { STORE_ITEMS } from '../AppConstants'
 
 // React Hooks
 import { useState, useEffect } from "react"
 import { useNavigate, useParams } from 'react-router-dom';
 
 // Redux
-import { addToCart, updateCart } from '../redux/shoppingCartSlice';
+import { addToCart } from '../redux/shoppingCartSlice';
 import { useDispatch } from 'react-redux';
 
 // Custom Hook
@@ -163,6 +161,8 @@ function CWStoreItemDetailComponent() {
       value={ddpInput}
       onChange={ () => setDdpInput( ddpInput + 1 ) }
       type="number"
+      inputMode="numeric"
+      pattern="\d*"
       id="num_ddp"
       name="num_ddp"
       min="1" />
