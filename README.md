@@ -65,6 +65,8 @@ All credit card info is just "42" repeated as needed.
 
 I encourage you to test this out so you can see the emails we send for order confirmation!
 
+<p><em>Launch Date:</em> Dec 10</p>
+
 ### Navigation
 Navigation in Car World functions similarly on Mobile and Desktop! Merely click on any option to route there, and 
 see your current location highlighted in the UI. For mobile, first tap the Car World Logo to open the menu.
