@@ -78,7 +78,7 @@ function CWAuthComponent() {
     const usernameRequirements = {
         required: { value: true, message: "Username is required"},
         minLength: { value: 4, message: "Username must be at least 4 characters long" },
-        maxLength: { value: 64, message: "Username cannot exceed 64 characters long" },
+        maxLength: { value: 15, message: "Username cannot exceed 15 characters long" },
     }
     const emailRequirements = {
         required: { value: true, message: "Valid Email is required"},
@@ -191,6 +191,7 @@ function CWAuthComponent() {
         const userType: string = loginRes.body.userType
         const ddp: number = loginRes.body.ddp
         const referral: string = loginRes.body.referral
+        const cwNation: boolean = loginRes.body.cwNation
         const joined: string = loginRes.body.joined
 
         // Update Redux store with new user info
@@ -202,6 +203,7 @@ function CWAuthComponent() {
             isLoggedIn: true,
             ddp: ddp,
             referral: referral,
+            cwNation: cwNation,
             joined: joined
         }))
 
@@ -230,6 +232,7 @@ function CWAuthComponent() {
         const userType: string = loginRes.body.userType
         const ddp: number = loginRes.body.ddp
         const referral: string = loginRes.body.referral
+        const cwNation: boolean = loginRes.body.cwNation
         const joined: string = loginRes.body.joined
 
 
@@ -242,6 +245,7 @@ function CWAuthComponent() {
             isLoggedIn: true,
             ddp: ddp,
             referral: referral,
+            cwNation: cwNation,
             joined: joined
         }))
 

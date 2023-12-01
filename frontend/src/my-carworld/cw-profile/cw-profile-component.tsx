@@ -78,6 +78,8 @@ function CWProfileComponent() {
             const ddpRankTopTwenty: CWDdpRank[] = ddpRankRes.body.ddpTierList
             const userRecord: CWDdpRank = ddpRankRes.body.callerUser
 
+            appendCheckmarkCWNationUsernames(ddpRankTopTwenty)
+
             setUserDdp(userRecord.ddp)
             setUserRank(userRecord.rank)
 
@@ -113,6 +115,14 @@ function CWProfileComponent() {
         const ddpRankRes = await ddpRankRawApiRes.json()
 
         return ddpRankRes
+    }
+
+    const appendCheckmarkCWNationUsernames = (ddpRankTopTwenty: CWDdpRank[]) => {
+        ddpRankTopTwenty.forEach((cwUser: CWDdpRank) => {
+            if (cwUser.cwNationMember) {
+                cwUser.username = cwUser.username + " ✔"
+            }
+        })
     }
 
     // Media query
@@ -209,7 +219,7 @@ function CWProfileComponent() {
 
                         <div className="card-content">
                             {/* Username */}
-                            <p className="username"> {cwUser.username} </p>
+                            <p className="username"> {cwUser.username} { cwUser.cwNation ? " ✔" : ""} </p>
 
                             {/* User's DDP */}
                             <p className="card-content-my-ddp-text">

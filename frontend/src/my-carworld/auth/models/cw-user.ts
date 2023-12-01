@@ -13,6 +13,7 @@ export type CWReduxLoginUserReqBody = {
     isLoggedIn: boolean,
     referral: string,
     joined: string,
+    cwNation: boolean,
     ddp: number
 }
 
@@ -38,6 +39,9 @@ export class CWUser {
     ddp: number
     referral: string
 
+    // CWNation Member
+    cwNation: boolean
+
     // Metadata, stringified Date() obj
     joined?: string
 
@@ -49,6 +53,7 @@ export class CWUser {
         authToken: string,
         refreshToken: string,
         referral: string,
+        cwNation: boolean,
         joined?: string
     ) {
         this.username = username
@@ -61,6 +66,8 @@ export class CWUser {
 
         this.authToken = new CWToken(authToken)
         this.refreshToken = new CWToken(refreshToken)
+
+        this.cwNation = cwNation
 
         if (joined) {
             this.joined = joined
@@ -77,6 +84,7 @@ export class CWUser {
             loginReq.authToken,
             loginReq.refreshToken,
             loginReq.referral,
+            loginReq.cwNation,
             loginReq.joined,
         )
     }
@@ -90,6 +98,7 @@ export class CWUser {
             guestToken,         // authToken
             "",                 // refreshToken
             "",                 // referral
+            false               // cwNation
         )
     }
 

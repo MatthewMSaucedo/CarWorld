@@ -373,6 +373,7 @@ async function loginRequest(request, dbClient) {
           ddp: getUserByUsernameRes.ddp.N,
           joined: getUserByUsernameRes.joined.S,
           tokens: jwtTokens,
+          cwNation: getUserByUsernameRes.cwNation.BOOL,
           referral: getUserByUsernameRes.referral.S
         }
       }

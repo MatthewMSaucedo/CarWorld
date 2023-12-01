@@ -24,29 +24,33 @@ stripe.api_key = os.environ["stripe_secret"]
 S3_CLIENT = boto3.client("s3")
 SES_CLIENT = boto3.client("ses")
 
+# TODO: source from env vars
+SHIPPING_WEIGHT_COST_MAP = {1: 5.20, 2.5: 8.40, 5: 11.90, 10: 18.10, 1000: 29.80}
+INTERNATIONAL_SHIPPING_COST = 26
 # NOTE: Must echo changes here to Stripe_Abrev_Name_Map
-COMMODITY_VALUE_MAP = {
-    "car world needs me shirt": 2500,
-    "i want to go to car world shirt": 2500,
-    "save the attendants shirt": 2500,
-    "magwadi shirt": 2500,
-    "quuarux gas wars shirt": 2500,
-    "enter car world shirt": 2500,
-    "tat pass bracelet": 6500,
-    "quuarux earrings": 3000,
-    "car world emblem earrings": 2500,
-    "william banks devotional candle": 1200,
-    "attendant pendant": 2500,
-    "vip pass": 1200,
-    "car world supper book": 1000,
-    "car world supper book 10 pack": 7000,
-    "pamphlet bundle": 1000,
-    "car world water": 500,
-    "enter car world poster": 3000,
-    "the artifact": 800000,
-    "devotion point": 100,
+COMMODITY_VALUE_AND_WEIGHT_MAP = {
+    "car world needs me shirt": {"price": 2500, "weight": 0},
+    "i want to go to car world shirt": {"price": 2500, "weight": 0},
+    "save the attendants shirt": {"price": 2500, "weight": 0},
+    "magwadi shirt": {"price": 2500, "weight": 0},
+    "quuarux gas wars shirt": {"price": 2500, "weight": 0},
+    "enter car world shirt": {"price": 2500, "weight": 0},
+    "tat pass bracelet": {"price": 6500, "weight": 0},
+    "quuarux earrings": {"price": 3000, "weight": 0},
+    "car world emblem earrings": {"price": 2500, "weight": 0},
+    "william banks devotional candle": {"price": 1200, "weight": 0},
+    "attendant pendant": {"price": 2500, "weight": 0},
+    "vip pass": {"price": 1200, "weight": 0},
+    "car world supper book": {"price": 1000, "weight": 0},
+    "car world supper book 10 pack": {"price": 7000, "weight": 0},
+    "pamphlet bundle": {"price": 1000, "weight": 0},
+    "car world water": {"price": 500, "weight": 0},
+    "enter car world poster": {"price": 3000, "weight": 0},
+    "the artifact": {"price": 800000, "weight": 0},
+    "devotion point": {"price": 100, "weight": 0},
 }
 # NOTE: Changes to price map must reflect here
+# TODO: source from env vars
 STRIPE_ABREVIATED_NAME_MAP = {
     # Forward
     "cnm": "car world needs me shirt",
@@ -432,6 +436,22 @@ def create_payment_intent(create_payment_intent_body, user_id, dynamo_client):
             "error": error,
         }
 
+    # Apply shipping cost
+    try:
+        shipping_country = create_payment_intent_body["shipping_country"]
+        amount += calculate_shipping_cost(cart, shipping_country)
+    except Exception as e:
+        error = {
+            "message": str(e),
+            "stack": traceback.format_exc(),
+        }
+        print(f"SERVER_ERROR: Failed to calculate shipping cost | {error}")
+        return {
+            "code": 500,
+            "message": "SERVER_ERROR: Failed to calculate shipping cost",
+            "error": error,
+        }
+
     # Initiate Payment Intent
     # NOTE:
     #   Car World makes use of the Stripe platform soley to act as a payment processor.
@@ -487,13 +507,42 @@ def calculate_transaction_amount(cart):
     amount = 0
     for commodity in cart:
         name = commodity["server_name"]
-        if name in COMMODITY_VALUE_MAP.keys():
-            amount = amount + (COMMODITY_VALUE_MAP[name] * commodity["quantity"])
+        if name in COMMODITY_VALUE_AND_WEIGHT_MAP.keys():
+            amount += (
+                COMMODITY_VALUE_AND_WEIGHT_MAP[name]["cost"] * commodity["quantity"]
+            )
         else:
             raise Exception(
-                f"Invalid commodity name received: {name}, valid names: {COMMODITY_VALUE_MAP.keys()}"
+                f"Invalid commodity name received: {name}, valid names: {COMMODITY_VALUE_AND_WEIGHT_MAP.keys()}"
             )
     return amount
+
+
+def calculate_shipping_cost(cart, shipping_country):
+    total_weight = 0
+    for commodity in cart:
+        name = commodity["server_name"]
+        if name in COMMODITY_VALUE_AND_WEIGHT_MAP.keys():
+            total_weight += (
+                COMMODITY_VALUE_AND_WEIGHT_MAP[name]["weight"] * commodity["quantity"]
+            )
+        else:
+            raise Exception(
+                f"Invalid commodity name received: {name}, valid names: {COMMODITY_VALUE_AND_WEIGHT_MAP.keys()}"
+            )
+
+    in_order_shipping_weights = sorted(SHIPPING_WEIGHT_COST_MAP.keys())
+    shipping_cost = 0
+    for weight in in_order_shipping_weights:
+        if total_weight < weight:
+            shipping_cost = SHIPPING_WEIGHT_COST_MAP[weight]
+        else:
+            break
+
+    if shipping_country != "USA":
+        shipping_cost += INTERNATIONAL_SHIPPING_COST
+
+    return shipping_cost
 
 
 # TODO: Replace raw dynamo client call with CW_DYNAMO_CLIENT
@@ -799,7 +848,7 @@ def handle_webhook(stripe_event, dynamo_client):
             is_guest_purchase=is_guest_purchase,
         )
 
-        return {"code": 200, "message": ses_response}
+        return {"code": 200}
     except Exception as e:
         error = {
             "message": str(e),
@@ -1162,12 +1211,12 @@ def queue_cw_db_retry_lambda(controller, action, db_actions):
     """"""
 
 
-CW_DYNAMO_CLIENT = CWDynamoClient()
-
-
 ########################################################
 # Controller Action Handler
 ########################################################
+CW_DYNAMO_CLIENT = CWDynamoClient()
+
+
 def handler(event, context):
     # Parse request
     try:
