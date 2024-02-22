@@ -431,6 +431,46 @@ class CWTransaction:
 
     # TODO:
     def write_to_db(self):
+        # def create_transaction_record(
+        #     transaction_id,
+        #     shipping,
+        #     status,
+        #     amount,
+        #     name,
+        #     email,
+        #     commodity_list,
+        #     user_id,
+        #     dynamo_client,
+        # ):
+        #     dynamo_client = dynamo_client.client
+
+        #     dynamo_client.put_item(
+        #         TableName=TRANSACTION_TABLE_NAME,
+        #         Item={
+        #             "id": {"S": transaction_id},
+        #             "shipping": {
+        #                 "M": {
+        #                     "city": {"S": str(shipping["address"]["city"] or "")},
+        #                     "country": {"S": str(shipping["address"]["country"] or "")},
+        #                     "line1": {"S": str(shipping["address"]["line1"] or "")},
+        #                     "line2": {"S": str(shipping["address"]["line2"] or "")},
+        #                     "postal_code": {"S": str(shipping["address"]["postal_code"] or "")},
+        #                     "us_state": {"S": str(shipping["address"]["state"] or "")},
+        #                     "client_name": {"S": str(shipping["name"] or "")},
+        #                     "phone": {"S": str(shipping["phone"] or "")},
+        #                 }
+        #             },
+        #             "tx_status": {"S": status},
+        #             "amount": {"N": str(amount)},
+        #             "customer": {"S": name},
+        #             "email": {"S": email},
+        #             "commodity_list": {"SS": commodity_list},
+        #             "user_id": {"S": user_id},
+        #         },
+        #     )
+
+        #     return
+
         pass
 
     # TODO: For logging
@@ -777,7 +817,7 @@ def update_transaction(update_transaction_body, dynamo_client):
 # @idempotent_function(
 #    data_keyword_argument="order", config=config, persistence_store=dynamodb
 # )
-def create_payment_intent_v2(create_payment_intent_body, user_id, dynamo_client):
+def create_payment_intent(create_payment_intent_body, user_id, dynamo_client):
     log.info("Initiating create_payment_intent...")
 
     user = CWUser(id=user_id)
@@ -827,218 +867,6 @@ def create_payment_intent_v2(create_payment_intent_body, user_id, dynamo_client)
     }
 
 
-def create_payment_intent(create_payment_intent_body, user_id, dynamo_client):
-    log.info("Initiating #create_payment_intent")
-
-    # Validate cart body
-    try:
-        cart = create_payment_intent_body["cart"]
-        for commodity in cart:
-            commodity_name = commodity["server_name"]
-            quantity = commodity["quantity"]
-            type = int(commodity["type"])
-
-            # Clothing has a size
-            if COMMODITY_TYPE_MAP[type] == "clothing":
-                size = commodity["size"]
-    except Exception as e:
-        error = {
-            "message": str(e),
-            "stack": traceback.format_exc(),
-        }
-        print(
-            f"CLIENT_ERROR: incorrect payload submitted to CWCC /secret: got {create_payment_intent_body}, expected cart of commodities | {error}"
-        )
-        return {
-            "code": 400,
-            "message": f"CLIENT_ERROR: incorrect payload submitted to CWCC /secret: got {create_payment_intent_body}, expected cart of commodities",
-            "error": error,
-        }
-
-    # Quantify transaction cost
-    try:
-        amount = calculate_transaction_amount(cart)
-    except Exception as e:
-        error = {
-            "message": str(e),
-            "stack": traceback.format_exc(),
-        }
-        print(f"CLIENT_ERROR: Failed to parse shopping cart: {cart} | {error}")
-        return {
-            "code": 400,
-            "message": f"CLIENT_ERROR: Failed to parse shopping cart: {cart}",
-            "error": error,
-        }
-
-    # Apply shipping cost
-    try:
-        shipping_country = create_payment_intent_body["shipping_country"]
-        amount += calculate_shipping_cost(cart, shipping_country)
-    except Exception as e:
-        error = {
-            "message": str(e),
-            "stack": traceback.format_exc(),
-        }
-        print(f"SERVER_ERROR: Failed to calculate shipping cost | {error}")
-        return {
-            "code": 500,
-            "message": "SERVER_ERROR: Failed to calculate shipping cost",
-            "error": error,
-        }
-
-    # Initiate Payment Intent
-    # NOTE:
-    #   Car World makes use of the Stripe platform soley to act as a payment processor.
-    #   In this asynchronous workflow, Car World must initiate with Stripe a "Payment Intent."
-    #   This can be thought of as establishing a valid payment session, for x ammount.
-    #   Once initiated, Stripe returns a client secret to be used by the client to engage
-    #   in a direct communication to Stripe's servers. Results of this communication
-    #   are communicated after-the-fact to Car World via our own subscription to processed
-    #   payment events emitted by Stripe.
-    try:
-        # NOTE: Convert Cart to short string
-        #   The Stripe metadata is limited in its allowed size (discovered during testing).
-        #   To allow for varied and large orders, we do a manual "shortening" of the cart,
-        #   creating a string less suited for human-reading but better for transport.
-        #   This method takes this directly-translated map to string:
-        #     [{'server_name': 'magwadi shirt', 'quantity': 1, 'type': 1, 'size': 'l'}, {'server_name': 'quuarux earrings', 'quantity': 2, 'type': 2}]
-        #   and concatenates it to this:
-        #     1_ms_1_l*2_qe_2
-        short_cart_string = cw_cart_to_short_string(cart)
-
-        stripe_payment_intent = stripe.PaymentIntent.create(
-            amount=amount,
-            currency="usd",
-            automatic_payment_methods={"enabled": True},
-            metadata={"cart": short_cart_string, "usr": user_id},
-        )
-
-        client_secret = stripe_payment_intent["client_secret"]
-        transaction_id = stripe_payment_intent["id"]
-    except Exception as e:
-        error = {
-            "message": str(e),
-            "stack": traceback.format_exc(),
-        }
-        print(f"SERVER_ERROR: Failed to initiate Stripe Payment Intent | {error}")
-        return {
-            "code": 500,
-            "message": "SERVER_ERROR: Failed to initiate Stripe Payment Intent",
-            "error": error,
-        }
-
-    return {
-        "code": 200,
-        "message": "Succesfully created Stripe PaymentIntent",
-        "body": {
-            "client_secret": client_secret,
-            "stripe_payment_intent_id": transaction_id,
-        },
-    }
-
-
-def calculate_transaction_amount(cart):
-    amount = 0
-    for commodity in cart:
-        name = commodity["server_name"]
-        if name in COMMODITY_VALUE_AND_WEIGHT_MAP.keys():
-            amount += (
-                COMMODITY_VALUE_AND_WEIGHT_MAP[name]["cost"] * commodity["quantity"]
-            )
-        else:
-            raise Exception(
-                f"Invalid commodity name received: {name}, valid names: {COMMODITY_VALUE_AND_WEIGHT_MAP.keys()}"
-            )
-    return amount
-
-
-def calculate_shipping_cost(cart, shipping_country):
-    total_weight = 0
-    for commodity in cart:
-        name = commodity["server_name"]
-        if name in COMMODITY_VALUE_AND_WEIGHT_MAP.keys():
-            total_weight += (
-                COMMODITY_VALUE_AND_WEIGHT_MAP[name]["weight"] * commodity["quantity"]
-            )
-        else:
-            raise Exception(
-                f"Invalid commodity name received: {name}, valid names: {COMMODITY_VALUE_AND_WEIGHT_MAP.keys()}"
-            )
-
-    in_order_shipping_weights = sorted(SHIPPING_WEIGHT_COST_MAP.keys())
-    shipping_cost = 0
-    for weight in in_order_shipping_weights:
-        if total_weight < weight:
-            shipping_cost = SHIPPING_WEIGHT_COST_MAP[weight]
-        else:
-            break
-
-    if shipping_country != "USA":
-        shipping_cost += INTERNATIONAL_SHIPPING_COST
-
-    return shipping_cost
-
-
-# TODO: Replace raw dynamo client call with CW_DYNAMO_CLIENT
-def create_transaction_record(
-    transaction_id,
-    shipping,
-    status,
-    amount,
-    name,
-    email,
-    commodity_list,
-    user_id,
-    dynamo_client,
-):
-    dynamo_client = dynamo_client.client
-
-    dynamo_client.put_item(
-        TableName=TRANSACTION_TABLE_NAME,
-        Item={
-            "id": {"S": transaction_id},
-            "shipping": {
-                "M": {
-                    "city": {"S": str(shipping["address"]["city"] or "")},
-                    "country": {"S": str(shipping["address"]["country"] or "")},
-                    "line1": {"S": str(shipping["address"]["line1"] or "")},
-                    "line2": {"S": str(shipping["address"]["line2"] or "")},
-                    "postal_code": {"S": str(shipping["address"]["postal_code"] or "")},
-                    "us_state": {"S": str(shipping["address"]["state"] or "")},
-                    "client_name": {"S": str(shipping["name"] or "")},
-                    "phone": {"S": str(shipping["phone"] or "")},
-                }
-            },
-            "tx_status": {"S": status},
-            "amount": {"N": str(amount)},
-            "customer": {"S": name},
-            "email": {"S": email},
-            "commodity_list": {"SS": commodity_list},
-            "user_id": {"S": user_id},
-        },
-    )
-
-    return
-
-
-def format_commodity_list_from_cart(cart):
-    commodity_list = []
-    for commodity in cart:
-        # prefix quantity as dynamo SS does not allow duplicate entries
-        formatted_commodity_name = (
-            str(commodity["quantity"]) + "_" + commodity["server_name"]
-        )
-
-        # postfix size if applicable
-        if COMMODITY_TYPE_MAP[int(commodity["type"])] == "clothing":
-            size = commodity["size"]
-            formatted_commodity_name = formatted_commodity_name + "_" + size
-
-        commodity_list.append(formatted_commodity_name)
-
-    return commodity_list
-
-
 def update_transaction_record_client_call(transaction_id, status, dynamo_client):
     response = dynamo_client.update(
         table_name=TRANSACTION_TABLE_NAME,
@@ -1076,55 +904,6 @@ def update_transaction_record_webhook_call(
     )
 
     return response
-
-
-# Explanation on formatting:
-# type_shortName_quantity(_size)...*type_shortName_quantity(_size)
-# >>> string = "T_A_x*T_A_x_y*T_A_x"
-# >>> string.split("*")
-# ['1_sa_1_s', '2_tp_3', '1_ms_2_l']
-# >>>
-def cw_cart_to_short_string(cart):
-    short_string = ""
-    for index, commodity in enumerate(cart):
-        if not index == 0:
-            short_string += "*"
-
-        short_string += f'{commodity["type"]}_{STRIPE_ABREVIATED_NAME_MAP[commodity["server_name"]]}_{commodity["quantity"]}'
-
-        if COMMODITY_TYPE_MAP[commodity["type"]] == "clothing":
-            short_string += f'_{commodity["size"]}'
-    return short_string
-
-
-# Explanation on formatting:
-# type_shortName_quantity(_size)...*type_shortName_quantity(_size)
-# >>> string = "T_A_x*T_A_x_y*T_A_x"
-# >>> string.split("*")
-# ['1_sa_1_s', '2_tp_3', '1_ms_2_l']
-# >>>
-def cw_cart_from_short_string(short_string):
-    cart = []
-    commodity_list = short_string.split("*")
-    for commodity in commodity_list:
-        # Process shortened commodity string
-        commodity_props = commodity.split("_")
-        type = int(commodity_props[0])
-        abreviated_name = commodity_props[1]
-        quantity = int(commodity_props[2])
-
-        # Assign standard cart format
-        cart_obj = {
-            "type": type,
-            "server_name": STRIPE_ABREVIATED_NAME_MAP[abreviated_name],
-            "quantity": quantity,
-        }
-
-        if COMMODITY_TYPE_MAP[type] == "clothing":
-            cart_obj.update({"size": commodity_props[3]})
-
-        cart.append(cart_obj)
-    return cart
 
 
 def handle_webhook_v2(stripe_event, dynamo_client):
@@ -1788,22 +1567,7 @@ def handler(event, context):
             request["body"] = json.loads(event["body"])
 
             # Create PaymentIntent
-            res = create_payment_intent_v2(
-                create_payment_intent_body=request["body"],
-                user_id=user_id,
-                dynamo_client=CW_DYNAMO_CLIENT,
-            )
-        elif request["action"] == "secret_v2":
-            # Given that this is a protected action, the JWT provided in the header
-            # has already been parsed, with the UserID being provided in the reqContext
-            user_id = event["requestContext"]["authorizer"]["lambda"]["user_id"]
-            log.append_keys(user_id=user_id)
-
-            # /secret has a request body
-            request["body"] = json.loads(event["body"])
-
-            # Create PaymentIntent
-            res = create_payment_intent_v2(
+            res = create_payment_intent(
                 create_payment_intent_body=request["body"],
                 user_id=user_id,
                 dynamo_client=CW_DYNAMO_CLIENT,
