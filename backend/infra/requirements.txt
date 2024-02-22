@@ -4,3 +4,4 @@ aws-cdk.aws_apigatewayv2_integrations_alpha
 aws_cdk.aws_apigatewayv2_authorizers_alpha
 constructs>=10.0.0,<11.0.0
 boto3==1.26.72
+six

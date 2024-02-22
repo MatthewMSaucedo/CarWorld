@@ -74,6 +74,8 @@ class CWCoreStack(Stack):
         self.cw_commodity_table = self.create_cw_commodity_table()
         # Create InvalidTokens database
         self.cw_invalid_token_table = self.create_cw_invalid_token_table()
+        # Create Idempotency database
+        self.cw_idempotency_table = self.create_cw_idempotency_table()
 
         ###################################################
         # CAR WORLD API GATEWAY
@@ -102,7 +104,7 @@ class CWCoreStack(Stack):
         )
 
         ###################################################
-        # COMMERCE EMAIL CACHE S3
+        # COMMERCE EMAIL CACHE S3 # TODO: Just replace this with a dynamo table
         ###################################################
         # Create s3 to use as cache for storing email, once Stripe Payment
         # process begins
@@ -116,6 +118,7 @@ class CWCoreStack(Stack):
             stripe_secret=self.stripe_secret,
             transaction_table=self.cw_transaction_table,
             commodity_table=self.cw_commodity_table,
+            idempotency_table=self.cw_idempotency_table,
             user_table=self.cw_user_table,
             cw_transaction_email_cache_s3=self.cw_transaction_email_cache_s3,
             ses_sender_email=ses_sender_email,
@@ -220,6 +223,24 @@ class CWCoreStack(Stack):
         )
 
         return invalid_token_table
+
+    def create_cw_idempotency_table(self):
+        idempotency_table = dynamodb.Table(
+            scope=self,
+            id=f"{self.stack_env}-idempotency",
+            # PK: idempotency key, a string
+            partition_key=dynamodb.Attribute(
+                name="id",
+                type=dynamodb.AttributeType.STRING,
+            ),
+            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
+            time_to_live_attribute="expiration",
+            encryption=dynamodb.TableEncryption.AWS_MANAGED,
+            point_in_time_recovery=True,
+            removal_policy=RemovalPolicy.DESTROY,
+        )
+
+        return idempotency_table
 
     def create_cw_transaction_table(self):
         transaction_table = dynamodb.Table(
@@ -433,6 +454,7 @@ class CWCoreStack(Stack):
         stripe_secret,
         transaction_table,
         commodity_table,
+        idempotency_table,
         user_table,
         cw_transaction_email_cache_s3,
         ses_sender_email,
@@ -453,13 +475,19 @@ class CWCoreStack(Stack):
             ],
         )
 
-        # External Packages (Stripe)
+        # External Packages (Stripe, AWS Powertools)
         # Generation guide:
         #   https://medium.com/geekculture/deploying-aws-lambda-layers-with-python-8b15e24bdad2
-        lambda_layer = lambdaFx.LayerVersion(
+        stripe_lambda_layer = lambdaFx.LayerVersion(
             self,
             f"{self.stack_env}-stripe-layer",
-            code=lambdaFx.AssetCode("lambda/commerce/layer/"),
+            code=lambdaFx.AssetCode("lambda/commerce/stripe-layer/"),
+            compatible_runtimes=[lambdaFx.Runtime.PYTHON_3_7],
+        )
+        powertools_lambda_layer = lambdaFx.LayerVersion(
+            self,
+            f"{self.stack_env}-powertools-layer",
+            code=lambdaFx.AssetCode("lambda/commerce/powertools-layer/"),
             compatible_runtimes=[lambdaFx.Runtime.PYTHON_3_7],
         )
 
@@ -467,6 +495,7 @@ class CWCoreStack(Stack):
         transaction_table.grant_read_write_data(commerce_lambda_role)
         user_table.grant_read_write_data(commerce_lambda_role)
         commodity_table.grant_read_write_data(commerce_lambda_role)
+        idempotency_table.grant_read_write_data(commerce_lambda_role)
 
         # Grant s3 email cache read/write access
         cw_transaction_email_cache_s3["bucket"].grant_read_write(commerce_lambda_role)
@@ -480,19 +509,28 @@ class CWCoreStack(Stack):
             code=lambdaFx.Code.from_asset("./lambda/commerce/"),
             description="CarWorld Commerce Lambda, to handle purchases",
             environment={
+                # Stripe secret
                 "stripe_secret": stripe_secret,
+                # Lambda Powertools
+                "POWERTOOLS_SERVICE_NAME": "commerce-lambda",
+                "POWERTOOLS_LOG_LEVEL": "INFO",
+                "TZ": "US/Eastern",
+                # Resource ARNs
                 "user_table_name": user_table.table_name,
                 "commodity_table_name": commodity_table.table_name,
                 "transaction_table_name": transaction_table.table_name,
                 "transaction_email_cache_s3_name": cw_transaction_email_cache_s3[
                     "bucket"
                 ].bucket_name,
+                # SES Email config
                 "ses_sender_email": ses_sender_email,
-                "ses_admin_list": ses_admin_list
-                if self.stack_env == "prod"
-                else "themattsaucedo@gmail.com",
+                "ses_admin_list": (
+                    ses_admin_list
+                    if self.stack_env == "prod"
+                    else "themattsaucedo@gmail.com"
+                ),
             },
-            layers=[lambda_layer],
+            layers=[stripe_lambda_layer, powertools_lambda_layer],
             memory_size=512,
             timeout=Duration.seconds(15),
         )

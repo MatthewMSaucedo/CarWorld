@@ -26,6 +26,7 @@ cwCoreStack = CWCoreStack(
     stack_env=stack_env,
     ses_sns_arn=ses_sns_arn,
     ses_sender_email=ses_sender_email,
+
     ses_admin_list=ses_admin_list,
 )
 

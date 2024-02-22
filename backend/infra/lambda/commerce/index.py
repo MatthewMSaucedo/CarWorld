@@ -1,14 +1,18 @@
-# TODO: Implement (or make use of pre-existing) propper logger, replace #print statements
-# TODO: Move resource initialization out of child processes of Handler!
-#       Initializing object outside of handler allows their re-use in succesive
-#       lambda calls, and shortens the execution time (which is what is actually billed)
-
 import os
 import json
 import traceback
 import stripe
 import boto3
 import hashlib
+import logging
+from enum import Enum
+from aws_lambda_powertools import Logger
+from aws_lambda_powertools.logging import correlation_paths
+from aws_lambda_powertools.utilities.idempotency import (
+    DynamoDBPersistenceLayer,
+    IdempotencyConfig,
+    idempotent_function,
+)
 
 # Environment Variables
 USER_TABLE_NAME = os.environ["user_table_name"]
@@ -19,6 +23,12 @@ SES_CONFIG_ID = os.environ["ses_config_id"]
 SES_SENDER_EMAIL = os.environ["ses_sender_email"]
 SES_ADMIN_LIST = os.environ["ses_admin_list"].split(",")
 stripe.api_key = os.environ["stripe_secret"]
+
+# Logging
+log = Logger(service="commerce")
+
+# AWS Powertools
+# idempotency_config = IdempotencyConfig(event_key_jmespath="order_id")
 
 # Clients
 S3_CLIENT = boto3.client("s3")
@@ -95,7 +105,6 @@ STRIPE_ABREVIATED_NAME_MAP = {
     "the artifact": "a",
     "devotion point": "dp",
 }
-COMMODITY_TYPE_MAP = {0: "ticket", 1: "clothing", 2: "art"}
 
 
 # TODO: Make this into a lambda layer to be used as a common CWLibrary
@@ -152,7 +161,7 @@ class CWDynamoClient:
         # TODO: Roll this block into #format_update_expression_attribute_values
         item = key_expression
         for field_name, field_value in field_value_map.items():
-            dynamo_formatted_value_mapping = dynamo_format_value_mapping(
+            dynamo_formatted_value_mapping = self.dynamo_format_value_mapping(
                 field_name, field_value, operation="create"
             )
             item.update(dynamo_formatted_value_mapping)
@@ -197,9 +206,11 @@ class CWDynamoClient:
 
         return {
             field_name: {
-                dynamoType: str(field_value)
-                if isinstance(field_value, int) or isinstance(field_value, float)
-                else field_value
+                dynamoType: (
+                    str(field_value)
+                    if isinstance(field_value, int) or isinstance(field_value, float)
+                    else field_value
+                )
             }
         }
 
@@ -264,6 +275,371 @@ class CWDynamoClient:
         return update_expression
 
 
+class UserTypeEnum(Enum):
+    GUEST = 1
+    STANDARD = 2
+    ADMIN = 3
+
+
+class CWUser:
+    def __init__(self, id, ddp=0, user_type=UserTypeEnum.STANDARD):
+        self.id = id
+        self.ddp = ddp
+        self.user_type = user_type
+
+    def set_email(self, email):
+        self.email = email
+
+    def increment_ddp_db(self, dynamo_client, ddp=1):
+        new_ddp = self.ddp + ddp
+        cw_user_table_key_expr = {"id": {"S": self.id}}
+        updated_cw_user = dynamo_client.update(
+            table_name=USER_TABLE_NAME,
+            key_expression=cw_user_table_key_expr,
+            field_value_map={"ddp": new_ddp},
+        )
+        self.ddp += ddp
+
+    @staticmethod
+    def from_user_id(id):
+        return CWUser(id=id)
+
+    @staticmethod
+    def from_stripe_event(event):
+        event_data = event["data"]["object"]
+        user_id = event_data["metadata"]["usr"]
+        return CWUser(id=user_id)
+
+    @staticmethod
+    def from_guest_default():
+        return CWUser("guest", user_type=UserTypeEnum.GUEST)
+
+
+class DenominationEnum(Enum):
+    DOLLAR = 1
+    CENT = 2
+
+
+class CWCost:
+    def __init__(self, amt, denomination=DenominationEnum.CENT):
+        if denomination == DenominationEnum.DOLLAR:
+            self._amt_cents = int(amt * 100)
+        else:
+            self._amt_cents = int(amt)
+
+    def __str__(self):
+        return f"${self.as_dollars()}"
+
+    def __add__(self, x):
+        self._amt_cents += x.as_cents()
+        return self
+
+    def __iadd__(self, other):
+        self._amt_cents += other.as_cents()
+        return self
+
+    def as_dollars(self):
+        return self._amt_cents / 100
+
+    @staticmethod
+    def from_dollars(dollars):
+        cent_value = dollars * 100
+        return CWCost(cent_value)
+
+    def as_cents(self):
+        return int(self._amt_cents)
+
+
+class CWTransaction:
+    def __init__(self, cart, user, id=None):
+        # sourced from Stripe PaymentIntent API
+        self._tx_id = id  # PK in transactions
+        self._client_secret = None  # Frontend Stripe token
+
+        self._shipping_country = "USA"
+
+        self.cart = cart
+        self._cw_cost = self._calculate_total()
+
+        self.user = user
+
+    @staticmethod
+    def from_stripe_event(event):
+        event_data = event["data"]["object"]
+
+        encoded_cart_str = event_data["metadata"]["cart"]
+        cart = CWShoppingCart.from_encoded_str(encoded_cart_str)
+
+        user_id = event_data["metadata"]["usr"]
+        user = CWUser.from_user_id(user_id)
+
+        transaction_id = event_data["id"]
+
+        return CWTransaction(cart, user, transaction_id)
+
+    def is_guest(self):
+        return self.user.user_type == UserTypeEnum.GUEST
+
+    def _set_id(self, id):
+        self._tx_id = id
+
+    def _set_client_secret(self, client_secret):
+        self._client_secret = client_secret
+
+    def get_id(self):
+        return self._tx_id
+
+    def get_client_secret(self):
+        return self._client_secret
+
+    def get_cost(self):
+        return self._cw_cost
+
+    def set_shipping_country(self, country):
+        self._shipping_country = country
+
+    def get_shipping_country(self):
+        return self._shipping_country
+
+    # NOTE:
+    #   Car World makes use of the Stripe platform soley to act as a payment processor.
+    #   In this asynchronous workflow, Car World must initiate with Stripe a "Payment Intent."
+    #   This can be thought of as establishing a valid payment session, for x ammount.
+    #   Once initiated, Stripe returns a client secret to be used by the client to engage
+    #   in a direct communication to Stripe's servers. Results of this communication
+    #   are communicated after-the-fact to Car World via our own subscription to processed
+    #   payment events emitted by Stripe.
+    def create_stripe_payment_intent(self):
+        # NOTE: Encode Cart contents
+        #   The Stripe metadata is limited in its allowed size.
+        #   To allow for varied and large orders, we do a manual "shortening" of the cart,
+        #   creating a string less suited for human-reading but better for transport.
+        encoded_cart_string = self.cart.get_as_encoded_str()
+
+        stripe_payment_intent = stripe.PaymentIntent.create(
+            amount=self._cw_cost.as_cents(),
+            currency="usd",
+            automatic_payment_methods={"enabled": True},
+            metadata={"cart": encoded_cart_string, "usr": self.user.id},
+        )
+
+        transaction_id = stripe_payment_intent["id"]
+        self._set_id(transaction_id)
+
+        client_secret = stripe_payment_intent["client_secret"]
+        self._set_client_secret(client_secret)
+
+    # TODO:
+    def write_to_db(self):
+        pass
+
+    # TODO: For logging
+    def get_as_dict(self):
+        return {}
+
+    def _calculate_total(self):
+        total = CWCost(amt=0)
+        total += self._calculate_shipping_cost()
+        total += self.cart.get_cost()
+        return total
+
+    def _calculate_shipping_cost(self):
+        shipping_weight = self.cart.get_weight()
+
+        in_order_shipping_weights = sorted(SHIPPING_WEIGHT_COST_MAP.keys())
+        shipping_cost = CWCost(amt=0)
+        for weight in in_order_shipping_weights:
+            if shipping_weight < weight:
+                shipping_cost += CWCost.from_dollars(SHIPPING_WEIGHT_COST_MAP[weight])
+            else:
+                break
+
+        if self._shipping_country != "USA":
+            shipping_cost += INTERNATIONAL_SHIPPING_COST
+        return shipping_cost
+
+
+# TODO: Deprecate this, replace with enum
+COMMODITY_TYPE_MAP = {
+    0: "ticket",
+    1: "clothing",
+    2: "art",
+}
+
+
+class CommodityTypeEnum(Enum):
+    TICKET = 0
+    CLOTHING = 1
+    ART = 2
+
+
+# TODO: Finish commodity type stuff
+class CWCommodity:
+    def __init__(self, name, commodity_type_enum, size=None):
+        self.name = name
+
+        cent_value = COMMODITY_VALUE_AND_WEIGHT_MAP[name]["price"]
+        self._cw_cost = CWCost(cent_value)
+
+        self.weight = COMMODITY_VALUE_AND_WEIGHT_MAP[name]["weight"]
+
+        self.commodity_type_enum = commodity_type_enum
+
+        if size:
+            self.size = size
+
+    def __str__(self):
+        return self.name
+
+    def set_size(self, size):
+        self.size = size
+
+    def get_cost(self):
+        return self._cw_cost
+
+    # TODO: For logging
+    def get_as_dict(self):
+        return {}
+
+    @staticmethod
+    def from_frontend_dict(frontend_dict):
+        type = int(frontend_dict["type"])
+        commodity_type_enum = CommodityTypeEnum(type)
+        if commodity_type_enum == CommodityTypeEnum.CLOTHING:
+            commodity = CWCommodity(
+                name=frontend_dict["server_name"],
+                commodity_type_enum=commodity_type_enum,
+                size=frontend_dict["size"],
+            )
+        else:
+            commodity = CWCommodity(
+                name=frontend_dict["server_name"],
+                commodity_type_enum=commodity_type_enum,
+            )
+        return commodity
+
+    def get_weight(self):
+        return self.weight
+
+
+class CWShoppingCartEntry:
+    def __init__(self, commodity, quantity):
+        self.commodity = commodity
+        self.quantity = quantity
+        self._cw_cost = self._calculate_cost()
+        self.weight = self._calculate_weight()
+
+    def get_cost(self):
+        return self._cw_cost
+
+    def get_weight(self):
+        return self.weight
+
+    def _calculate_cost(self):
+        cost_cents = self.commodity.get_cost().as_cents() * self.quantity
+        return CWCost(amt=cost_cents)
+
+    def _calculate_weight(self):
+        weight = self.commodity.get_weight() * self.quantity
+        return weight
+
+    # TODO: For logging
+    def get_as_dict(self):
+        return {}
+
+
+class CWShoppingCart:
+    def __init__(self, shopping_cart_entry_list):
+        self.shopping_cart_entry_list = shopping_cart_entry_list
+        self._cw_cost = self._calculate_cost()
+        self._weight = self._calculate_weight()
+
+    def get_cost(self):
+        return self._cw_cost
+
+    def _calculate_cost(self):
+        cw_cost = CWCost(amt=0)
+        for shopping_cart_entry in self.shopping_cart_entry_list:
+            # NOTE: This syntax is fine since we overrode CWCost::__add__
+            cw_cost += shopping_cart_entry.get_cost()
+        return cw_cost
+
+    def get_weight(self):
+        return self._weight
+
+    def _calculate_weight(self):
+        weight = 0
+        for shopping_cart_entry in self.shopping_cart_entry_list:
+            weight += shopping_cart_entry.get_weight()
+        return weight
+
+    @staticmethod
+    def from_frontend_dict(frontend_cart_dict):
+        try:
+            shopping_cart_entry_list = []
+            for commodity_dict in frontend_cart_dict:
+                commodity = CWCommodity.from_frontend_dict(commodity_dict)
+                quantity = commodity_dict["quantity"]
+
+                cart_entry = CWShoppingCartEntry(commodity=commodity, quantity=quantity)
+                shopping_cart_entry_list.append(cart_entry)
+        except Exception as e:
+            print(e)
+            raise e
+        return CWShoppingCart(shopping_cart_entry_list=shopping_cart_entry_list)
+
+    # TODO: For logging
+    def get_as_dict(self):
+        return {}
+
+    #   This method takes this directly-translated map to string:
+    #     [{'server_name': 'magwadi shirt', 'quantity': 1, 'type': 1, 'size': 'l'}, {'server_name': 'quuarux earrings', 'quantity': 2, 'type': 2}]
+    #   and concatenates it to this:
+    #     1_ms_1_l*2_qe_2
+    def get_as_encoded_str(self):
+        encoded_string = ""
+        for index, cart_entry in enumerate(self.shopping_cart_entry_list):
+            if not index == 0:
+                encoded_string += "*"
+
+            comm_type_value = cart_entry.commodity.commodity_type_enum.value
+            encoded_string += f"{comm_type_value}_{STRIPE_ABREVIATED_NAME_MAP[cart_entry.commodity.name]}_{cart_entry.quantity}"
+
+            if cart_entry.commodity.commodity_type_enum == CommodityTypeEnum.CLOTHING:
+                encoded_string += f"_{cart_entry.commodity.size}"
+        return encoded_string
+
+    @staticmethod
+    def from_encoded_str(encoded_str):
+        shopping_cart_entry_list = []
+        commodity_list = encoded_str.split("*")
+        for commodity in commodity_list:
+            # Process shortened commodity string
+            commodity_props = commodity.split("_")
+            type = int(commodity_props[0])
+            abreviated_name = commodity_props[1]
+            quantity = int(commodity_props[2])
+
+            # Assign standard cart format
+            server_name = STRIPE_ABREVIATED_NAME_MAP[abreviated_name]
+
+            if CommodityTypeEnum(type) == CommodityTypeEnum.CLOTHING:
+                size = commodity_props[3]
+                entry = CWShoppingCartEntry(
+                    CWCommodity(server_name, type, size), quantity
+                )
+            else:
+                entry = CWShoppingCartEntry(CWCommodity(server_name, type), quantity)
+
+            shopping_cart_entry_list.append(entry)
+        return cart
+
+
+####################################################################################################################################################################################
+##                                                                                                                                                                                ##
+####################################################################################################################################################################################
+
+
 def get_commodity_list(dynamo_client):
     try:
         # Retrieve backend list of commodities
@@ -300,7 +676,7 @@ def get_commodity_list(dynamo_client):
     return {
         "code": 200,
         "message": "Successfully retreived commodity list",
-        "body": {"commodityList": fe_commodity_map},
+        "body": {"commodity_list": fe_commodity_map},
     }
 
 
@@ -366,11 +742,11 @@ def update_transaction(update_transaction_body, dynamo_client):
             "stack": traceback.format_exc(),
         }
         print(
-            f"CLIENT_ERROR: incorrect payload submitted to CWCC /update_transaction: {create_payment_intent_body} | {error}"
+            f"CLIENT_ERROR: incorrect payload submitted to CWCC /update_transaction: {update_transaction_body} | {error}"
         )
         return {
             "code": 400,
-            "message": f"CLIENT_ERROR: incorrect payload submitted to CWCC /update_transaction: {create_payment_intent_body}",
+            "message": f"CLIENT_ERROR: incorrect payload submitted to CWCC /update_transaction: {update_transaction_body}",
             "error": error,
         }
 
@@ -395,7 +771,65 @@ def update_transaction(update_transaction_body, dynamo_client):
         }
 
 
+# TODO: https://docs.powertools.aws.dev/lambda/python/2.5.0/utilities/idempotency/#lambda-timeout-sequence-diagram
+#       Idempotency - why? The moron that wrote the frontend (it was me, I did it) can't
+#       seem to keep the client from spamming a few of these unintentionally.
+# @idempotent_function(
+#    data_keyword_argument="order", config=config, persistence_store=dynamodb
+# )
+def create_payment_intent_v2(create_payment_intent_body, user_id, dynamo_client):
+    log.info("Initiating create_payment_intent...")
+
+    user = CWUser(id=user_id)
+
+    try:
+        cart = CWShoppingCart.from_frontend_dict(create_payment_intent_body["cart"])
+    except Exception as e:
+        incorrect_payload_error = f"CLIENT_ERROR: incorrect payload submitted to CWCC /secret: got {create_payment_intent_body}, expected cart of commodities"
+        log.exception(incorrect_payload_error)
+        return {
+            "code": 400,
+            "message": incorrect_payload_error,
+            "error": {
+                "message": str(e),
+                "stack": traceback.format_exc(),
+            },
+        }
+
+    transaction = CWTransaction(cart=cart, user=user)
+
+    try:
+        transaction.create_stripe_payment_intent()
+        log.info(
+            "Successfully generated stripe PaymentIntent",
+            transaction_id=transaction.get_id(),
+            user_id=user_id,
+        )
+    except Exception as e:
+        stripe_api_failure = "SERVER_ERROR: Failed to initiate Stripe Payment Intent"
+        log.exception(stripe_api_failure, user_id=user_id)
+        return {
+            "code": 500,
+            "message": stripe_api_failure,
+            "error": {
+                "message": str(e),
+                "stack": traceback.format_exc(),
+            },
+        }
+
+    return {
+        "code": 200,
+        "message": "Succesfully created Stripe PaymentIntent",
+        "body": {
+            "client_secret": transaction.get_client_secret(),
+            "stripe_payment_intent_id": transaction.get_id(),
+        },
+    }
+
+
 def create_payment_intent(create_payment_intent_body, user_id, dynamo_client):
+    log.info("Initiating #create_payment_intent")
+
     # Validate cart body
     try:
         cart = create_payment_intent_body["cart"]
@@ -691,6 +1125,102 @@ def cw_cart_from_short_string(short_string):
 
         cart.append(cart_obj)
     return cart
+
+
+def handle_webhook_v2(stripe_event, dynamo_client):
+    try:
+        event = stripe.Event.construct_from(stripe_event, stripe.api_key)
+    except Exception as e:
+        log.exception(
+            "SERVER_ERROR: Failed to parse Stripe webhook event",
+            stripe_event=stripe_event,
+        )
+        return {
+            "code": 500,
+            "message": "SERVER_ERROR: Failed to parse Stripe webhook event",
+            "error": {"message": str(e), "stack": traceback.format_exc()},
+        }
+
+    transaction = CWTransaction.from_stripe_event(event)
+
+    if transaction.is_guest():
+        cw_user = CWUser.from_guest_default()
+
+        # Obtain email from cache for guest user
+        try:
+            email = obtain_email_from_cache(key=transaction.get_id())
+            cw_user.set_email(email)
+        except Exception as e:
+            user_email_s3_lookup_failure = (
+                "SERVER_ERROR: failed to obtain email from user record or s3 cache"
+            )
+            log.exception(user_email_s3_lookup_failure)
+            return {
+                "code": 500,
+                "message": user_email_s3_lookup_failure,
+                "error": {
+                    "message": str(e),
+                    "stack": traceback.format_exc(),
+                },
+            }
+    else:
+        cw_user = CWUser.from_stripe_event(event)
+
+    try:
+        transaction.write_to_db()
+    except Exception as e:
+        tx_db_write_failure = "Failed to write transaction_record to db"
+        log.exception(tx_db_write_failure)
+        return {
+            "code": 500,
+            "message": tx_db_write_failure,
+            "error": {
+                "message": str(e),
+                "stack": traceback.format_exc(),
+            },
+        }
+
+    # Increment DDP for purchases made by registered users
+    if not transaction.is_guest():
+        try:
+            cw_user.increment_ddp_db(dynamo_client)
+        except Exception as e:
+            # TODO: Queue DynamoDB-Error Retries
+            # Can look at old commits to find the skeleton for this.
+            # For now, just logging.
+            #
+            # While we're here...
+            # it would probably be easier to just create a MetricFilter(1)
+            # and MetricAlarm(2) that listen for these logs and notify SNS.
+            # Point SES at the SNS, recieve alert. Maybe expensive though?
+            #
+            # 1: https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/MonitoringLogData.html
+            # 2: https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/AlarmThatSendsEmail.html
+            #
+            log_context = {
+                "user_id": cw_user.id,
+                "transaction_id": transaction.get_id(),
+            }
+            log.exception("SERVER_ERROR: Failed to update ddp for user", **log_context)
+
+    # Send an email to William, Russell, and Customer about completed purchase
+    try:
+        # TODO
+        SESService.send_email_order_details_to_admins(transaction=transaction)
+        SESService.send_email_order_details_to_customer(transaction=transaction)
+
+        return {"code": 200}
+    except Exception as e:
+        ses_email_send_error = "SERVER_ERROR: failed to email about commodity purchase"
+        log.exception(ses_email_send_error)
+        return {
+            "code": 500,
+            "message": ses_email_send_error,
+            "error": {
+                "message": str(e),
+                "stack": traceback.format_exc(),
+            },
+        }
 
 
 def handle_webhook(stripe_event, dynamo_client):
@@ -1055,9 +1585,10 @@ def send_email_order_details_to_customer(
         { customer_shipping }
         { cw_user_string }
         <p>
-            For any questions or concerns in relation to your order, please contact William
-            Banks directly at: williambanks500@gmail.com. Responses sent to this email
-            (merch@carworld.love) are not being recorded and will not be seen.
+            For any questions or concerns in relation to your order, contact William
+            Banks directly at: williambanks500@gmail.com. Please do not responded to
+            this email (merch@carworld.love); responses are not being recorded and
+            will not be seen.
         </p>
         </body>
     </html>
@@ -1217,6 +1748,10 @@ def queue_cw_db_retry_lambda(controller, action, db_actions):
 CW_DYNAMO_CLIENT = CWDynamoClient()
 
 
+# https://docs.powertools.aws.dev/lambda/python/latest/core/log/#built-in-correlation-id-expressions
+@log.inject_lambda_context(
+    correlation_id_path=correlation_paths.API_GATEWAY_HTTP, log_event=True
+)
 def handler(event, context):
     # Parse request
     try:
@@ -1238,18 +1773,37 @@ def handler(event, context):
             "error": error,
         }
 
+    # Add endpoint action to log
+    log.append_keys(action=request["action"])
+
     # Direct to proper controller action
     try:
         if request["action"] == "secret":
             # Given that this is a protected action, the JWT provided in the header
             # has already been parsed, with the UserID being provided in the reqContext
             user_id = event["requestContext"]["authorizer"]["lambda"]["user_id"]
+            log.append_keys(user_id=user_id)
 
             # /secret has a request body
             request["body"] = json.loads(event["body"])
 
             # Create PaymentIntent
-            res = create_payment_intent(
+            res = create_payment_intent_v2(
+                create_payment_intent_body=request["body"],
+                user_id=user_id,
+                dynamo_client=CW_DYNAMO_CLIENT,
+            )
+        elif request["action"] == "secret_v2":
+            # Given that this is a protected action, the JWT provided in the header
+            # has already been parsed, with the UserID being provided in the reqContext
+            user_id = event["requestContext"]["authorizer"]["lambda"]["user_id"]
+            log.append_keys(user_id=user_id)
+
+            # /secret has a request body
+            request["body"] = json.loads(event["body"])
+
+            # Create PaymentIntent
+            res = create_payment_intent_v2(
                 create_payment_intent_body=request["body"],
                 user_id=user_id,
                 dynamo_client=CW_DYNAMO_CLIENT,
@@ -1271,15 +1825,15 @@ def handler(event, context):
         else:
             raise Exception(f'Invalid route: {request["action"]}')
     except Exception as e:
-        error = {
-            "message": str(e),
-            "stack": traceback.format_exc(),
-        }
-        print(f"SERVER_ERROR: Unhandled server error encountered -- {error}")
+        unhandled_exception = "SERVER_ERROR: Unhandled server error encountered"
+        log.exception(unhandled_exception)
         return {
             "code": 500,
-            "message": "SERVER_ERROR: Unhandled server error encountered",
-            "error": error,
+            "message": unhandled_exception,
+            "error": {
+                "message": str(e),
+                "stack": traceback.format_exc(),
+            },
         }
 
     # Add headers for CORS
