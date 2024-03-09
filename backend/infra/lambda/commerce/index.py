@@ -282,13 +282,16 @@ class UserTypeEnum(Enum):
 
 
 class CWUser:
-    def __init__(self, id, ddp=0, user_type=UserTypeEnum.STANDARD):
+    def __init__(self, id, ddp=0, user_type_enum=UserTypeEnum.STANDARD):
         self.id = id
         self.ddp = ddp
-        self.user_type = user_type
+        self.user_type_enum = user_type_enum
 
     def set_email(self, email):
         self.email = email
+
+    def is_guest(self):
+        return self.user_type_enum == UserTypeEnum.GUEST
 
     def increment_ddp_db(self, dynamo_client, ddp=1):
         new_ddp = self.ddp + ddp
@@ -300,19 +303,14 @@ class CWUser:
         )
         self.ddp += ddp
 
+    # TODO: db call
     @staticmethod
     def from_user_id(id):
         return CWUser(id=id)
 
     @staticmethod
-    def from_stripe_event(event):
-        event_data = event["data"]["object"]
-        user_id = event_data["metadata"]["usr"]
-        return CWUser(id=user_id)
-
-    @staticmethod
     def from_guest_default():
-        return CWUser("guest", user_type=UserTypeEnum.GUEST)
+        return CWUser(id="guest", user_type_enum=UserTypeEnum.GUEST)
 
 
 class DenominationEnum(Enum):
@@ -350,13 +348,46 @@ class CWCost:
         return int(self._amt_cents)
 
 
+class CWShippingDetails:
+    def __init__(
+        self, client_name, city, country, line1, line2, postal_code, state, phone
+    ):
+        self.client_name = client_name
+        self.city = city
+        self.country = country
+        self.line1 = line1
+        self.line2 = line2
+        self.postal_code = postal_code
+        self.state = state
+        self.phone = phone
+
+    def get_dynamo_manual_expression_attribute_map(self):
+        return {
+            "shipping": {
+                "M": {
+                    "city": {"S": str(self.city or "")},
+                    "country": {"S": str(self.country or "")},
+                    "line1": {"S": str(self.line1 or "")},
+                    "line2": {"S": str(self.line2 or "")},
+                    "postal_code": {"S": str(self.postal_code or "")},
+                    "us_state": {"S": str(self.state or "")},
+                    "client_name": {"S": str(self.client_name or "")},
+                    "phone": {"S": str(self.phone or "")},
+                }
+            }
+        }
+
+
 class CWTransaction:
-    def __init__(self, cart, user, id=None):
+    def __init__(self, cart, user, id=None, status=None, shipping_country="USA"):
         # sourced from Stripe PaymentIntent API
         self._tx_id = id  # PK in transactions
         self._client_secret = None  # Frontend Stripe token
 
-        self._shipping_country = "USA"
+        self._shipping_country = shipping_country
+        self._shipping_details = None
+
+        self.status = status
 
         self.cart = cart
         self._cw_cost = self._calculate_total()
@@ -364,7 +395,9 @@ class CWTransaction:
         self.user = user
 
     @staticmethod
-    def from_stripe_event(event):
+    def from_stripe_event(stripe_event):
+        # Parse event using Stripe lib
+        event = stripe.Event.construct_from(stripe_event, stripe.api_key)
         event_data = event["data"]["object"]
 
         encoded_cart_str = event_data["metadata"]["cart"]
@@ -373,12 +406,29 @@ class CWTransaction:
         user_id = event_data["metadata"]["usr"]
         user = CWUser.from_user_id(user_id)
 
+        # TODO: CWShippingDetails
+        # self._shipping_details =
+        # shipping = event_data["shipping"]
+        # name = event_data["shipping"]["name"]
+
+        tx_status = event_data["status"]
+
         transaction_id = event_data["id"]
 
-        return CWTransaction(cart, user, transaction_id)
+        transaction = CWTransaction(
+            cart=cart, user=user, id=transaction_id, status=tx_status
+        )
 
-    def is_guest(self):
-        return self.user.user_type == UserTypeEnum.GUEST
+        amount = int(event_data["amount"])
+        if transaction.get_cost().as_cents() != int(amount):
+            # TODO: Proper log message, this shouldn't happen
+            log.error("")
+            transaction._cw_cost = CWCost(amount)
+
+        return transaction
+
+    def get_shipping_details(self):
+        return self._shipping_details
 
     def _set_id(self, id):
         self._tx_id = id
@@ -591,18 +641,23 @@ class CWShoppingCartEntry:
 class CWShoppingCart:
     def __init__(self, shopping_cart_entry_list):
         self.shopping_cart_entry_list = shopping_cart_entry_list
-        self._cw_cost = self._calculate_cost()
+        self._cw_cost, self._size = self._calculate_cost_and_size()
         self._weight = self._calculate_weight()
 
     def get_cost(self):
         return self._cw_cost
 
-    def _calculate_cost(self):
+    def _calculate_cost_and_size(self):
         cw_cost = CWCost(amt=0)
+        size = 0
         for shopping_cart_entry in self.shopping_cart_entry_list:
             # NOTE: This syntax is fine since we overrode CWCost::__add__
             cw_cost += shopping_cart_entry.get_cost()
-        return cw_cost
+            size += shopping_cart_entry.quantity
+        return cw_cost, size
+
+    def get_size(self):
+        return self._size
 
     def get_weight(self):
         return self._weight
@@ -906,29 +961,28 @@ def update_transaction_record_webhook_call(
     return response
 
 
-def handle_webhook_v2(stripe_event, dynamo_client):
+def handle_webhook(stripe_event, dynamo_client):
     try:
-        event = stripe.Event.construct_from(stripe_event, stripe.api_key)
+        transaction = CWTransaction.from_stripe_event(stripe_event)
     except Exception as e:
+        stripe_webhook_parse_failure = (
+            "SERVER_ERROR: Failed to parse Stripe webhook event"
+        )
         log.exception(
-            "SERVER_ERROR: Failed to parse Stripe webhook event",
+            stripe_webhook_parse_failure,
             stripe_event=stripe_event,
         )
         return {
             "code": 500,
-            "message": "SERVER_ERROR: Failed to parse Stripe webhook event",
+            "message": stripe_webhook_parse_failure,
             "error": {"message": str(e), "stack": traceback.format_exc()},
         }
 
-    transaction = CWTransaction.from_stripe_event(event)
-
-    if transaction.is_guest():
-        cw_user = CWUser.from_guest_default()
-
+    if transaction.user.is_guest():
         # Obtain email from cache for guest user
         try:
             email = obtain_email_from_cache(key=transaction.get_id())
-            cw_user.set_email(email)
+            transaction.user.set_email(email)
         except Exception as e:
             user_email_s3_lookup_failure = (
                 "SERVER_ERROR: failed to obtain email from user record or s3 cache"
@@ -942,8 +996,6 @@ def handle_webhook_v2(stripe_event, dynamo_client):
                     "stack": traceback.format_exc(),
                 },
             }
-    else:
-        cw_user = CWUser.from_stripe_event(event)
 
     try:
         transaction.write_to_db()
@@ -960,9 +1012,11 @@ def handle_webhook_v2(stripe_event, dynamo_client):
         }
 
     # Increment DDP for purchases made by registered users
-    if not transaction.is_guest():
+    if not transaction.user.is_guest():
         try:
-            cw_user.increment_ddp_db(dynamo_client)
+            transaction.user.increment_ddp_db(
+                dynamo_client, ddp=transaction.cart.size()
+            )
         except Exception as e:
             # TODO: Queue DynamoDB-Error Retries
             # Can look at old commits to find the skeleton for this.
@@ -977,7 +1031,7 @@ def handle_webhook_v2(stripe_event, dynamo_client):
             # 2: https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/AlarmThatSendsEmail.html
             #
             log_context = {
-                "user_id": cw_user.id,
+                "user_id": transaction.user.id,
                 "transaction_id": transaction.get_id(),
             }
             log.exception("SERVER_ERROR: Failed to update ddp for user", **log_context)
@@ -999,175 +1053,6 @@ def handle_webhook_v2(stripe_event, dynamo_client):
                 "message": str(e),
                 "stack": traceback.format_exc(),
             },
-        }
-
-
-def handle_webhook(stripe_event, dynamo_client):
-    try:
-        event = stripe.Event.construct_from(stripe_event, stripe.api_key)
-    except Exception as e:
-        error = {
-            "message": str(e),
-            "stack": traceback.format_exc(),
-        }
-        print(
-            f"SERVER_ERROR: Failed to parse Stripe webhook event: {stripe_event} | {error}"
-        )
-        return {
-            "code": 500,
-            "message": "SERVER_ERROR: Failed to parse Stripe webhook event",
-            "error": error,
-        }
-
-    try:
-        event_data = event["data"]["object"]
-
-        # Obtain data needed to create record of Transaction
-        transaction_id = event_data["id"]
-        shipping = event_data["shipping"]
-        status = event_data["status"]
-        amount = event_data["amount"]
-        name = event_data["shipping"]["name"]
-
-        # Get dynamo-friendly commodity list
-        cart = cw_cart_from_short_string(event_data["metadata"]["cart"])
-        commodity_list = format_commodity_list_from_cart(cart)
-
-        # Grab user ID for user followup actions
-        user_id = event_data["metadata"]["usr"]
-        is_guest_purchase = user_id == "guest"
-
-        print(f"DEBUG - cart metadata: {event_data['metadata']['cart']}")
-        print(f"DEBUG - commodity_list: {commodity_list}")
-    except Exception as e:
-        error = {
-            "message": str(e),
-            "stack": traceback.format_exc(),
-        }
-        print(
-            f"SERVER_ERROR: Failed to parse Transaction data from Stripe callback | {error}"
-        )
-        return {
-            "code": 500,
-            "message": "SERVER_ERROR: Failed to parse Transaction data from Stripe callback",
-            "error": error,
-        }
-
-    cw_user_record = None
-    try:
-        if not is_guest_purchase:
-            cw_user_record = dynamo_client.get(USER_TABLE_NAME, {"id": {"S": user_id}})
-    except Exception as e:
-        error = {
-            "message": str(e),
-            "stack": traceback.format_exc(),
-        }
-        print(f"SERVER_ERROR: Failed to parse UserID from Stripe callback | {error}")
-        # NOTE: This is not a fatal error - we should still record transaction
-        # return {
-        #     "code": 500,
-        #     "message": "SERVER_ERROR: Failed to parse Transaction data from Stripe callback",
-        #     "error": error,
-        # }
-
-    try:
-        if is_guest_purchase:
-            email = obtain_email_from_cache(key=transaction_id)
-        else:
-            email = cw_user_record["email"]["S"]
-    except Exception as e:
-        error = {
-            "message": str(e),
-            "stack": traceback.format_exc(),
-        }
-        print(
-            f"SERVER_ERROR: Failed to obtain email from User Record or s3 cache | {error}"
-        )
-        return {
-            "code": 500,
-            "message": "SERVER_ERROR: Failed to obtain email from User Record or s3 cache",
-            "error": error,
-        }
-
-    try:
-        transaction_record = create_transaction_record(
-            transaction_id=transaction_id,
-            shipping=shipping,
-            status=status,
-            amount=amount,
-            email=email,
-            name=name,
-            commodity_list=commodity_list,
-            user_id=user_id,  # 'guest', for guest purchases
-            dynamo_client=dynamo_client,
-        )
-    except Exception as e:
-        error = {
-            "message": str(e),
-            "stack": traceback.format_exc(),
-        }
-        print(f"SERVER_ERROR: Failed to create Transaction record | {error}")
-        return {
-            "code": 500,
-            "message": "SERVER_ERROR: Failed to create Transaction record",
-            "error": error,
-        }
-
-    # NOTE:
-    #   This update method would not scale (dynamo atomicity) to scores of concurrent payments.
-    #   What a beautiful problem that would be to have one day!
-    # NOTE:
-    #   No external error handling here - as this is not a blocking error, it catches and logs any
-    #   errors itself.
-    # remove_purchased_commodities_from_stock(commodity_list, dynamo_client)
-
-    item_count = determine_item_count_from_cart(commodity_list)
-
-    # Grant DDP to user purchases
-    if not is_guest_purchase:
-        # NOTE:
-        #   No external error handling here - as this is not a blocking error, it catches and logs any
-        #   errors itself.
-        grantDdpToUser(
-            cw_user_record=cw_user_record,
-            commodity_list=commodity_list,
-            item_count=item_count,
-            dynamo_client=dynamo_client,
-        )
-
-    # Send an email to William, Russell, and Customer about completed purchase
-    try:
-        ses_response = send_email_order_details_to_admins(
-            shipping=shipping,
-            customer_email=email,
-            customer_name=name,
-            products=commodity_list,
-            amt_in_cents=amount,
-            username=(None if is_guest_purchase else cw_user_record["username"]["S"]),
-            is_guest_purchase=is_guest_purchase,
-        )
-
-        ses_response = send_email_order_details_to_customer(
-            shipping=shipping,
-            customer_name=name,
-            customer_email=email,
-            products=commodity_list,
-            amt_in_cents=amount,
-            item_count=item_count,
-            is_guest_purchase=is_guest_purchase,
-        )
-
-        return {"code": 200}
-    except Exception as e:
-        error = {
-            "message": str(e),
-            "stack": traceback.format_exc(),
-        }
-        print(f"SERVER_ERROR: failed to email about commodity purchase | {error}")
-        return {
-            "code": 500,
-            "message": "SERVER_ERROR: failed to email about commodity purchase",
-            "error": error,
         }
 
 
