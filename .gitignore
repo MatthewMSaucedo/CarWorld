@@ -62,3 +62,6 @@ Thumbs.db
 
 # Pytest
 /.pytest_cache
+
+# Backend stuff
+backend/infra/lambda/auth/zip
