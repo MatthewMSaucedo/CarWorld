@@ -47,6 +47,6 @@ Then synthesize the CloudFormation template:
 ```
 cdk synth
 ```
-Now you can deploy with `cdk deploy` (you'll need some AWS credentials though).
+Now you can deploy with `cdk deploy` (you'll need some AWS credentials though), AND you will need to login to the AWS console and manually upload the `function.zip` file from `lambda/auth/zip` to the Auth lambda.
 
 At the moment, when running the frontend development server, you'll need to log into the AWS console, pull up your newly created API Gateway, and copy and paste it's API ID string into the `CW_API_GW_ID` variable in  `CarWorld/frontend/src/AppConstants.tsx`, for the frontend to be pointed at the new deployment.
