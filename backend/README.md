@@ -22,7 +22,7 @@
 ![CarWorld System Diagram](backend/CWSystemDiagram.jpg/infra?raw=true "CarWorld System Design")
 
 ### Deployment
-Starting from `CarWorld/backend/infra`, create and enter a virtualenv (MacOS and Linux):
+Starting from the `backend` directory, create and enter a virtualenv (MacOS and Linux):
 ```
 python3 -m venv .venv
 source .venv/bin/activate # or .venv\Scripts\activate.bat for Windows
@@ -31,9 +31,11 @@ Install Python packages:
 ```
 pip install -r requirements.txt
 ```
-Make sure to install the JWT package into a special sub-directory for the validator lambda (it will get packaged into a lambda layer):
+Make sure to install these packages into special sub-directories (that will get packaged into lambda layers):
 ```
 pip install jwt --target ./lambda/validator/jwt-layer/python/lib/python3.12/site-packages
+pip install stripe --target ./lambda/commerce/stripe-layer/python/lib/python3.12/site-packages
+pip install aws-lambda-powertools --target ./lambda/commerce/powertools-layer/python/lib/python3.12/site-packages
 ```
 The `auth` lambda function is written in JavaScript (the rest are written in Python). It needs a little extra love:
 ```
