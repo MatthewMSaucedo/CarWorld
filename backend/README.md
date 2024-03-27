@@ -21,63 +21,32 @@
 
 ![CarWorld System Diagram](backend/CWSystemDiagram.jpg/infra?raw=true "CarWorld System Design")
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
-
-This project is set up like a standard Python project.  The initialization
-process also creates a virtualenv within this project, stored under the `.venv`
-directory.  To create the virtualenv it assumes that there is a `python3`
-(or `python` for Windows) executable in your path with access to the `venv`
-package. If for any reason the automatic creation of the virtualenv fails,
-you can create the virtualenv manually.
-
-To manually create a virtualenv on MacOS and Linux:
-
+### Deployment
+Starting from `CarWorld/backend/infra`, create and enter a virtualenv (MacOS and Linux):
 ```
-$ python3 -m venv .venv
+python3 -m venv .venv
+source .venv/bin/activate # or .venv\Scripts\activate.bat for Windows
 ```
-
-After the init process completes and the virtualenv is created, you can use the following
-step to activate your virtualenv.
-
+Install Python packages:
 ```
-$ source .venv/bin/activate
+pip install -r requirements.txt
 ```
-
-If you are a Windows platform, you would activate the virtualenv like this:
-
+Make sure to install the JWT package into a special sub-directory for the validator lambda (it will get packaged into a lambda layer):
 ```
-% .venv\Scripts\activate.bat
+pip install jwt --target ./lambda/validator/jwt-layer/python/lib/python3.12/site-packages
 ```
-
-Once the virtualenv is activated, you can install the required dependencies.
-
+The `auth` lambda function is written in JavaScript (the rest are written in Python). It needs a little extra love:
 ```
-$ pip install -r requirements.txt
+cd lambda/auth
+npm i
+mkdir zip # or rm zip/function.zip
+zip -r zip/function.zip index.js package-lock.json package.json node_modules/
+cd ../..
 ```
-
-At this point you can now synthesize the CloudFormation template for this code.
-
+Then synthesize the CloudFormation template:
 ```
-$ cdk synth
+cdk synth
 ```
+Now you can deploy with `cdk deploy` (you'll need some AWS credentials though).
 
-Need to add dependencies to lambda?
-
-```
-$ mkdir zip
-$ zip -r zip/function.zip index.js node_modules/ package.json package-lock.json
-```
-
-To add additional dependencies, for example other CDK libraries, just add
-them to your `setup.py` file and rerun the `pip install -r requirements.txt`
-command.
-
-#### Useful commands
-
- * `cdk ls`          list all stacks in the app
- * `cdk synth`       emits the synthesized CloudFormation template
- * `cdk deploy`      deploy this stack to your default AWS account/region
- * `cdk diff`        compare deployed stack with current state
- * `cdk docs`        open CDK documentation
-
-Enjoy!
+At the moment, when running the frontend development server, you'll need to log into the AWS console, pull up your newly created API Gateway, and copy and paste it's API ID string into the `CW_API_GW_ID` variable in  `CarWorld/frontend/src/AppConstants.tsx`, for the frontend to be pointed at the new deployment.

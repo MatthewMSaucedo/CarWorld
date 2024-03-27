@@ -64,4 +64,4 @@ Thumbs.db
 /.pytest_cache
 
 # Backend stuff
-backend/infra/lambda/auth/zip
+backend/infra/lambda/auth/zip/function.zip

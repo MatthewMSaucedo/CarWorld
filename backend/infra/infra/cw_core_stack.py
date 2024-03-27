@@ -310,7 +310,7 @@ class CWCoreStack(Stack):
         batch_write_store_items_lambda = lambdaFx.Function(
             scope=self,
             id=f"{self.stack_env}-cw-batch-write-store-items-lambda",
-            runtime=lambdaFx.Runtime.PYTHON_3_7,
+            runtime=lambdaFx.Runtime.PYTHON_3_12,
             handler="batch_write_store_items.handler",
             role=batch_write_store_items_lambda_role,
             code=lambdaFx.Code.from_asset("./lambda/jobs/"),
@@ -381,30 +381,23 @@ class CWCoreStack(Stack):
         # NOTE: Generation guide:
         #   https://medium.com/geekculture/deploying-aws-lambda-layers-with-python-8b15e24bdad2
         #   So essentially, creating a `layer` folder, and running the following:
-        #   pip3 install [[PACKAGE]] --target ~/CarWorld/backend/infra/lambda/validator/layer/python/lib/python3.7/site-packages
+        #   pip3 install [[PACKAGE]] --target ~/CarWorld/backend/infra/lambda/validator/layer/python/lib/python3.12/site-packages
         jwt_lambda_layer = lambdaFx.LayerVersion(
             self,
             f"{self.stack_env}-jwt-lambda-layer",
             code=lambdaFx.AssetCode("lambda/validator/jwt-layer/"),
-            compatible_runtimes=[lambdaFx.Runtime.PYTHON_3_7],
+            compatible_runtimes=[lambdaFx.Runtime.PYTHON_3_12],
         )
-        jwt_dependency_lambda_layer = lambdaFx.LayerVersion(
-            self,
-            f"{self.stack_env}-jwt-dependency-lambda-layer",
-            code=lambdaFx.AssetCode("lambda/validator/jwt-dependency-layer/"),
-            compatible_runtimes=[lambdaFx.Runtime.PYTHON_3_7],
-        )
-
         validator_lambda = lambdaFx.Function(
             scope=self,
             id=f"{self.stack_env}-cw-validator-lambda",
-            runtime=lambdaFx.Runtime.PYTHON_3_7,
+            runtime=lambdaFx.Runtime.PYTHON_3_12,
             handler="index.handler",
             role=validator_role,
             code=lambdaFx.Code.from_asset("./lambda/validator/"),
             description="CarWorld Validator Lambda, to authenticate API requests",
             environment={"jwtSecret": jwt_secret, "jwtExpMinutes": jwt_exp_minutes},
-            layers=[jwt_lambda_layer, jwt_dependency_lambda_layer],
+            layers=[jwt_lambda_layer],
             memory_size=512,
             timeout=Duration.seconds(15),
         )
@@ -417,7 +410,7 @@ class CWCoreStack(Stack):
             scope=self,
             id=f"{self.stack_env}-cw-auth-api",
             description="CarWorld API Gateway",
-            cors_preflight=apigw.CorsPreflightOptions(
+			cors_preflight=apigw.CorsPreflightOptions(
                 allow_headers=["*"],
                 allow_methods=[
                     apigw.CorsHttpMethod.GET,
@@ -482,13 +475,13 @@ class CWCoreStack(Stack):
             self,
             f"{self.stack_env}-stripe-layer",
             code=lambdaFx.AssetCode("lambda/commerce/stripe-layer/"),
-            compatible_runtimes=[lambdaFx.Runtime.PYTHON_3_7],
+            compatible_runtimes=[lambdaFx.Runtime.PYTHON_3_12],
         )
         powertools_lambda_layer = lambdaFx.LayerVersion(
             self,
             f"{self.stack_env}-powertools-layer",
             code=lambdaFx.AssetCode("lambda/commerce/powertools-layer/"),
-            compatible_runtimes=[lambdaFx.Runtime.PYTHON_3_7],
+            compatible_runtimes=[lambdaFx.Runtime.PYTHON_3_12],
         )
 
         # Grant db access
@@ -503,7 +496,7 @@ class CWCoreStack(Stack):
         commerce_lambda = lambdaFx.Function(
             scope=self,
             id=f"{self.stack_env}-cw-commerce-lambda",
-            runtime=lambdaFx.Runtime.PYTHON_3_7,
+            runtime=lambdaFx.Runtime.PYTHON_3_12,
             handler="index.handler",
             role=commerce_lambda_role,
             code=lambdaFx.Code.from_asset("./lambda/commerce/"),
@@ -658,7 +651,7 @@ class CWCoreStack(Stack):
         profile_lambda = lambdaFx.Function(
             scope=self,
             id=f"{self.stack_env}-cw-profile-lambda",
-            runtime=lambdaFx.Runtime.PYTHON_3_7,
+            runtime=lambdaFx.Runtime.PYTHON_3_12,
             handler="index.handler",
             role=profile_lambda_role,
             code=lambdaFx.Code.from_asset("./lambda/profile/"),
@@ -738,7 +731,7 @@ class CWCoreStack(Stack):
         ses_lambda = lambdaFx.Function(
             scope=self,
             id=f"{self.stack_env}-cw-ses-notif-lambda",
-            runtime=lambdaFx.Runtime.PYTHON_3_7,
+            runtime=lambdaFx.Runtime.PYTHON_3_12,
             handler="index.handler",
             role=ses_lambda_role,
             code=lambdaFx.Code.from_asset("./lambda/ses/"),  # TODO:
