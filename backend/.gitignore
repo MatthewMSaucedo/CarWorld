@@ -1,0 +1,16 @@
+*.swp
+package-lock.json
+__pycache__
+.pytest_cache
+.venv
+*.egg-info
+
+# Lambda Layers
+lambda/validator/jwt-layer
+lambda/commerce/stripe-layer
+lambda/commerce/powertools-layer
+lambda/auth/zip/*
+
+# CDK asset staging directory
+.cdk.staging
+cdk.out
