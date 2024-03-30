@@ -33,10 +33,12 @@ pip install -r requirements.txt
 ```
 Make sure to install these packages into special sub-directories (that will get packaged into lambda layers):
 ```
-pip install jwt --target ./lambda/validator/jwt-layer/python/lib/python3.12/site-packages
-pip install stripe --target ./lambda/commerce/stripe-layer/python/lib/python3.12/site-packages
-pip install aws-lambda-powertools --target ./lambda/commerce/powertools-layer/python/lib/python3.12/site-packages
+pip install pyjwt==2.6.0 typing-extensions==3.7.4.1 --target ./lambda/validator/jwt-dependency-layer/python/lib/python3.11/site-packages
+pip install stripe --target ./lambda/commerce/stripe-layer/python/lib/python3.11/site-packages
+pip install aws-lambda-powertools --target ./lambda/commerce/powertools-layer/python/lib/python3.11/site-packages
 ```
+Soemthing to keep an eye out for is that if the Python version you are using to create the venv and make these `pip` calls is not the same as the version in the Lambda's runtime (currently Python 3.11), you might get some mysterious errors from the validator function along the lines of [this Stack Overflow post](https://stackoverflow.com/questions/57189352/aws-lambda-unable-to-import-module-python-handler-no-module-named-cffi-bac).
+
 The `auth` lambda function is written in JavaScript (the rest are written in Python). It needs a little extra love:
 ```
 cd lambda/auth
@@ -51,4 +53,4 @@ cdk synth
 ```
 Now you can deploy with `cdk deploy` (you'll need some AWS credentials though), AND you will need to login to the AWS console and manually upload the `function.zip` file from `lambda/auth/zip` to the Auth lambda.
 
-At the moment, when running the frontend development server, you'll need to log into the AWS console, pull up your newly created API Gateway, and copy and paste it's API ID string into the `CW_API_GW_ID` variable in  `CarWorld/frontend/src/AppConstants.tsx`, for the frontend to be pointed at the new deployment.
+At the moment, when running the frontend development server, you'll need to log into the AWS console, pull up your newly created API Gateway, and find and replace it's ID string into the URLs in the `CW_API_ENDPOINTS` variable in `frontend/src/AppConstants.tsx` for the frontend to be pointed at the new deployment.
