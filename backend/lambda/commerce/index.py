@@ -361,6 +361,20 @@ class CWShippingDetails:
         self.state = state
         self.phone = phone
 
+    @staticmethod
+    def from_stripe_event(stripe_shipping_data)
+        # TODO: Validate against actual stripe event data
+        return CWShippingDetails(
+            stripe_shipping_data["client_name"],
+            stripe_shipping_data["city"],
+            stripe_shipping_date["country"],
+            strip_shipping_data["line1"],
+            strip_shipping_data["line2"],
+            strip_shipping_data["postal_code"],
+            strip_shipping_data["state"],
+            strip_shipping_data["phone"]
+        )
+
     def get_dynamo_manual_expression_attribute_map(self):
         return {
             "shipping": {
@@ -406,10 +420,10 @@ class CWTransaction:
         user_id = event_data["metadata"]["usr"]
         user = CWUser.from_user_id(user_id)
 
-        # TODO: CWShippingDetails
-        # self._shipping_details =
-        # shipping = event_data["shipping"]
-        # name = event_data["shipping"]["name"]
+        # TODO: Implement this static method
+        self._shipping_details = CWShippingDetails.from_stripe_event(
+            event_data["shipping"]
+        )
 
         tx_status = event_data["status"]
 
@@ -963,6 +977,10 @@ def update_transaction_record_webhook_call(
 
 def handle_webhook(stripe_event, dynamo_client):
     try:
+        # TODO: Impl
+        # This doesn't work since we have transitioned to class-based calls,
+        # as the underyling dependency on CWShippingDetails has not implemented
+        # the static method CWShippingDetails.from_stripe_event
         transaction = CWTransaction.from_stripe_event(stripe_event)
     except Exception as e:
         stripe_webhook_parse_failure = (
@@ -998,6 +1016,7 @@ def handle_webhook(stripe_event, dynamo_client):
             }
 
     try:
+        # TODO: Implement
         transaction.write_to_db()
     except Exception as e:
         tx_db_write_failure = "Failed to write transaction_record to db"
@@ -1014,6 +1033,7 @@ def handle_webhook(stripe_event, dynamo_client):
     # Increment DDP for purchases made by registered users
     if not transaction.user.is_guest():
         try:
+            # TODO: Implement
             transaction.user.increment_ddp_db(
                 dynamo_client, ddp=transaction.cart.size()
             )
